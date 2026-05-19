@@ -6,14 +6,7 @@ import {
   usersTable,
 } from '../../database/schemas/users.schema.js'
 
-export interface IUserRepository {
-  create(data: NewUser): Promise<User | null>
-  findByEmail(email: string): Promise<User | null>
-  updatePassword(id: string, passwordHash: string): Promise<User | null>
-  delete(id: string): Promise<void>
-}
-
-export class UserRepository implements IUserRepository {
+export class UserRepository {
   constructor(private readonly database: Database) {}
 
   async create(data: NewUser): Promise<User | null> {
@@ -21,6 +14,15 @@ export class UserRepository implements IUserRepository {
       .insert(usersTable)
       .values(data)
       .returning()
+
+    return user ?? null
+  }
+
+  async findById(id: string): Promise<User | null> {
+    const [user] = await this.database
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, id))
 
     return user ?? null
   }
