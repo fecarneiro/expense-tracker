@@ -7,6 +7,8 @@ function required(name: string) {
 }
 
 export const env = {
-  DATABASE_URL: required('DATABASE_URL'),
+  PORT: process.env.PORT ?? 3000,
   NODE_ENV: process.env.NODE_ENV ?? 'development',
+  DATABASE_URL: required('DATABASE_URL'),
+  JWT_SECRET: required('JWT_SECRET'),
 }
