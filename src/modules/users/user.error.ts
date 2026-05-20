@@ -13,3 +13,17 @@ export class UserCreationFailedError extends AppError {
     this.name = 'UserCreationFailedError'
   }
 }
+
+export class InvalidCredentialsError extends AppError {
+  constructor() {
+    super('Invalid credentials error', 401)
+    this.name = 'InvalidCredentialsError'
+  }
+}
+
+export class AuthenticatedUserNotFoundError extends AppError {
+  constructor() {
+    super('Authenticated user not found', 401)
+    this.name = 'AuthenticatedUserNotFoundError'
+  }
+}
