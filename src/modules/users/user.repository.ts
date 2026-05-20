@@ -22,7 +22,7 @@ export class UserRepository {
     const [user] = await this.database
       .select()
       .from(usersTable)
-      .where(eq(usersTable.email, id))
+      .where(eq(usersTable.id, id))
 
     return user ?? null
   }
