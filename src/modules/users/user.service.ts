@@ -2,7 +2,6 @@ import type { PasswordHasher } from '../../shared/password-hasher.js'
 import type {
   ChangePasswordInput,
   CreateUserInput,
-  SignInCredentials,
   UserResponse,
 } from './user.dto.js'
 import {
@@ -37,27 +36,6 @@ export class UserService {
     }
 
     return newUser
-  }
-
-  async verifyUserCredentials(data: SignInCredentials): Promise<UserResponse> {
-    const { email, password } = data
-
-    const user = await this.userRepository.findByEmail(email)
-
-    if (!user) {
-      throw new InvalidCredentialsError()
-    }
-
-    const validCredentials = await this.passwordHasher.compare(
-      password,
-      user.passwordHash,
-    )
-
-    if (!validCredentials) {
-      throw new InvalidCredentialsError()
-    }
-
-    return { email: user.email, id: user.id }
   }
 
   async changeUserPassword(
