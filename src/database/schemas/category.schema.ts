@@ -6,7 +6,7 @@ export const categoriesTable = pgTable('categories', {
   userId: uuid()
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
-  name: varchar({ length: 255 }).notNull(),
+  description: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().notNull().defaultNow(),
 })
 
