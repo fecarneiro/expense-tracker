@@ -6,10 +6,10 @@ import { errorMiddleware } from './middlewares/error.middleware.js'
 import { AuthController } from './modules/auth/auth.controller.js'
 import { authRouter } from './modules/auth/auth.routes.js'
 import { AuthService } from './modules/auth/auth.service.js'
+import { UserController } from './modules/users/user.controller.js'
 import { UserRepository } from './modules/users/user.repository.js'
+import { userRouter } from './modules/users/user.routes.js'
 import { UserService } from './modules/users/user.service.js'
-import { UserController } from './modules/users/users.controller.js'
-import { userRouter } from './modules/users/users.routes.js'
 import { PasswordHasher } from './shared/password-hasher.js'
 
 const port = Number(process.env.PORT ?? 3000)

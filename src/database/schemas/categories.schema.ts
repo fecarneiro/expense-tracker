@@ -2,10 +2,13 @@ import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { usersTable } from './users.schema.js'
 
 export const categoriesTable = pgTable('categories', {
-  id: uuid().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   userId: uuid()
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
-  name: varchar().notNull(),
+  name: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().notNull().defaultNow(),
 })
+
+export type Category = typeof categoriesTable.$inferSelect
+export type NewCategory = typeof categoriesTable.$inferInsert
