@@ -2,7 +2,7 @@ import * as z from 'zod'
 
 export const UserSchema = z.object({
   id: z.uuid(),
-  email: z.email().trim().toLowerCase(),
+  email: z.string().trim().toLowerCase().pipe(z.email()),
   password: z.string().min(6).max(20),
   createdAt: z.date(),
 })
