@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { generateToken } from './access-token.js'
-import { SignInCredentials } from './auth.dto.js'
+import { loginSchema } from './auth.schemas.js'
 import type { AuthService } from './auth.service.js'
 import { cookieOptions } from './cookie.js'
 
@@ -8,7 +8,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   async login(req: Request, res: Response) {
-    const data = SignInCredentials.parse(req.body)
+    const data = loginSchema.parse(req.body)
     const user = await this.authService.verifyUserCredentials(data)
 
     const token = await generateToken(user)

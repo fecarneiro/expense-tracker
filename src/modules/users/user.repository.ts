@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
-import {
-  type NewUser,
-  type User,
-  usersTable,
-} from '../../database/schemas/users.schema.js'
+import { type NewUser, type User, usersTable } from './user.entity.js'
+import type {
+  DeleteUserRepositoryData,
+  UpdatePasswordRepositoryData,
+} from './user.schemas.js'
 
 export class UserRepository {
   constructor(private readonly database: Database) {}
@@ -36,17 +36,19 @@ export class UserRepository {
     return user ?? null
   }
 
-  async updatePassword(id: string, passwordHash: string): Promise<User | null> {
+  async updatePassword(
+    data: UpdatePasswordRepositoryData,
+  ): Promise<User | null> {
     const [user] = await this.database
       .update(usersTable)
-      .set({ passwordHash })
-      .where(eq(usersTable.id, id))
+      .set({ passwordHash: data.passwordHash })
+      .where(eq(usersTable.id, data.userId))
       .returning()
 
     return user ?? null
   }
 
-  async delete(id: string) {
-    await this.database.delete(usersTable).where(eq(usersTable.id, id))
+  async delete(data: DeleteUserRepositoryData) {
+    await this.database.delete(usersTable).where(eq(usersTable.id, data.userId))
   }
 }
