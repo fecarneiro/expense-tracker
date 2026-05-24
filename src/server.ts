@@ -42,8 +42,12 @@ server.use('/', authRouter(authController))
 server.use('/users', userRouter(userController))
 server.use('/categories', authMiddleware, categoryRouter(categoryController))
 
-server.listen(port, () => {
-  console.log(`Server is running on port: ${port}`)
+server.use('/', (_req, res) => {
+  res.status(404).json({ message: 'Not found' })
 })
 
 server.use(errorMiddleware)
+
+server.listen(port, () => {
+  console.log(`Server is running on port: ${port}`)
+})

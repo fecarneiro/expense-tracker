@@ -1,7 +1,8 @@
 import type { PasswordHasher } from '../../shared/password-hasher.js'
+import { type PublicUser, toPublicUser } from '../users/user.entity.js'
 import { InvalidCredentialsError } from '../users/user.error.js'
 import type { UserRepository } from '../users/user.repository.js'
-import type { AuthResponse, SignInCredentials } from './auth.dto.js'
+import type { LoginData } from './auth.schemas.js'
 
 export class AuthService {
   constructor(
@@ -9,7 +10,7 @@ export class AuthService {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async verifyUserCredentials(data: SignInCredentials): Promise<AuthResponse> {
+  async verifyUserCredentials(data: LoginData): Promise<PublicUser> {
     const { email, password } = data
 
     const user = await this.userRepository.findByEmail(email)
@@ -18,15 +19,15 @@ export class AuthService {
       throw new InvalidCredentialsError()
     }
 
-    const validCredentials = await this.passwordHasher.compare(
+    const validatedCredentials = await this.passwordHasher.compare(
       password,
       user.passwordHash,
     )
 
-    if (!validCredentials) {
+    if (!validatedCredentials) {
       throw new InvalidCredentialsError()
     }
 
-    return { email: user.email, id: user.id }
+    return toPublicUser(user)
   }
 }
