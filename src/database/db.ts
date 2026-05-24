@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
 import { env } from '../config/env.config.js'
-import { categoriesTable } from './schemas/categories.schema.js'
+import { categoriesTable } from './schemas/category.schema.js'
 import { transactionsTable } from './schemas/transactions.schema.js'
 import { usersTable } from './schemas/users.schema.js'
 
