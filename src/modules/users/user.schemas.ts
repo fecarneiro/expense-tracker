@@ -16,23 +16,21 @@ export const userIdParamsSchema = userIdField
 
 // Controller Layer (HTTP bodies)
 
-export const createUserSchema = z.object({
-  email: emailField,
-  password: strongPasswordField,
-})
-
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: strongPasswordField,
 })
 
+export const deleteUserSchema = z.object({
+  password: z.string().min(1),
+})
+
 // Service Layer
-export type CreateUserData = z.infer<typeof createUserSchema>
 export type ChangePasswordData = z.infer<typeof changePasswordSchema> & {
   userId: string
 }
 
-export interface DeleteUserData {
+export type DeleteUserData = z.infer<typeof deleteUserSchema> & {
   userId: string
 }
 
@@ -42,6 +40,6 @@ export interface UpdatePasswordRepositoryData {
   passwordHash: string
 }
 
-export interface DeleteUserRepositoryData {
+export interface DeleteRepositoryData {
   userId: string
 }

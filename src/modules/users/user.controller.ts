@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import {
   changePasswordSchema,
-  createUserSchema,
+  deleteUserSchema,
   userIdParamsSchema,
 } from './user.schemas.js'
 import type { UserService } from './user.service.js'
@@ -9,16 +9,10 @@ import type { UserService } from './user.service.js'
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  async create(req: Request, res: Response) {
-    const data = createUserSchema.parse(req.body)
-    const user = await this.userService.createNewUser(data)
-    res.status(201).json(user)
-  }
-
   async update(req: Request, res: Response) {
     const data = changePasswordSchema.parse(req.body)
-    const userId = userIdParamsSchema.parse(req.params.id)
-    await this.userService.changeUserPassword({
+    const userId = userIdParamsSchema.parse(req.cookies.userId)
+    await this.userService.changePassword({
       userId,
       currentPassword: data.currentPassword,
       newPassword: data.newPassword,
@@ -27,8 +21,9 @@ export class UserController {
   }
 
   async delete(req: Request, res: Response) {
-    const userId = userIdParamsSchema.parse(req.params.id)
-    await this.userService.deleteUser({ userId })
+    const data = deleteUserSchema.parse(req.body)
+    const userId = userIdParamsSchema.parse(req.cookies.userId)
+    await this.userService.delete({ userId, password: data.password })
     res.status(204).send()
   }
 }

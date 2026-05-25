@@ -38,8 +38,8 @@ server.disable('x-powered-by')
 server.use(cookieParser())
 server.use(express.json())
 
-server.use('/', authRouter(authController))
-server.use('/users', userRouter(userController))
+server.use('/auth', authRouter(authController))
+server.use('/users', authMiddleware, userRouter(userController))
 server.use('/categories', authMiddleware, categoryRouter(categoryController))
 
 server.use('/', (_req, res) => {
