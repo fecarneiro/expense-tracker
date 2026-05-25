@@ -1,0 +1,38 @@
+import { sql } from 'drizzle-orm'
+import {
+  pgTable,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core'
+import { usersTable } from '../users/user.entity.js'
+
+export const categoriesTable = pgTable(
+  'categories',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: 'cascade' }),
+    name: varchar({ length: 50 }).notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('unique_category_name').on(
+      table.userId,
+      sql`lower(${table.name})`,
+    ),
+  ],
+)
+export type Category = typeof categoriesTable.$inferSelect
+export type NewCategory = typeof categoriesTable.$inferInsert
+export type PublicCategory = Omit<Category, 'userId'>
+
+export function toPublicCategory(category: Category): PublicCategory {
+  return {
+    id: category.id,
+    name: category.name,
+    createdAt: category.createdAt,
+  }
+}

@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express'
+import { toPublicCategory } from './category.entity.js'
 import {
   categoryParamsSchema,
   createCategorySchema,
-  toCategoryResponse,
   updateCategorySchema,
-} from './category.dto.js'
+} from './category.schemas.js'
 import type { CategoryService } from './category.service.js'
 
 export class CategoryController {
@@ -19,7 +19,7 @@ export class CategoryController {
       name: input.name,
     })
 
-    res.status(201).json(toCategoryResponse(category))
+    res.status(201).json(toPublicCategory(category))
   }
 
   async update(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export class CategoryController {
       name,
     })
 
-    res.status(200).json(toCategoryResponse(category))
+    res.status(200).json(toPublicCategory(category))
   }
 
   async findById(req: Request, res: Response) {
@@ -45,7 +45,7 @@ export class CategoryController {
       userId,
     })
 
-    res.status(200).json(toCategoryResponse(category))
+    res.status(200).json(toPublicCategory(category))
   }
 
   async findAll(req: Request, res: Response) {
@@ -55,7 +55,7 @@ export class CategoryController {
       userId,
     })
 
-    res.status(200).json(categories.map(toCategoryResponse))
+    res.status(200).json(categories.map(toPublicCategory))
   }
 
   async delete(req: Request, res: Response) {

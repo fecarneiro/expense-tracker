@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
+import { categoriesTable } from './category.entity.js'
 import { CategoryAlreadyExistsError } from './category.error.js'
 import type {
   Category,
