@@ -1,7 +1,5 @@
 import * as z from 'zod'
 
-const userIdField = z.uuid()
-
 export const emailField = z
   .string()
   .trim()
@@ -10,9 +8,6 @@ export const emailField = z
   .pipe(z.email())
 
 export const strongPasswordField = z.string().min(8).max(72)
-
-// HTTP params
-export const userIdParamsSchema = userIdField
 
 // Controller Layer (HTTP bodies)
 

@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { verifyToken } from '../modules/auth/access-token.js'
 import { Unauthorized } from '../modules/auth/auth.error.js'
+import { accessTokenPayloadSchema } from '../modules/auth/auth.schemas.js'
 
 export async function authMiddleware(
   req: Request,
@@ -12,12 +13,18 @@ export async function authMiddleware(
   if (!token) {
     throw new Unauthorized()
   }
+
   const verifiedToken = await verifyToken(token)
 
-  if (!verifiedToken) {
+  const parsedPayload = accessTokenPayloadSchema.safeParse(verifiedToken)
+
+  if (!parsedPayload.success) {
     throw new Unauthorized()
   }
 
-  req.cookies.userId = verifiedToken.userId
+  req.auth = {
+    userId: parsedPayload.data.userId,
+  }
+
   next()
 }

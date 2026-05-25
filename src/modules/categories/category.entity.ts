@@ -27,7 +27,7 @@ export const categoriesTable = pgTable(
 )
 export type Category = typeof categoriesTable.$inferSelect
 export type NewCategory = typeof categoriesTable.$inferInsert
-export type PublicCategory = Omit<Category, 'userId'>
+export type PublicCategory = Pick<Category, 'id' | 'name' | 'createdAt'>
 
 export function toPublicCategory(category: Category): PublicCategory {
   return {
