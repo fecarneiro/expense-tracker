@@ -1,9 +1,5 @@
 import type { Request, Response } from 'express'
-import {
-  changePasswordSchema,
-  deleteUserSchema,
-  userIdParamsSchema,
-} from './user.schemas.js'
+import { changePasswordSchema, deleteUserSchema } from './user.schemas.js'
 import type { UserService } from './user.service.js'
 
 export class UserController {
@@ -11,7 +7,8 @@ export class UserController {
 
   async update(req: Request, res: Response) {
     const data = changePasswordSchema.parse(req.body)
-    const userId = userIdParamsSchema.parse(req.cookies.userId)
+    const userId = req.auth.userId
+
     await this.userService.changePassword({
       userId,
       currentPassword: data.currentPassword,
@@ -22,7 +19,8 @@ export class UserController {
 
   async delete(req: Request, res: Response) {
     const data = deleteUserSchema.parse(req.body)
-    const userId = userIdParamsSchema.parse(req.cookies.userId)
+    const userId = req.auth.userId
+
     await this.userService.delete({ userId, password: data.password })
     res.status(204).send()
   }

@@ -1,6 +1,8 @@
 import * as z from 'zod'
 import { emailField, strongPasswordField } from '../users/user.schemas.js'
 
+export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
+
 export const registerSchema = z.object({
   email: emailField,
   password: strongPasswordField,

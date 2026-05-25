@@ -9,7 +9,7 @@ export const usersTable = pgTable('users', {
 
 export type User = typeof usersTable.$inferSelect
 export type NewUser = typeof usersTable.$inferInsert
-export type PublicUser = Omit<User, 'passwordHash'>
+export type PublicUser = Pick<User, 'id' | 'email' | 'createdAt'>
 
 export function toPublicUser(user: User): PublicUser {
   return {

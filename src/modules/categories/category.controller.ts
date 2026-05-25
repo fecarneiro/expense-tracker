@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express'
-import { toPublicCategory } from './category.entity.js'
 import {
-  categoryParamsSchema,
+  categoryIdParamsSchema,
   createCategorySchema,
   updateCategorySchema,
 } from './category.schemas.js'
@@ -12,60 +11,59 @@ export class CategoryController {
 
   async create(req: Request, res: Response) {
     const input = createCategorySchema.parse(req.body)
-    const userId = req.cookies.userId
+    const userId = req.auth.userId
 
     const category = await this.categoryService.create({
       userId,
       name: input.name,
     })
 
-    res.status(201).json(toPublicCategory(category))
+    res.status(201).json(category)
   }
 
   async update(req: Request, res: Response) {
-    const { id } = categoryParamsSchema.parse(req.params)
+    const { id } = categoryIdParamsSchema.parse(req.params)
+    const userId = req.auth.userId
     const { name } = updateCategorySchema.parse(req.body)
-    const userId = req.cookies.userId
 
     const category = await this.categoryService.update({
-      userId,
       id,
+      userId,
       name,
     })
 
-    res.status(200).json(toPublicCategory(category))
+    res.status(200).json(category)
   }
 
   async findById(req: Request, res: Response) {
-    const { id } = categoryParamsSchema.parse(req.params)
-    const userId = req.cookies.userId
+    const { id } = categoryIdParamsSchema.parse(req.params)
+    const userId = req.auth.userId
 
     const category = await this.categoryService.findById({
       id,
       userId,
     })
 
-    res.status(200).json(toPublicCategory(category))
+    res.status(200).json(category)
   }
 
   async findAll(req: Request, res: Response) {
-    const userId = req.cookies.userId
+    const userId = req.auth.userId
 
     const categories = await this.categoryService.findAll({
       userId,
     })
 
-    res.status(200).json(categories.map(toPublicCategory))
+    res.status(200).json(categories)
   }
 
   async delete(req: Request, res: Response) {
-    const { id } = categoryParamsSchema.parse(req.params)
-
-    const userId = req.cookies.userId
+    const { id } = categoryIdParamsSchema.parse(req.params)
+    const userId = req.auth.userId
 
     await this.categoryService.delete({
-      userId,
       id,
+      userId,
     })
 
     res.status(204).send()

@@ -1,21 +1,23 @@
 import { and, eq } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import { categoriesTable } from './category.entity.js'
+import {
+  type Category,
+  categoriesTable,
+  type NewCategory,
+} from './category.entity.js'
 import { CategoryAlreadyExistsError } from './category.error.js'
 import type {
-  Category,
-  CreateCategory,
-  DeleteCategory,
-  FindAllCategoryByUserId,
-  FindCategoryById,
-  UpdateCategory,
-} from './category.types.js'
+  DeleteCategoryInput,
+  FindAllCategoriesInput,
+  FindCategoryByIdInput,
+  UpdateCategoryInput,
+} from './category.schemas.js'
 
 export class CategoryRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: CreateCategory): Promise<Category | null> {
+  async create(data: NewCategory): Promise<Category | null> {
     try {
       const [category] = await this.database
         .insert(categoriesTable)
@@ -31,7 +33,7 @@ export class CategoryRepository {
     }
   }
 
-  async update(data: UpdateCategory): Promise<Category | null> {
+  async update(data: UpdateCategoryInput): Promise<Category | null> {
     try {
       const [category] = await this.database
         .update(categoriesTable)
@@ -53,7 +55,7 @@ export class CategoryRepository {
     }
   }
 
-  async findById(data: FindCategoryById): Promise<Category | null> {
+  async findById(data: FindCategoryByIdInput): Promise<Category | null> {
     const [categories] = await this.database
       .select()
       .from(categoriesTable)
@@ -67,7 +69,7 @@ export class CategoryRepository {
     return categories ?? null
   }
 
-  async findAll(data: FindAllCategoryByUserId): Promise<Category[]> {
+  async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
     const categories = await this.database
       .select()
       .from(categoriesTable)
@@ -76,7 +78,7 @@ export class CategoryRepository {
     return categories
   }
 
-  async delete(data: DeleteCategory): Promise<void> {
+  async delete(data: DeleteCategoryInput): Promise<void> {
     await this.database
       .delete(categoriesTable)
       .where(

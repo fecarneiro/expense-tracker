@@ -1,55 +1,56 @@
+import { type PublicCategory, toPublicCategory } from './category.entity.js'
 import {
   CategoryCreationFailedError,
   CategoryNotFoundError,
 } from './category.error.js'
 import type { CategoryRepository } from './category.repository.js'
 import type {
-  Category,
-  CreateCategory,
-  DeleteCategory,
-  FindAllCategoryByUserId,
-  FindCategoryById,
-  UpdateCategory,
-} from './category.types.js'
+  CreateCategoryInput,
+  DeleteCategoryInput,
+  FindAllCategoriesInput,
+  FindCategoryByIdInput,
+  UpdateCategoryInput,
+} from './category.schemas.js'
 
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
 
-  async create(data: CreateCategory): Promise<Category> {
-    const newCategory = await this.categoryRepository.create(data)
+  async create(data: CreateCategoryInput): Promise<PublicCategory> {
+    const category = await this.categoryRepository.create(data)
 
-    if (!newCategory) {
+    if (!category) {
       throw new CategoryCreationFailedError()
     }
 
-    return newCategory
+    return toPublicCategory(category)
   }
 
-  async update(data: UpdateCategory): Promise<Category> {
-    const updated = await this.categoryRepository.update(data)
+  async update(data: UpdateCategoryInput): Promise<PublicCategory> {
+    const category = await this.categoryRepository.update(data)
 
-    if (!updated) {
+    if (!category) {
       throw new CategoryNotFoundError()
     }
 
-    return updated
+    return toPublicCategory(category)
   }
 
-  async findById(data: FindCategoryById): Promise<Category> {
+  async findById(data: FindCategoryByIdInput): Promise<PublicCategory> {
     const category = await this.categoryRepository.findById(data)
 
     if (!category) {
       throw new CategoryNotFoundError()
     }
 
-    return category
+    return toPublicCategory(category)
   }
 
-  async findAll(data: FindAllCategoryByUserId): Promise<Category[]> {
-    return await this.categoryRepository.findAll(data)
+  async findAll(data: FindAllCategoriesInput): Promise<PublicCategory[]> {
+    const categories = await this.categoryRepository.findAll(data)
+    return categories.map((c) => toPublicCategory(c))
   }
 
-  async delete(data: DeleteCategory): Promise<void> {
+  async delete(data: DeleteCategoryInput): Promise<void> {
     return await this.categoryRepository.delete(data)
   }
 }
