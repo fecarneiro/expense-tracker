@@ -4,7 +4,7 @@ const transactionBaseSchema = z.object({
   categoryId: z.uuid(),
   type: z.enum(['income', 'expense']),
   amountInCents: z.number().int().positive(),
-  description: z.string().trim().min(1).max(255),
+  description: z.string().trim().min(1).max(120),
 })
 
 export const createTransactionSchema = transactionBaseSchema

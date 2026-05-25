@@ -4,7 +4,7 @@ import {
   type NewTransaction,
   type Transaction,
   transactionsTable,
-} from '../../database/schemas/transactions.schema.js'
+} from './transaction.entity.js'
 
 export class TransactionRepository {
   constructor(private readonly database: Database) {}

@@ -9,8 +9,8 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
-import { categoriesTable } from './category.schema.js'
-import { usersTable } from './users.schema.js'
+import { categoriesTable } from '../categories/category.entity.js'
+import { usersTable } from '../users/user.entity.js'
 
 export const transactionTypeEnum = pgEnum('type', ['income', 'expense'])
 
@@ -27,7 +27,7 @@ export const transactionsTable = pgTable(
     type: transactionTypeEnum().notNull(),
     amountInCents: integer().notNull(),
     description: varchar({ length: 255 }).notNull(),
-    createdAt: timestamp().notNull().defaultNow(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [check('amount_check', sql`${table.amountInCents} > 0`)],
 )
