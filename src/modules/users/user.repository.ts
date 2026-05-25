@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { type NewUser, type User, usersTable } from './user.entity.js'
 import type {
-  DeleteUserRepositoryData,
+  DeleteRepositoryData,
   UpdatePasswordRepositoryData,
 } from './user.schemas.js'
 
@@ -48,7 +48,7 @@ export class UserRepository {
     return user ?? null
   }
 
-  async delete(data: DeleteUserRepositoryData) {
+  async delete(data: DeleteRepositoryData) {
     await this.database.delete(usersTable).where(eq(usersTable.id, data.userId))
   }
 }

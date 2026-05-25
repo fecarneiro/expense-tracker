@@ -1,8 +1,12 @@
 import type { PasswordHasher } from '../../shared/password-hasher.js'
 import { type PublicUser, toPublicUser } from '../users/user.entity.js'
-import { InvalidCredentialsError } from '../users/user.error.js'
+import {
+  EmailAlreadyInUseError,
+  InvalidCredentialsError,
+  UserCreationFailedError,
+} from '../users/user.error.js'
 import type { UserRepository } from '../users/user.repository.js'
-import type { LoginData } from './auth.schemas.js'
+import type { LoginData, RegisterUserData } from './auth.schemas.js'
 
 export class AuthService {
   constructor(
@@ -10,7 +14,30 @@ export class AuthService {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async verifyUserCredentials(data: LoginData): Promise<PublicUser> {
+  async register(data: RegisterUserData): Promise<PublicUser> {
+    const { email, password } = data
+
+    const existingUser = await this.userRepository.findByEmail(email)
+
+    if (existingUser) {
+      throw new EmailAlreadyInUseError()
+    }
+
+    const passwordHash = await this.passwordHasher.hash(password)
+
+    const createdUser = await this.userRepository.create({
+      email,
+      passwordHash,
+    })
+
+    if (!createdUser) {
+      throw new UserCreationFailedError()
+    }
+
+    return toPublicUser(createdUser)
+  }
+
+  async verifyCredentials(data: LoginData): Promise<PublicUser> {
     const { email, password } = data
 
     const user = await this.userRepository.findByEmail(email)

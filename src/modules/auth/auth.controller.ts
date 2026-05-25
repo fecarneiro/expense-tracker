@@ -1,15 +1,21 @@
 import type { Request, Response } from 'express'
 import { generateToken } from './access-token.js'
-import { loginSchema } from './auth.schemas.js'
+import { loginSchema, registerSchema } from './auth.schemas.js'
 import type { AuthService } from './auth.service.js'
 import { cookieOptions } from './cookie.js'
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  async register(req: Request, res: Response) {
+    const data = registerSchema.parse(req.body)
+    const user = await this.authService.register(data)
+    res.status(201).json(user)
+  }
+
   async login(req: Request, res: Response) {
     const data = loginSchema.parse(req.body)
-    const user = await this.authService.verifyUserCredentials(data)
+    const user = await this.authService.verifyCredentials(data)
 
     const token = await generateToken(user)
 
