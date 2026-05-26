@@ -10,6 +10,10 @@ import { CategoryController } from './modules/categories/category.controller.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { categoryRouter } from './modules/categories/category.routes.js'
 import { CategoryService } from './modules/categories/category.service.js'
+import { TransactionController } from './modules/transactions/transaction.controller.js'
+import { TransactionRepository } from './modules/transactions/transaction.repository.js'
+import { transactionRouter } from './modules/transactions/transaction.routes.js'
+import { TransactionService } from './modules/transactions/transaction.service.js'
 import { UserController } from './modules/users/user.controller.js'
 import { UserRepository } from './modules/users/user.repository.js'
 import { userRouter } from './modules/users/user.routes.js'
@@ -25,22 +29,28 @@ const passwordHasher = new PasswordHasher()
 // Repositories
 const userRepository = new UserRepository(db)
 const categoryRepository = new CategoryRepository(db)
+const transactionRepository = new TransactionRepository(db)
 // Services
-const userService = new UserService(userRepository, passwordHasher)
 const authService = new AuthService(userRepository, passwordHasher)
+const userService = new UserService(userRepository, passwordHasher)
 const categoryService = new CategoryService(categoryRepository)
+const transactionService = new TransactionService(transactionRepository)
 // Controllers
-const userController = new UserController(userService)
 const authController = new AuthController(authService)
+const userController = new UserController(userService)
 const categoryController = new CategoryController(categoryService)
+const transactionController = new TransactionController(transactionService)
 
 server.disable('x-powered-by')
 server.use(cookieParser())
 server.use(express.json())
 
 server.use('/auth', authRouter(authController))
-server.use('/users', authMiddleware, userRouter(userController))
-server.use('/categories', authMiddleware, categoryRouter(categoryController))
+
+server.use(authMiddleware)
+server.use('/users', userRouter(userController))
+server.use('/categories', categoryRouter(categoryController))
+server.use('/transactions', transactionRouter(transactionController))
 
 server.use('/', (_req, res) => {
   res.status(404).json({ message: 'Not found' })

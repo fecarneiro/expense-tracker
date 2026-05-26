@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import {
   pgTable,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -23,8 +24,10 @@ export const categoriesTable = pgTable(
       table.userId,
       sql`lower(${table.name})`,
     ),
+    unique('unique_category_id_user_id').on(table.id, table.userId),
   ],
 )
+
 export type Category = typeof categoriesTable.$inferSelect
 export type NewCategory = typeof categoriesTable.$inferInsert
 export type PublicCategory = Pick<Category, 'id' | 'name' | 'createdAt'>
