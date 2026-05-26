@@ -26,7 +26,7 @@ export const transactionsTable = pgTable(
       .references(() => categoriesTable.id, { onDelete: 'cascade' }),
     type: transactionTypeEnum().notNull(),
     amountInCents: integer().notNull(),
-    description: varchar({ length: 255 }).notNull(),
+    description: varchar({ length: 70 }).notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [check('amount_check', sql`${table.amountInCents} > 0`)],
@@ -34,3 +34,20 @@ export const transactionsTable = pgTable(
 
 export type Transaction = typeof transactionsTable.$inferSelect
 export type NewTransaction = typeof transactionsTable.$inferInsert
+export type PublicTransaction = Pick<
+  Transaction,
+  'id' | 'categoryId' | 'type' | 'amountInCents' | 'description' | 'createdAt'
+>
+
+export function toPublicTransaction(
+  transaction: Transaction,
+): PublicTransaction {
+  return {
+    id: transaction.id,
+    categoryId: transaction.categoryId,
+    type: transaction.type,
+    amountInCents: transaction.amountInCents,
+    description: transaction.description,
+    createdAt: transaction.createdAt,
+  }
+}
