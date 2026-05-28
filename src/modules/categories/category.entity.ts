@@ -31,11 +31,3 @@ export const categoriesTable = pgTable(
 export type Category = typeof categoriesTable.$inferSelect
 export type NewCategory = typeof categoriesTable.$inferInsert
 export type PublicCategory = Pick<Category, 'id' | 'name' | 'createdAt'>
-
-export function toPublicCategory(category: Category): PublicCategory {
-  return {
-    id: category.id,
-    name: category.name,
-    createdAt: category.createdAt,
-  }
-}
