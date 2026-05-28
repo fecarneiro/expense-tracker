@@ -18,5 +18,7 @@
     "source.organizeImports.biome": "explicit"
   },
   "biome.requireConfiguration": true,
-  "js/ts.tsdk.path": "./node_modules/typescript/lib"
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+  "js/ts.experimental.useTsgo": true,
+  "typescript.native-preview.tsdk": "/Users/felipe/dev/expense-flow/node_modules/@typescript/native-preview"
 }
