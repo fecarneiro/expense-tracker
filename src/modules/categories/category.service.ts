@@ -51,6 +51,8 @@ export class CategoryService {
   }
 
   async delete(data: DeleteCategoryInput): Promise<void> {
-    return await this.categoryRepository.delete(data)
+    const category = await this.categoryRepository.delete(data)
+
+    if (!category) throw new CategoryNotFoundError()
   }
 }

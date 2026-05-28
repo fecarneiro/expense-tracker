@@ -11,7 +11,9 @@ const transactionBaseSchema = z.object({
 // HTTP schemas
 export const transactionIdParamsSchema = z.object({ id: z.uuid() })
 export const createTransactionSchema = transactionBaseSchema
-export const updateTransactionSchema = transactionBaseSchema.partial()
+export const updateTransactionSchema = transactionBaseSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0)
 
 // Application inputs
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema> &
