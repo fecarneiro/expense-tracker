@@ -2,28 +2,34 @@
   "$schema": "https://www.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "target": "ES2024",
-    "lib": ["ES2024"],
+    "target": "ES2025",
+    "lib": ["ES2025"],
 
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
-    "strict": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
 
-    "esModuleInterop": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
 
     "types": ["node"],
+
     "sourceMap": true,
     "noEmit": true
   },
 
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "drizzle.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": ["node_modules", "dist", "coverage"]
 }
