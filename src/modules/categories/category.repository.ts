@@ -8,6 +8,7 @@ import {
   type Category,
   categoriesTable,
   type NewCategory,
+  type PublicCategory,
 } from './category.entity.js'
 import {
   CategoryAlreadyExistsError,
@@ -20,15 +21,21 @@ import type {
   UpdateCategoryInput,
 } from './category.schemas.js'
 
+const publicCategoriesTableColumns = {
+  id: categoriesTable.id,
+  name: categoriesTable.name,
+  createdAt: categoriesTable.createdAt,
+}
+
 export class CategoryRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: NewCategory): Promise<Category | null> {
+  async create(data: NewCategory): Promise<PublicCategory | null> {
     try {
       const [category] = await this.database
         .insert(categoriesTable)
         .values(data)
-        .returning()
+        .returning(publicCategoriesTableColumns)
 
       return category ?? null
     } catch (err) {
@@ -39,7 +46,7 @@ export class CategoryRepository {
     }
   }
 
-  async update(data: UpdateCategoryInput): Promise<Category | null> {
+  async update(data: UpdateCategoryInput): Promise<PublicCategory | null> {
     try {
       const [category] = await this.database
         .update(categoriesTable)
@@ -50,7 +57,7 @@ export class CategoryRepository {
             eq(categoriesTable.userId, data.userId),
           ),
         )
-        .returning()
+        .returning(publicCategoriesTableColumns)
 
       return category ?? null
     } catch (err) {
@@ -61,9 +68,9 @@ export class CategoryRepository {
     }
   }
 
-  async findById(data: FindCategoryByIdInput): Promise<Category | null> {
-    const [categories] = await this.database
-      .select()
+  async findById(data: FindCategoryByIdInput): Promise<PublicCategory | null> {
+    const [category] = await this.database
+      .select(publicCategoriesTableColumns)
       .from(categoriesTable)
       .where(
         and(
@@ -72,12 +79,12 @@ export class CategoryRepository {
         ),
       )
 
-    return categories ?? null
+    return category ?? null
   }
 
-  async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
+  async findAll(data: FindAllCategoriesInput): Promise<PublicCategory[]> {
     const categories = await this.database
-      .select()
+      .select(publicCategoriesTableColumns)
       .from(categoriesTable)
       .where(eq(categoriesTable.userId, data.userId))
 

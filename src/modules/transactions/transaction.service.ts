@@ -10,7 +10,7 @@ import type {
   FindAllTransactionsInput,
   FindTransactionByIdInput,
   UpdateTransactionInput,
-} from './transaction.schema.js'
+} from './transaction.schemas.js'
 
 export class TransactionService {
   constructor(private readonly transactionRepository: TransactionRepository) {}

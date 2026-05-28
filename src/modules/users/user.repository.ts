@@ -48,7 +48,14 @@ export class UserRepository {
     return user ?? null
   }
 
-  async delete(data: DeleteRepositoryData) {
-    await this.database.delete(usersTable).where(eq(usersTable.id, data.userId))
+  async delete(data: DeleteRepositoryData): Promise<Pick<User, 'id'> | null> {
+    const [user] = await this.database
+      .delete(usersTable)
+      .where(eq(usersTable.id, data.userId))
+      .returning({ id: usersTable.id })
+
+    if (!user) return null
+
+    return user
   }
 }

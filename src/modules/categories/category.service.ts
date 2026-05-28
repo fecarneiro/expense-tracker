@@ -1,4 +1,4 @@
-import { type PublicCategory, toPublicCategory } from './category.entity.js'
+import type { PublicCategory } from './category.entity.js'
 import {
   CategoryCreationFailedError,
   CategoryNotFoundError,
@@ -22,7 +22,7 @@ export class CategoryService {
       throw new CategoryCreationFailedError()
     }
 
-    return toPublicCategory(category)
+    return category
   }
 
   async update(data: UpdateCategoryInput): Promise<PublicCategory> {
@@ -32,7 +32,7 @@ export class CategoryService {
       throw new CategoryNotFoundError()
     }
 
-    return toPublicCategory(category)
+    return category
   }
 
   async findById(data: FindCategoryByIdInput): Promise<PublicCategory> {
@@ -42,12 +42,12 @@ export class CategoryService {
       throw new CategoryNotFoundError()
     }
 
-    return toPublicCategory(category)
+    return category
   }
 
   async findAll(data: FindAllCategoriesInput): Promise<PublicCategory[]> {
     const categories = await this.categoryRepository.findAll(data)
-    return categories.map((c) => toPublicCategory(c))
+    return categories
   }
 
   async delete(data: DeleteCategoryInput): Promise<void> {
