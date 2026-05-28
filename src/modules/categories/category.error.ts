@@ -14,6 +14,13 @@ export class CategoryNotFoundError extends AppError {
   }
 }
 
+export class CategoryInUseError extends AppError {
+  constructor() {
+    super('Category in use', 409)
+    this.name = 'CategoryInUseError'
+  }
+}
+
 export class CategoryCreationFailedError extends AppError {
   constructor() {
     super('Could not create category', 500)
