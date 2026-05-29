@@ -11,6 +11,7 @@
     "ignoreUnknown": false,
     "includes": [
       "src/**/*.ts",
+      "*.ts",
       "*.json",
       "*.jsonc",
       ".vscode/**/*.json",

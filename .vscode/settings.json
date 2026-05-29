@@ -18,7 +18,12 @@
     "source.organizeImports.biome": "explicit"
   },
   "biome.requireConfiguration": true,
-  "js/ts.tsdk.path": "./node_modules/typescript/lib",
   "js/ts.experimental.useTsgo": true,
-  "typescript.native-preview.tsdk": "/Users/felipe/dev/expense-flow/node_modules/@typescript/native-preview"
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.updateImportsOnPaste.enabled": true,
+  "js/ts.suggest.autoImports": true,
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  "js/ts.preferences.importModuleSpecifierEnding": "js",
+  "js/ts.preferences.quoteStyle": "single",
+  "js/ts.preferences.preferTypeOnlyAutoImports": true
 }
