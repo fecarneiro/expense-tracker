@@ -1,5 +1,5 @@
 import type { CookieOptions } from 'express'
-import { env } from '../../config/env.config.js'
+import { env } from '../../../config/env.config.js'
 import { TOKEN_TTL_SECONDS } from './access-token.js'
 
 export const cookieOptions: CookieOptions = {
