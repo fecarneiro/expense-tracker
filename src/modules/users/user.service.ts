@@ -1,8 +1,6 @@
 import type { PasswordHasher } from '../../shared/password-hasher.js'
-import {
-  AuthenticatedUserNotFoundError,
-  InvalidCredentialsError,
-} from './user.error.js'
+import { InvalidCredentialsError } from '../auth/auth.error.js'
+import { AuthenticatedUserNotFoundError } from './user.error.js'
 import type { UserRepository } from './user.repository.js'
 import type { ChangePasswordData, DeleteUserData } from './user.schemas.js'
 
