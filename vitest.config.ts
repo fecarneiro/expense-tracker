@@ -6,5 +6,9 @@ export default defineConfig({
     globals: false,
     include: ['src/**/*.test.ts'],
     restoreMocks: true,
+    reporters: ['verbose'],
+    onConsoleLog(log) {
+      return true // força exibição mesmo em testes que passam
+    },
   },
 })
