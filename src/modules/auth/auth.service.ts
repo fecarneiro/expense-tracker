@@ -1,12 +1,15 @@
+import {
+  type PublicUser,
+  toPublicUser,
+} from '../../database/schemas/user.schema.js'
 import type { PasswordHasher } from '../../shared/password-hasher.js'
-import { type PublicUser, toPublicUser } from '../users/user.entity.js'
 import {
   EmailAlreadyInUseError,
   InvalidCredentialsError,
   UserCreationFailedError,
 } from '../users/user.error.js'
 import type { UserRepository } from '../users/user.repository.js'
-import type { LoginData, RegisterUserData } from './auth.schemas.js'
+import type { LoginData, RegisterUserData } from './auth.dto.js'
 
 export class AuthService {
   constructor(

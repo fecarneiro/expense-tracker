@@ -3,7 +3,7 @@ import {
   categoryIdParamsSchema,
   createCategorySchema,
   updateCategorySchema,
-} from './category.schemas.js'
+} from './category.dto.js'
 import type { CategoryService } from './category.service.js'
 
 export class CategoryController {

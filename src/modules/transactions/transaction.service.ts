@@ -1,16 +1,16 @@
-import type { PublicTransactionWithCategory } from './transaction.entity.js'
-import {
-  TransactionCreationFailedError,
-  TransactionNotFoundError,
-} from './transaction.error.js'
-import type { TransactionRepository } from './transaction.repository.js'
+import type { PublicTransactionWithCategory } from '../../database/schemas/transaction.schema.js'
 import type {
   CreateTransactionInput,
   DeleteTransactionInput,
   FindAllTransactionsInput,
   FindTransactionByIdInput,
   UpdateTransactionInput,
-} from './transaction.schemas.js'
+} from './transaction.dto.js'
+import {
+  TransactionCreationFailedError,
+  TransactionNotFoundError,
+} from './transaction.error.js'
+import type { TransactionRepository } from './transaction.repository.js'
 
 export class TransactionService {
   constructor(private readonly transactionRepository: TransactionRepository) {}

@@ -2,21 +2,21 @@ import { and, eq } from 'drizzle-orm'
 import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../categories/category.entity.js'
-import { CategoryNotFoundError } from '../categories/category.error.js'
+import { categoriesTable } from '../../database/schemas/category.schema.js'
 import {
   type NewTransaction,
   type PublicTransaction,
   type PublicTransactionWithCategory,
   type Transaction,
   transactionsTable,
-} from './transaction.entity.js'
+} from '../../database/schemas/transaction.schema.js'
+import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
   FindAllTransactionsInput,
   FindTransactionByIdInput,
   UpdateTransactionInput,
-} from './transaction.schemas.js'
+} from './transaction.dto.js'
 
 const publicTransactionColumns = (
   source: Record<keyof PublicTransaction, AnyPgColumn>,

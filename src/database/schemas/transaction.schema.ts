@@ -10,11 +10,8 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
-import {
-  type Category,
-  categoriesTable,
-} from '../categories/category.entity.js'
-import { usersTable } from '../users/user.entity.js'
+import { type Category, categoriesTable } from './category.schema.js'
+import { usersTable } from './user.schema.js'
 
 export const transactionTypeEnum = pgEnum('type', ['income', 'expense'])
 

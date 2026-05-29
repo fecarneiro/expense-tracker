@@ -3,7 +3,7 @@ import {
   createTransactionSchema,
   transactionIdParamsSchema,
   updateTransactionSchema,
-} from './transaction.schemas.js'
+} from './transaction.dto.js'
 import type { TransactionService } from './transaction.service.js'
 
 export class TransactionController {

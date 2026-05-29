@@ -1,16 +1,16 @@
-import type { PublicCategory } from './category.entity.js'
-import {
-  CategoryCreationFailedError,
-  CategoryNotFoundError,
-} from './category.error.js'
-import type { CategoryRepository } from './category.repository.js'
+import type { PublicCategory } from '../../database/schemas/category.schema.js'
 import type {
   CreateCategoryInput,
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   UpdateCategoryInput,
-} from './category.schemas.js'
+} from './category.dto.js'
+import {
+  CategoryCreationFailedError,
+  CategoryNotFoundError,
+} from './category.error.js'
+import type { CategoryRepository } from './category.repository.js'
 
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
