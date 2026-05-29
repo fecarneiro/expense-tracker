@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { Transaction } from './transaction.entity.js'
+import type { Transaction } from '../../database/schemas/transaction.schema.js'
 
 const transactionBaseSchema = z.object({
   categoryId: z.uuid(),

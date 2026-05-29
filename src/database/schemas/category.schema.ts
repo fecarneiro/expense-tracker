@@ -7,7 +7,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
-import { usersTable } from '../users/user.entity.js'
+import { usersTable } from './user.schema.js'
 
 export const categoriesTable = pgTable(
   'categories',

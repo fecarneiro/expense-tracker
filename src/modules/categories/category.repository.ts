@@ -9,17 +9,17 @@ import {
   categoriesTable,
   type NewCategory,
   type PublicCategory,
-} from './category.entity.js'
-import {
-  CategoryAlreadyExistsError,
-  CategoryInUseError,
-} from './category.error.js'
+} from '../../database/schemas/category.schema.js'
 import type {
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   UpdateCategoryInput,
-} from './category.schemas.js'
+} from './category.dto.js'
+import {
+  CategoryAlreadyExistsError,
+  CategoryInUseError,
+} from './category.error.js'
 
 const publicCategoriesTableColumns = {
   id: categoriesTable.id,

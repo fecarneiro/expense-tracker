@@ -1,6 +1,10 @@
 import { eq } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
-import { type NewUser, type User, usersTable } from './user.entity.js'
+import {
+  type NewUser,
+  type User,
+  usersTable,
+} from '../../database/schemas/user.schema.js'
 import type {
   DeleteRepositoryData,
   UpdatePasswordRepositoryData,

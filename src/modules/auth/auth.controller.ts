@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { generateToken } from './access-token.js'
-import { loginSchema, registerSchema } from './auth.schemas.js'
+import { loginSchema, registerSchema } from './auth.dto.js'
 import type { AuthService } from './auth.service.js'
 import { cookieOptions } from './cookie.js'
 

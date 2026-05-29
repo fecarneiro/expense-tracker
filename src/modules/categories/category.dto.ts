@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import type { Category } from './category.entity.js'
+import type { Category } from '../../database/schemas/category.schema.js'
 
 const categoryNameField = z.string().trim().min(1).max(50)
 
