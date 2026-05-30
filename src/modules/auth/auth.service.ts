@@ -5,11 +5,11 @@ import {
 import type { PasswordHasher } from '../../shared/password-hasher.js'
 import {
   EmailAlreadyInUseError,
-  InvalidCredentialsError,
   UserCreationFailedError,
 } from '../users/user.error.js'
 import type { UserRepository } from '../users/user.repository.js'
 import type { LoginData, RegisterUserData } from './auth.dto.js'
+import { InvalidCredentialsError } from './auth.error.js'
 
 export class AuthService {
   constructor(
