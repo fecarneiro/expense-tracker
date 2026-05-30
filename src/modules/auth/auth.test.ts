@@ -37,29 +37,49 @@ function sut() {
   return { authService, createUser }
 }
 
-test('register new userwith succes', async () => {
+test('register returns public user without sensitive fields', async () => {
   const { createUser } = sut()
   const createdUser = await createUser()
 
-  expect(createdUser.email).toBe('johndoe@email.com')
-  expect(createdUser).not.toHaveProperty('passwordHash')
-  expect(createdUser).not.toHaveProperty('password')
+  expect(createdUser).toStrictEqual({
+    id: expect.any(String),
+    email: 'johndoe@email.com',
+    createdAt: expect.any(Date),
+  })
 })
 
 test('login succeed with valid credentials', async () => {
+  const { authService, createUser } = sut()
+  await createUser()
+
+  const result = await authService.verifyCredentials({
+    email: 'johndoe@email.com',
+    password: '12345678',
+  })
+
+  expect(result).toStrictEqual({
+    id: expect.any(String),
+    email: 'johndoe@email.com',
+    createdAt: expect.any(Date),
+  })
+})
+
+test('login fails with invalid email', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
 
   const loginInput = {
-    email: 'johndoe@email.com',
+    email: 'johndoe_wrong@email.com',
     password: '12345678',
   }
 
-  expect(await authService.verifyCredentials(loginInput)).toBeTruthy()
+  await expect(authService.verifyCredentials(loginInput)).rejects.toThrow(
+    new InvalidCredentialsError(),
+  )
 })
 
-test('login fails with invalid credentials', async () => {
+test('login fails with invalid password', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
