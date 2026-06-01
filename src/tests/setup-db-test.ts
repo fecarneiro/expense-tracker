@@ -16,14 +16,3 @@ export async function setupDbTest() {
 
   return { client, dbTest }
 }
-
-// const { client, dbTest } = await setupDbTest()
-
-// const data = {
-//   email: 'test@gmail.com',
-//   passwordHash: '12345678',
-// }
-
-// const user = await dbTest.insert(usersTable).values(data).returning()
-// console.log(user)
-// client.close()

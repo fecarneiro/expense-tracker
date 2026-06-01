@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import { loginSchema, registerSchema } from './auth.dto.js'
 import type { AuthService } from './auth.service.js'
 import { generateToken } from './session/access-token.js'
-import { cookieOptions } from './session/cookie.js'
+import { cookieOptions } from './session/cookie-options.js'
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
