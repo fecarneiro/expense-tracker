@@ -3,6 +3,7 @@ import type { Database } from '../../database/db.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { PasswordHasher } from '../../shared/password-hasher.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
+import { EmailAlreadyInUseError } from '../users/user.error.js'
 import { UserRepository } from '../users/user.repository.js'
 import { InvalidCredentialsError } from './auth.error.js'
 import { AuthService } from './auth.service.js'
@@ -37,7 +38,7 @@ function sut() {
   return { authService, createUser }
 }
 
-test('register returns public user without sensitive fields', async () => {
+test('register returns the public user without sensitive fields', async () => {
   const { createUser } = sut()
   const createdUser = await createUser()
 
@@ -48,7 +49,22 @@ test('register returns public user without sensitive fields', async () => {
   })
 })
 
-test('login succeed with valid credentials', async () => {
+test('register fails when the email is already in use', async () => {
+  const { authService, createUser } = sut()
+
+  await createUser()
+
+  const registerInput = {
+    email: 'johndoe@email.com',
+    password: '12345678',
+  }
+
+  await expect(authService.register(registerInput)).rejects.toThrow(
+    new EmailAlreadyInUseError(),
+  )
+})
+
+test('verifyCredentials returns the public user with valid credentials', async () => {
   const { authService, createUser } = sut()
   await createUser()
 
@@ -64,7 +80,7 @@ test('login succeed with valid credentials', async () => {
   })
 })
 
-test('login fails with invalid email', async () => {
+test('verifyCredentials fails when the email does not exist', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
@@ -79,7 +95,7 @@ test('login fails with invalid email', async () => {
   )
 })
 
-test('login fails with invalid password', async () => {
+test('verifyCredentials fails when the password is wrong', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
