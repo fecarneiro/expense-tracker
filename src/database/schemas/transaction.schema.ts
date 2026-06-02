@@ -18,7 +18,7 @@ export const transactionTypeEnum = pgEnum('type', ['income', 'expense'])
 export const transactionsTable = pgTable(
   'transactions',
   {
-    id: uuid().primaryKey().defaultRandom(),
+    id: uuid().primaryKey().default(sql`uuidv7()`),
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),

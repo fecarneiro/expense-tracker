@@ -12,7 +12,7 @@ import { usersTable } from './user.schema.js'
 export const categoriesTable = pgTable(
   'categories',
   {
-    id: uuid().primaryKey().defaultRandom(),
+    id: uuid().primaryKey().default(sql`uuidv7()`),
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
