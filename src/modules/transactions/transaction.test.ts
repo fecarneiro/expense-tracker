@@ -4,6 +4,8 @@ import { categoriesTable } from '../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
+import { CategoryNotFoundError } from '../categories/category.error.js'
+import { TransactionNotFoundError } from './transaction.error.js'
 import { TransactionRepository } from './transaction.repository.js'
 import { TransactionService } from './transaction.service.js'
 
@@ -55,13 +57,13 @@ function sut() {
   return { transactionService }
 }
 
-test('create new transaction for an user', async () => {
+test('create returns the persisted transaction with its category', async () => {
   const { transactionService } = sut()
-  const { user, category } = await seed()
+  const owner = await seed()
 
   const newTransaction = await transactionService.create({
-    userId: user.id,
-    categoryId: category.id,
+    userId: owner.user.id,
+    categoryId: owner.category.id,
     type: 'expense',
     amountInCents: 10000,
     description: 'ifood',
@@ -70,8 +72,8 @@ test('create new transaction for an user', async () => {
   expect(newTransaction).toStrictEqual({
     id: expect.any(String),
     category: {
-      id: category.id,
-      name: category.name,
+      id: owner.category.id,
+      name: owner.category.name,
     },
     type: 'expense',
     amountInCents: 10000,
@@ -80,10 +82,87 @@ test('create new transaction for an user', async () => {
   })
 })
 
-test('find all transactions returns all transactions for a given user only', async () => {
+test('create fails when the category does not exist', async () => {
+  const { transactionService } = sut()
+  const { user } = await seed()
+
+  await expect(
+    transactionService.create({
+      userId: user.id,
+      categoryId: '019e8885-153c-7c82-af4a-28a31559e01e',
+      type: 'expense',
+      amountInCents: 10000,
+      description: 'ifood',
+    }),
+  ).rejects.toThrow(new CategoryNotFoundError())
+})
+
+test('update changes the fields of the owner transaction', async () => {
   const { transactionService } = sut()
   const owner = await seed()
-  const other = await seed('user2@test.com')
+
+  const created = await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  const updated = await transactionService.update({
+    id: created.id,
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    amountInCents: 22000,
+  })
+
+  expect(updated).toStrictEqual({
+    id: created.id,
+    category: {
+      id: owner.category.id,
+      name: owner.category.name,
+    },
+    type: 'expense',
+    amountInCents: 22000,
+    description: 'mine',
+    createdAt: expect.any(Date),
+  })
+})
+
+test('update fails and preserves data when the user is not the owner', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
+
+  const created = await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  await expect(
+    transactionService.update({
+      id: created.id,
+      userId: other.user.id,
+      amountInCents: 55555,
+      description: 'my transaction',
+    }),
+  ).rejects.toThrow(new TransactionNotFoundError())
+
+  await expect(
+    transactionService.findById({
+      id: created.id,
+      userId: owner.user.id,
+    }),
+  ).resolves.toMatchObject({ amountInCents: 99999, description: 'mine' })
+})
+
+test('findAll returns only the transactions of the given user', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
 
   await transactionService.create({
     userId: owner.user.id,
@@ -109,12 +188,11 @@ test('find all transactions returns all transactions for a given user only', asy
   expect(result[0]?.description).toBe('mine')
 })
 
-test('find all transactions returns all transactions for a given user only', async () => {
+test('findById returns the transaction of the owner', async () => {
   const { transactionService } = sut()
   const owner = await seed()
-  const other = await seed('user2@test.com')
 
-  await transactionService.create({
+  const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
@@ -122,18 +200,96 @@ test('find all transactions returns all transactions for a given user only', asy
     description: 'mine',
   })
 
-  await transactionService.create({
-    userId: other.user.id,
-    categoryId: other.category.id,
-    type: 'expense',
-    amountInCents: 55555,
-    description: 'theirs',
-  })
-
-  const result = await transactionService.findAll({
+  const result = await transactionService.findById({
+    id: created.id,
     userId: owner.user.id,
   })
 
-  expect(result).toHaveLength(1)
-  expect(result[0]?.description).toBe('mine')
+  expect(result).toStrictEqual({
+    id: created.id,
+    category: {
+      id: owner.category.id,
+      name: owner.category.name,
+    },
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+    createdAt: expect.any(Date),
+  })
+})
+
+test('findById fails when the user is not the owner', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
+
+  const created = await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  await expect(
+    transactionService.findById({
+      id: created.id,
+      userId: other.user.id,
+    }),
+  ).rejects.toThrow(new TransactionNotFoundError())
+})
+
+test('delete removes the transaction of the owner', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+
+  const created = await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  await expect(
+    transactionService.delete({
+      id: created.id,
+      userId: owner.user.id,
+    }),
+  ).resolves.toBeUndefined()
+
+  await expect(
+    transactionService.findById({
+      id: created.id,
+      userId: owner.user.id,
+    }),
+  ).rejects.toThrow(new TransactionNotFoundError())
+})
+
+test('delete fails and preserves data when the user is not the owner', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
+
+  const created = await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  await expect(
+    transactionService.delete({
+      id: created.id,
+      userId: other.user.id,
+    }),
+  ).rejects.toThrow(new TransactionNotFoundError())
+
+  await expect(
+    transactionService.findById({
+      id: created.id,
+      userId: owner.user.id,
+    }),
+  ).resolves.toMatchObject({ id: created.id })
 })
