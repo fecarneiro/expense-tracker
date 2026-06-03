@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 
 import {
   check,
+  date,
   foreignKey,
   integer,
   pgEnum,
@@ -19,14 +20,23 @@ export const transactionsTable = pgTable(
   'transactions',
   {
     id: uuid().primaryKey().defaultRandom(),
+
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
+
+    occurredOn: date({ mode: 'string' }).notNull(),
+
     categoryId: uuid().notNull(),
     type: transactionTypeEnum().notNull(),
+
     amountInCents: integer().notNull(),
-    description: varchar({ length: 70 }).notNull(),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+
+    notes: varchar({ length: 70 }),
+
+    createdAt: timestamp({ withTimezone: true, mode: 'string' })
+      .notNull()
+      .defaultNow(),
   },
 
   (table) => [
