@@ -22,9 +22,10 @@ const publicTransactionColumns = (
   source: Record<keyof PublicTransaction, AnyPgColumn>,
 ) => ({
   id: source.id,
+  occurredOn: source.occurredOn,
   type: source.type,
   amountInCents: source.amountInCents,
-  description: source.description,
+  notes: source.notes,
   createdAt: source.createdAt,
   category: { id: categoriesTable.id, name: categoriesTable.name },
 })
