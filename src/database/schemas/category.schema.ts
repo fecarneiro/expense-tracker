@@ -13,11 +13,16 @@ export const categoriesTable = pgTable(
   'categories',
   {
     id: uuid().primaryKey().defaultRandom(),
+
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
+
     name: varchar({ length: 50 }).notNull(),
-    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+
+    createdAt: timestamp({ withTimezone: true, mode: 'string' })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     uniqueIndex('unique_category_name').on(
