@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import { changePasswordSchema, deleteUserSchema } from './user.schemas.js'
+import { changePasswordSchema, deleteUserSchema } from './user.dto.js'
 import type { UserService } from './user.service.js'
 
 export class UserController {

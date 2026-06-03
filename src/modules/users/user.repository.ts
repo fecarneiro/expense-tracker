@@ -8,7 +8,7 @@ import {
 import type {
   DeleteRepositoryData,
   UpdatePasswordRepositoryData,
-} from './user.schemas.js'
+} from './user.dto.js'
 
 export class UserRepository {
   constructor(private readonly database: Database) {}
