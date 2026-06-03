@@ -11,4 +11,5 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV ?? 'development',
   DATABASE_URL: required('DATABASE_URL'),
   JWT_SECRET: required('JWT_SECRET'),
+  TELEGRAM_BOT_TOKEN: required('TELEGRAM_BOT_TOKEN'),
 }
