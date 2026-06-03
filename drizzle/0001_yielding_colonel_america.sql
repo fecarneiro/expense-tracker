@@ -1,0 +1,1 @@
+CREATE INDEX "transactions_user_occurred_on_id_idx" ON "transactions" USING btree ("user_id","occurred_on","id");
