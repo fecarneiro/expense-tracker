@@ -158,36 +158,6 @@ test('update fails and preserves data when the user is not the owner', async () 
     }),
   ).resolves.toMatchObject({ amountInCents: 99999, description: 'mine' })
 })
-
-test('findAll returns only the transactions of the given user', async () => {
-  const { transactionService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  await transactionService.create({
-    userId: owner.user.id,
-    categoryId: owner.category.id,
-    type: 'expense',
-    amountInCents: 99999,
-    description: 'mine',
-  })
-
-  await transactionService.create({
-    userId: other.user.id,
-    categoryId: other.category.id,
-    type: 'expense',
-    amountInCents: 55555,
-    description: 'theirs',
-  })
-
-  const result = await transactionService.findAll({
-    userId: owner.user.id,
-  })
-
-  expect(result).toHaveLength(1)
-  expect(result[0]?.description).toBe('mine')
-})
-
 test('findById returns the transaction of the owner', async () => {
   const { transactionService } = sut()
   const owner = await seed()
@@ -237,6 +207,35 @@ test('findById fails when the user is not the owner', async () => {
       userId: other.user.id,
     }),
   ).rejects.toThrow(new TransactionNotFoundError())
+})
+
+test('findAll returns only the transactions of the given user', async () => {
+  const { transactionService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
+
+  await transactionService.create({
+    userId: owner.user.id,
+    categoryId: owner.category.id,
+    type: 'expense',
+    amountInCents: 99999,
+    description: 'mine',
+  })
+
+  await transactionService.create({
+    userId: other.user.id,
+    categoryId: other.category.id,
+    type: 'expense',
+    amountInCents: 55555,
+    description: 'theirs',
+  })
+
+  const result = await transactionService.findAll({
+    userId: owner.user.id,
+  })
+
+  expect(result).toHaveLength(1)
+  expect(result[0]?.description).toBe('mine')
 })
 
 test('delete removes the transaction of the owner', async () => {
