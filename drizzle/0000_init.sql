@@ -10,10 +10,11 @@ CREATE TABLE "categories" (
 CREATE TABLE "transactions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
+	"occurred_on" date NOT NULL,
 	"category_id" uuid NOT NULL,
 	"type" "type" NOT NULL,
 	"amount_in_cents" integer NOT NULL,
-	"description" varchar(70) NOT NULL,
+	"notes" varchar(70),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "amount_check" CHECK ("transactions"."amount_in_cents" > 0)
 );
