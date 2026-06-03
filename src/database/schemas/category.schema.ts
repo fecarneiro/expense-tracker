@@ -20,9 +20,7 @@ export const categoriesTable = pgTable(
 
     name: varchar({ length: 50 }).notNull(),
 
-    createdAt: timestamp({ withTimezone: true, mode: 'string' })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex('unique_category_name').on(

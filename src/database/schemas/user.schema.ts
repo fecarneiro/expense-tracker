@@ -1,4 +1,3 @@
-import { sql } from 'drizzle-orm'
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 
 export const usersTable = pgTable('users', {
@@ -8,9 +7,7 @@ export const usersTable = pgTable('users', {
 
   passwordHash: varchar({ length: 255 }).notNull(),
 
-  createdAt: timestamp({ withTimezone: true, mode: 'string' })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 
 export type User = typeof usersTable.$inferSelect
