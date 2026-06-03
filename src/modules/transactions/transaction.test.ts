@@ -65,8 +65,9 @@ test('create returns the persisted transaction with its category', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 10000,
-    description: 'ifood',
+    notes: 'ifood',
   })
 
   expect(created).toStrictEqual({
@@ -76,8 +77,9 @@ test('create returns the persisted transaction with its category', async () => {
       name: owner.category.name,
     },
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 10000,
-    description: 'ifood',
+    notes: 'ifood',
     createdAt: expect.any(Date),
   })
 })
@@ -91,8 +93,9 @@ test('create fails when the category does not exist', async () => {
       userId: user.id,
       categoryId: '019e8885-153c-7c82-af4a-28a31559e01e',
       type: 'expense',
+      occurredOn: '2026-06-03',
       amountInCents: 10000,
-      description: 'ifood',
+      notes: 'ifood',
     }),
   ).rejects.toThrow(new CategoryNotFoundError())
 })
@@ -105,8 +108,9 @@ test('update changes the fields of the owner transaction', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   const updated = await transactionService.update({
@@ -123,8 +127,9 @@ test('update changes the fields of the owner transaction', async () => {
       name: owner.category.name,
     },
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 22000,
-    description: 'mine',
+    notes: 'mine',
     createdAt: expect.any(Date),
   })
 })
@@ -138,8 +143,9 @@ test('update fails and preserves data when the user is not the owner', async () 
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   await expect(
@@ -147,7 +153,7 @@ test('update fails and preserves data when the user is not the owner', async () 
       id: created.id,
       userId: other.user.id,
       amountInCents: 55555,
-      description: 'my transaction',
+      notes: 'my transaction',
     }),
   ).rejects.toThrow(new TransactionNotFoundError())
 
@@ -156,7 +162,7 @@ test('update fails and preserves data when the user is not the owner', async () 
       id: created.id,
       userId: owner.user.id,
     }),
-  ).resolves.toMatchObject({ amountInCents: 99999, description: 'mine' })
+  ).resolves.toMatchObject({ amountInCents: 99999, notes: 'mine' })
 })
 test('findById returns the transaction of the owner', async () => {
   const { transactionService } = sut()
@@ -166,8 +172,9 @@ test('findById returns the transaction of the owner', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   const result = await transactionService.findById({
@@ -182,8 +189,9 @@ test('findById returns the transaction of the owner', async () => {
       name: owner.category.name,
     },
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
     createdAt: expect.any(Date),
   })
 })
@@ -197,8 +205,9 @@ test('findById fails when the user is not the owner', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   await expect(
@@ -218,16 +227,18 @@ test('findAll returns only the transactions of the given user', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   await transactionService.create({
     userId: other.user.id,
     categoryId: other.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 55555,
-    description: 'theirs',
+    notes: 'theirs',
   })
 
   const result = await transactionService.findAll({
@@ -235,7 +246,7 @@ test('findAll returns only the transactions of the given user', async () => {
   })
 
   expect(result).toHaveLength(1)
-  expect(result[0]?.description).toBe('mine')
+  expect(result[0]?.notes).toBe('mine')
 })
 
 test('delete removes the transaction of the owner', async () => {
@@ -246,8 +257,9 @@ test('delete removes the transaction of the owner', async () => {
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   await expect(
@@ -274,8 +286,9 @@ test('delete fails and preserves data when the user is not the owner', async () 
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
+    occurredOn: '2026-06-03',
     amountInCents: 99999,
-    description: 'mine',
+    notes: 'mine',
   })
 
   await expect(
