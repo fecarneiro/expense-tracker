@@ -1,4 +1,4 @@
-import { eq, sql, sum } from 'drizzle-orm'
+import { desc, eq, sql, sum } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
 import type {
@@ -6,14 +6,18 @@ import type {
   GetMonthlyBalanceOutput,
 } from './analytics.dto.js'
 
-const monthlyGroup = sql<string>`
-TO_CHAR(
-  DATE_TRUNC(
-    'month',
-      ${transactionsTable.createdAt}
-    ),
-    'YYYY-MM'
-  )
+const monthSql = sql<string>`
+  TO_CHAR(${transactionsTable.occurredOn}, 'YYYY-MM')
+`
+
+const signedAmountSql = sql<number>`
+  CASE
+    WHEN ${transactionsTable.transactionType} = 'income'
+      THEN ${transactionsTable.amountInCents}
+    WHEN ${transactionsTable.transactionType} = 'expense'
+      THEN -${transactionsTable.amountInCents}
+    ELSE 0
+  END
 `
 
 export class AnalyticsQuery {
@@ -26,13 +30,13 @@ export class AnalyticsQuery {
 
     const monthlyBalance = await this.database
       .select({
-        month: monthlyGroup.mapWith(String),
-        total: sum(transactionsTable.amountInCents).mapWith(Number),
+        month: monthSql.mapWith(String),
+        total: sum(signedAmountSql).mapWith(Number),
       })
       .from(transactionsTable)
       .where(eq(transactionsTable.userId, userId))
-      .groupBy(monthlyGroup)
-      .orderBy(monthlyGroup)
+      .groupBy(monthSql)
+      .orderBy(desc(monthSql))
 
     return monthlyBalance
   }
