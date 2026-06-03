@@ -34,9 +34,7 @@ export const transactionsTable = pgTable(
 
     notes: varchar({ length: 70 }),
 
-    createdAt: timestamp({ withTimezone: true, mode: 'string' })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
 
   (table) => [
