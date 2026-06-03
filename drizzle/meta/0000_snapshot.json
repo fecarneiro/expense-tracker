@@ -1,5 +1,5 @@
 {
-  "id": "89455bea-485a-42c6-90e2-99607fda3fed",
+  "id": "d8ab1281-5983-4f88-95a8-21489d74a281",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -105,6 +105,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "occurred_on": {
+          "name": "occurred_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
         "category_id": {
           "name": "category_id",
           "type": "uuid",
@@ -124,11 +130,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "notes": {
+          "name": "notes",
           "type": "varchar(70)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
