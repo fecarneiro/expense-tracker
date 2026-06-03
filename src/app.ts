@@ -3,6 +3,10 @@ import express from 'express'
 import { db } from './database/db.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
+import { AnalyticsController } from './modules/analytics/analytics.controller.js'
+import { AnalyticsQuery } from './modules/analytics/analytics.query.js'
+import { analyticRouter } from './modules/analytics/analytics.routes.js'
+import { AnalyticsService } from './modules/analytics/analytics.service.js'
 import { AuthController } from './modules/auth/auth.controller.js'
 import { authRouter } from './modules/auth/auth.routes.js'
 import { AuthService } from './modules/auth/auth.service.js'
@@ -29,16 +33,19 @@ export function createApp() {
   const userRepository = new UserRepository(db)
   const categoryRepository = new CategoryRepository(db)
   const transactionRepository = new TransactionRepository(db)
+  const analyticsQuery = new AnalyticsQuery(db)
   // Services
   const authService = new AuthService(userRepository, passwordHasher)
   const userService = new UserService(userRepository, passwordHasher)
   const categoryService = new CategoryService(categoryRepository)
   const transactionService = new TransactionService(transactionRepository)
+  const analyticService = new AnalyticsService(analyticsQuery)
   // Controllers
   const authController = new AuthController(authService)
   const userController = new UserController(userService)
   const categoryController = new CategoryController(categoryService)
   const transactionController = new TransactionController(transactionService)
+  const analyticController = new AnalyticsController(analyticService)
 
   app.disable('x-powered-by')
   app.use(cookieParser())
@@ -50,6 +57,7 @@ export function createApp() {
   app.use('/users', userRouter(userController))
   app.use('/categories', categoryRouter(categoryController))
   app.use('/transactions', transactionRouter(transactionController))
+  app.use('/analytics', analyticRouter(analyticController))
 
   app.use('/', (_req, res) => {
     res.status(404).json({ message: 'Not found' })
