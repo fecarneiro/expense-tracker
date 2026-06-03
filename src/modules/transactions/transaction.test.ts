@@ -243,6 +243,8 @@ test('findAll returns only the transactions of the given user', async () => {
 
   const result = await transactionService.findAll({
     userId: owner.user.id,
+    limit: 10,
+    offset: 0,
   })
 
   expect(result).toHaveLength(1)
