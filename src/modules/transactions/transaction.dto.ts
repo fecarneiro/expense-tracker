@@ -11,7 +11,7 @@ const transactionNotesFieldSchema = z
 const transactionBaseSchema = z.object({
   occurredOn: z.iso.date(),
   categoryId: z.uuid(),
-  type: z.enum(['income', 'expense']),
+  transactionType: z.enum(['income', 'expense']),
   amountInCents: z.number().int().positive(),
   notes: transactionNotesFieldSchema,
 })

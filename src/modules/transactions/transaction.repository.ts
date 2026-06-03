@@ -23,7 +23,7 @@ const publicTransactionColumns = (
 ) => ({
   id: source.id,
   occurredOn: source.occurredOn,
-  type: source.type,
+  transactionType: source.transactionType,
   amountInCents: source.amountInCents,
   notes: source.notes,
   createdAt: source.createdAt,

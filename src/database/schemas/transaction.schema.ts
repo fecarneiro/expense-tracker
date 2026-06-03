@@ -30,7 +30,7 @@ export const transactionsTable = pgTable(
 
     categoryId: uuid().notNull(),
 
-    type: transactionTypeEnum().notNull(),
+    transactionType: transactionTypeEnum().notNull(),
 
     amountInCents: integer().notNull(),
 

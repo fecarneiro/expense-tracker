@@ -295,7 +295,7 @@ test('delete fails when the category is in use by a transaction', async () => {
   await dbTest.insert(transactionsTable).values({
     userId: owner.user.id,
     categoryId: created.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',

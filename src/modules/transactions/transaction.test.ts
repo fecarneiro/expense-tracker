@@ -64,7 +64,7 @@ test('create returns the persisted transaction with its category', async () => {
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 10000,
     notes: 'ifood',
@@ -76,7 +76,7 @@ test('create returns the persisted transaction with its category', async () => {
       id: owner.category.id,
       name: owner.category.name,
     },
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 10000,
     notes: 'ifood',
@@ -92,7 +92,7 @@ test('create fails when the category does not exist', async () => {
     transactionService.create({
       userId: user.id,
       categoryId: '019e8885-153c-7c82-af4a-28a31559e01e',
-      type: 'expense',
+      transactionType: 'expense',
       occurredOn: '2026-06-03',
       amountInCents: 10000,
       notes: 'ifood',
@@ -107,7 +107,7 @@ test('update changes the fields of the owner transaction', async () => {
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -126,7 +126,7 @@ test('update changes the fields of the owner transaction', async () => {
       id: owner.category.id,
       name: owner.category.name,
     },
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 22000,
     notes: 'mine',
@@ -142,7 +142,7 @@ test('update fails and preserves data when the user is not the owner', async () 
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -171,7 +171,7 @@ test('findById returns the transaction of the owner', async () => {
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -188,7 +188,7 @@ test('findById returns the transaction of the owner', async () => {
       id: owner.category.id,
       name: owner.category.name,
     },
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -204,7 +204,7 @@ test('findById fails when the user is not the owner', async () => {
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -226,7 +226,7 @@ test('findAll returns only the transactions of the given user', async () => {
   await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -235,7 +235,7 @@ test('findAll returns only the transactions of the given user', async () => {
   await transactionService.create({
     userId: other.user.id,
     categoryId: other.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 55555,
     notes: 'theirs',
@@ -258,7 +258,7 @@ test('delete removes the transaction of the owner', async () => {
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
@@ -287,7 +287,7 @@ test('delete fails and preserves data when the user is not the owner', async () 
   const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
-    type: 'expense',
+    transactionType: 'expense',
     occurredOn: '2026-06-03',
     amountInCents: 99999,
     notes: 'mine',
