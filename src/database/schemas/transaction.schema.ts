@@ -4,6 +4,7 @@ import {
   check,
   date,
   foreignKey,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -28,6 +29,7 @@ export const transactionsTable = pgTable(
     occurredOn: date({ mode: 'string' }).notNull(),
 
     categoryId: uuid().notNull(),
+
     type: transactionTypeEnum().notNull(),
 
     amountInCents: integer().notNull(),
@@ -38,6 +40,11 @@ export const transactionsTable = pgTable(
   },
 
   (table) => [
+    index('transactions_user_occurred_on_id_idx').on(
+      table.userId,
+      table.occurredOn,
+      table.id,
+    ),
     check('amount_check', sql`${table.amountInCents} > 0`),
     foreignKey({
       name: 'transactions_category_user_fk',
@@ -48,6 +55,7 @@ export const transactionsTable = pgTable(
 )
 
 export type Transaction = typeof transactionsTable.$inferSelect
+
 export type NewTransaction = typeof transactionsTable.$inferInsert
 
 export type PublicTransactionCategory = Pick<Category, 'id' | 'name'>

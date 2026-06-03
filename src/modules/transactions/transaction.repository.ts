@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
@@ -113,6 +113,7 @@ export class TransactionRepository {
   async findAll(
     data: FindAllTransactionsInput,
   ): Promise<PublicTransactionWithCategory[]> {
+    const { limit = 10, offset = 0 } = data
     const transactions = await this.database
       .select(publicTransactionColumns(transactionsTable))
       .from(transactionsTable)
@@ -121,6 +122,9 @@ export class TransactionRepository {
         eq(transactionsTable.categoryId, categoriesTable.id),
       )
       .where(eq(transactionsTable.userId, data.userId))
+      .orderBy(desc(transactionsTable.occurredOn), desc(transactionsTable.id))
+      .limit(limit)
+      .offset(offset)
 
     return transactions
   }

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import {
   createTransactionSchema,
   transactionIdParamsSchema,
+  transactionQueryParamsSchema,
   updateTransactionSchema,
 } from './transaction.dto.js'
 import type { TransactionService } from './transaction.service.js'
@@ -48,13 +49,16 @@ export class TransactionController {
   }
 
   async findAll(req: Request, res: Response) {
+    const { limit, offset } = transactionQueryParamsSchema.parse(req.query)
     const userId = req.auth.userId
 
-    const categories = await this.transactionService.findAll({
+    const transactions = await this.transactionService.findAll({
       userId,
+      limit,
+      offset,
     })
 
-    res.status(200).json(categories)
+    res.status(200).json(transactions)
   }
 
   async delete(req: Request, res: Response) {
