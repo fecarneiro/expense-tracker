@@ -22,6 +22,13 @@
       "when": 1780483222896,
       "tag": "0002_rename_type_to_transaction_type",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780514833189,
+      "tag": "0003_absurd_power_man",
+      "breakpoints": true
     }
   ]
 }
