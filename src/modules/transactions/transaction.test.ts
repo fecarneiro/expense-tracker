@@ -61,7 +61,7 @@ test('create returns the persisted transaction with its category', async () => {
   const { transactionService } = sut()
   const owner = await seed()
 
-  const newTransaction = await transactionService.create({
+  const created = await transactionService.create({
     userId: owner.user.id,
     categoryId: owner.category.id,
     type: 'expense',
@@ -69,7 +69,7 @@ test('create returns the persisted transaction with its category', async () => {
     description: 'ifood',
   })
 
-  expect(newTransaction).toStrictEqual({
+  expect(created).toStrictEqual({
     id: expect.any(String),
     category: {
       id: owner.category.id,
