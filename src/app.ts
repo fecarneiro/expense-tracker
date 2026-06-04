@@ -14,6 +14,10 @@ import { CategoryController } from './modules/categories/category.controller.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { categoryRouter } from './modules/categories/category.routes.js'
 import { CategoryService } from './modules/categories/category.service.js'
+import { TelegramController } from './modules/telegram/telegram.controller.js'
+import { TelegramRepository } from './modules/telegram/telegram.repository.js'
+import { telegramRouter } from './modules/telegram/telegram.routes.js'
+import { TelegramService } from './modules/telegram/telegram.service.js'
 import { TransactionController } from './modules/transactions/transaction.controller.js'
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { transactionRouter } from './modules/transactions/transaction.routes.js'
@@ -34,24 +38,28 @@ export function createApp() {
   const categoryRepository = new CategoryRepository(db)
   const transactionRepository = new TransactionRepository(db)
   const analyticsQuery = new AnalyticsQuery(db)
+  const telegramRepository = new TelegramRepository(db)
   // Services
   const authService = new AuthService(userRepository, passwordHasher)
   const userService = new UserService(userRepository, passwordHasher)
   const categoryService = new CategoryService(categoryRepository)
   const transactionService = new TransactionService(transactionRepository)
   const analyticService = new AnalyticsService(analyticsQuery)
+  const telegramService = new TelegramService(authService, telegramRepository)
   // Controllers
   const authController = new AuthController(authService)
   const userController = new UserController(userService)
   const categoryController = new CategoryController(categoryService)
   const transactionController = new TransactionController(transactionService)
   const analyticController = new AnalyticsController(analyticService)
+  const telegramController = new TelegramController(telegramService)
 
   app.disable('x-powered-by')
   app.use(cookieParser())
   app.use(express.json())
 
   app.use('/auth', authRouter(authController))
+  app.use('/telegram', telegramRouter(telegramController))
 
   app.use(authMiddleware)
   app.use('/users', userRouter(userController))
