@@ -1,19 +1,21 @@
 import * as z from 'zod'
 import type { Transaction } from '../../database/schemas/transaction.schema.js'
 
-const transactionNotesFieldSchema = z
+const transactionNotesFieldField = z
   .string()
   .trim()
   .max(70)
   .optional()
   .transform((val) => (val == null || val === '' ? null : val))
 
+export const transactionAmountInCentsField = z.number().int().positive()
+
 const transactionBaseSchema = z.object({
   occurredOn: z.iso.date(),
   categoryId: z.uuid(),
   transactionType: z.enum(['income', 'expense']),
-  amountInCents: z.number().int().positive(),
-  notes: transactionNotesFieldSchema,
+  amountInCents: transactionAmountInCentsField,
+  notes: transactionNotesFieldField,
 })
 
 // HTTP schemas
