@@ -14,10 +14,7 @@ export class TelegramRepository {
 
   async linkAccount(data: NewTelegram): Promise<Telegram | null> {
     try {
-      const [telegram] = await this.database
-        .insert(telegramTable)
-        .values(data)
-        .returning()
+      const [telegram] = await this.database.insert(telegramTable).values(data).returning()
 
       return telegram ?? null
     } catch (err) {

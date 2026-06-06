@@ -6,18 +6,13 @@ import type {
   FindTransactionByIdInput,
   UpdateTransactionInput,
 } from './transaction.dto.js'
-import {
-  TransactionCreationFailedError,
-  TransactionNotFoundError,
-} from './transaction.error.js'
+import { TransactionCreationFailedError, TransactionNotFoundError } from './transaction.error.js'
 import type { TransactionRepository } from './transaction.repository.js'
 
 export class TransactionService {
   constructor(private readonly transactionRepository: TransactionRepository) {}
 
-  async create(
-    data: CreateTransactionInput,
-  ): Promise<PublicTransactionWithCategory> {
+  async create(data: CreateTransactionInput): Promise<PublicTransactionWithCategory> {
     const transaction = await this.transactionRepository.create(data)
 
     if (!transaction) throw new TransactionCreationFailedError()
@@ -25,9 +20,7 @@ export class TransactionService {
     return transaction
   }
 
-  async update(
-    data: UpdateTransactionInput,
-  ): Promise<PublicTransactionWithCategory> {
+  async update(data: UpdateTransactionInput): Promise<PublicTransactionWithCategory> {
     const transaction = await this.transactionRepository.update(data)
 
     if (!transaction) throw new TransactionNotFoundError()
@@ -35,9 +28,7 @@ export class TransactionService {
     return transaction
   }
 
-  async findById(
-    data: FindTransactionByIdInput,
-  ): Promise<PublicTransactionWithCategory> {
+  async findById(data: FindTransactionByIdInput): Promise<PublicTransactionWithCategory> {
     const transaction = await this.transactionRepository.findById(data)
 
     if (!transaction) throw new TransactionNotFoundError()
@@ -45,9 +36,7 @@ export class TransactionService {
     return transaction
   }
 
-  async findAll(
-    data: FindAllTransactionsInput,
-  ): Promise<PublicTransactionWithCategory[]> {
+  async findAll(data: FindAllTransactionsInput): Promise<PublicTransactionWithCategory[]> {
     const transactions = await this.transactionRepository.findAll(data)
 
     return transactions

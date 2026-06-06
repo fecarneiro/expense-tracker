@@ -1,10 +1,7 @@
 import { desc, eq, sql, sum } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
-import type {
-  GetMonthlyBalanceInput,
-  GetMonthlyBalanceOutput,
-} from './analytics.dto.js'
+import type { GetMonthlyBalanceInput, GetMonthlyBalanceOutput } from './analytics.dto.js'
 
 const monthSql = sql<string>`
   TO_CHAR(${transactionsTable.occurredOn}, 'YYYY-MM')
@@ -23,9 +20,7 @@ const signedAmountSql = sql<number>`
 export class AnalyticsQuery {
   constructor(private readonly database: Database) {}
 
-  async monthlyBalance(
-    data: GetMonthlyBalanceInput,
-  ): Promise<GetMonthlyBalanceOutput[]> {
+  async monthlyBalance(data: GetMonthlyBalanceInput): Promise<GetMonthlyBalanceOutput[]> {
     const { userId } = data
 
     const monthlyBalance = await this.database

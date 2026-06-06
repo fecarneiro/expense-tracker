@@ -301,7 +301,7 @@ test('delete fails when the category is in use by a transaction', async () => {
     notes: 'mine',
   })
 
-  await expect(
-    categoryService.delete({ id: created.id, userId: owner.user.id }),
-  ).rejects.toThrow(new CategoryInUseError())
+  await expect(categoryService.delete({ id: created.id, userId: owner.user.id })).rejects.toThrow(
+    new CategoryInUseError(),
+  )
 })

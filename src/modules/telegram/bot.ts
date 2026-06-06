@@ -54,8 +54,7 @@ export function createTelegramBot() {
 
     console.log(parsed)
 
-    const { amountInCents, categoryName } =
-      createNewTransactionFromTelegramSchema.parse(parsed)
+    const { amountInCents, categoryName } = createNewTransactionFromTelegramSchema.parse(parsed)
 
     const category = await categoryService.findByName({
       name: categoryName,
@@ -63,9 +62,7 @@ export function createTelegramBot() {
     })
     if (!category) return ctx.reply(`Category '${categoryName}' not found`)
 
-    const occurredOn = new Date(ctx.message.date * 1000)
-      .toISOString()
-      .slice(0, 10)
+    const occurredOn = new Date(ctx.message.date * 1000).toISOString().slice(0, 10)
 
     await transactionService.create({
       userId,

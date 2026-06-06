@@ -43,9 +43,7 @@ export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema> &
 
 export type FindTransactionByIdInput = Pick<Transaction, 'id' | 'userId'>
 
-export type FindAllTransactionsInput = z.infer<
-  typeof transactionQueryParamsSchema
-> &
+export type FindAllTransactionsInput = z.infer<typeof transactionQueryParamsSchema> &
   Pick<Transaction, 'userId'>
 
 export type DeleteTransactionInput = Pick<Transaction, 'id' | 'userId'>
