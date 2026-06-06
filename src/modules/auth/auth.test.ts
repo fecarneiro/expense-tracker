@@ -59,9 +59,7 @@ test('register fails when the email is already in use', async () => {
     password: '12345678',
   }
 
-  await expect(authService.register(registerInput)).rejects.toThrow(
-    new EmailAlreadyInUseError(),
-  )
+  await expect(authService.register(registerInput)).rejects.toThrow(new EmailAlreadyInUseError())
 })
 
 test('verifyCredentials returns the public user with valid credentials', async () => {

@@ -40,11 +40,7 @@ export const transactionsTable = pgTable(
   },
 
   (table) => [
-    index('transactions_user_occurred_on_id_idx').on(
-      table.userId,
-      table.occurredOn,
-      table.id,
-    ),
+    index('transactions_user_occurred_on_id_idx').on(table.userId, table.occurredOn, table.id),
     check('amount_check', sql`${table.amountInCents} > 0`),
     foreignKey({
       name: 'transactions_category_user_fk',

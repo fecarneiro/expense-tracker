@@ -24,9 +24,7 @@ export const createNewTransactionFromTelegramSchema = z.object({
 
 export type LinkTelegramAccountData = z.infer<typeof telegramBaseSchema>
 
-export type GetUserIdByTelegramIdData = z.infer<
-  typeof getUserIdByTelegramIdSchema
->
+export type GetUserIdByTelegramIdData = z.infer<typeof getUserIdByTelegramIdSchema>
 
 export type CreateNewTransactionFromTelegramData = z.infer<
   typeof createNewTransactionFromTelegramSchema

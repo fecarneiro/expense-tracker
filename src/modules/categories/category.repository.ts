@@ -1,8 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import {
-  isForeignKeyViolation,
-  isUniqueViolation,
-} from '../../database/db.error.js'
+import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import {
   type Category,
@@ -17,10 +14,7 @@ import type {
   FindCategoryByNameData,
   UpdateCategoryInput,
 } from './category.dto.js'
-import {
-  CategoryAlreadyExistsError,
-  CategoryInUseError,
-} from './category.error.js'
+import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 
 const publicCategoriesTableColumns = {
   id: categoriesTable.id,
@@ -52,12 +46,7 @@ export class CategoryRepository {
       const [category] = await this.database
         .update(categoriesTable)
         .set({ name: data.name })
-        .where(
-          and(
-            eq(categoriesTable.id, data.id),
-            eq(categoriesTable.userId, data.userId),
-          ),
-        )
+        .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
         .returning(publicCategoriesTableColumns)
 
       return category ?? null
@@ -73,28 +62,16 @@ export class CategoryRepository {
     const [category] = await this.database
       .select(publicCategoriesTableColumns)
       .from(categoriesTable)
-      .where(
-        and(
-          eq(categoriesTable.id, data.id),
-          eq(categoriesTable.userId, data.userId),
-        ),
-      )
+      .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
 
     return category ?? null
   }
 
-  async findByName(
-    data: FindCategoryByNameData,
-  ): Promise<PublicCategory | null> {
+  async findByName(data: FindCategoryByNameData): Promise<PublicCategory | null> {
     const [category] = await this.database
       .select(publicCategoriesTableColumns)
       .from(categoriesTable)
-      .where(
-        and(
-          eq(categoriesTable.name, data.name),
-          eq(categoriesTable.userId, data.userId),
-        ),
-      )
+      .where(and(eq(categoriesTable.name, data.name), eq(categoriesTable.userId, data.userId)))
 
     return category ?? null
   }
@@ -108,18 +85,11 @@ export class CategoryRepository {
     return categories
   }
 
-  async delete(
-    data: DeleteCategoryInput,
-  ): Promise<Pick<Category, 'id'> | null> {
+  async delete(data: DeleteCategoryInput): Promise<Pick<Category, 'id'> | null> {
     try {
       const [category] = await this.database
         .delete(categoriesTable)
-        .where(
-          and(
-            eq(categoriesTable.id, data.id),
-            eq(categoriesTable.userId, data.userId),
-          ),
-        )
+        .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
         .returning({ id: categoriesTable.id })
 
       if (!category) return null

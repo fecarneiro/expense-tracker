@@ -7,10 +7,7 @@ import type {
   FindCategoryByNameData,
   UpdateCategoryInput,
 } from './category.dto.js'
-import {
-  CategoryCreationFailedError,
-  CategoryNotFoundError,
-} from './category.error.js'
+import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
 import type { CategoryRepository } from './category.repository.js'
 
 export class CategoryService {
@@ -46,9 +43,7 @@ export class CategoryService {
     return category
   }
 
-  async findByName(
-    data: FindCategoryByNameData,
-  ): Promise<PublicCategory | null> {
+  async findByName(data: FindCategoryByNameData): Promise<PublicCategory | null> {
     const category = await this.categoryRepository.findByName(data)
     // dont throw error bc used only in telegram bot
     return category

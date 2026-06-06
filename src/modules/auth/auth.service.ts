@@ -1,12 +1,6 @@
-import {
-  type PublicUser,
-  toPublicUser,
-} from '../../database/schemas/user.schema.js'
+import { type PublicUser, toPublicUser } from '../../database/schemas/user.schema.js'
 import type { PasswordHasher } from '../../shared/password-hasher.js'
-import {
-  EmailAlreadyInUseError,
-  UserCreationFailedError,
-} from '../users/user.error.js'
+import { EmailAlreadyInUseError, UserCreationFailedError } from '../users/user.error.js'
 import type { UserRepository } from '../users/user.repository.js'
 import type { LoginData, RegisterUserData } from './auth.dto.js'
 import { InvalidCredentialsError } from './auth.error.js'
@@ -49,10 +43,7 @@ export class AuthService {
       throw new InvalidCredentialsError()
     }
 
-    const validatedCredentials = await this.passwordHasher.compare(
-      password,
-      user.passwordHash,
-    )
+    const validatedCredentials = await this.passwordHasher.compare(password, user.passwordHash)
 
     if (!validatedCredentials) {
       throw new InvalidCredentialsError()

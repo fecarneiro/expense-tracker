@@ -1,9 +1,6 @@
 import type { Telegram } from '../../database/schemas/telegram.schema.js'
 import type { AuthService } from '../auth/auth.service.js'
-import type {
-  GetUserIdByTelegramIdData,
-  LinkTelegramAccountData,
-} from './telegram.dto.js'
+import type { GetUserIdByTelegramIdData, LinkTelegramAccountData } from './telegram.dto.js'
 import { TelegramLinkAccountFailedError } from './telegram.error.js'
 import type { TelegramRepository } from './telegram.repository.js'
 

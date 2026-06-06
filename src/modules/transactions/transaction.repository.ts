@@ -18,9 +18,7 @@ import type {
   UpdateTransactionInput,
 } from './transaction.dto.js'
 
-const publicTransactionColumns = (
-  source: Record<keyof PublicTransaction, AnyPgColumn>,
-) => ({
+const publicTransactionColumns = (source: Record<keyof PublicTransaction, AnyPgColumn>) => ({
   id: source.id,
   occurredOn: source.occurredOn,
   transactionType: source.transactionType,
@@ -33,9 +31,7 @@ const publicTransactionColumns = (
 export class TransactionRepository {
   constructor(private readonly database: Database) {}
 
-  async create(
-    data: NewTransaction,
-  ): Promise<PublicTransactionWithCategory | null> {
+  async create(data: NewTransaction): Promise<PublicTransactionWithCategory | null> {
     try {
       const inserted = this.database
         .$with('inserted')
@@ -56,9 +52,7 @@ export class TransactionRepository {
     }
   }
 
-  async update(
-    data: UpdateTransactionInput,
-  ): Promise<PublicTransactionWithCategory | null> {
+  async update(data: UpdateTransactionInput): Promise<PublicTransactionWithCategory | null> {
     const { id, userId, ...updateData } = data
 
     try {
@@ -66,12 +60,7 @@ export class TransactionRepository {
         this.database
           .update(transactionsTable)
           .set(updateData)
-          .where(
-            and(
-              eq(transactionsTable.id, id),
-              eq(transactionsTable.userId, userId),
-            ),
-          )
+          .where(and(eq(transactionsTable.id, id), eq(transactionsTable.userId, userId)))
           .returning(),
       )
 
@@ -90,37 +79,22 @@ export class TransactionRepository {
     }
   }
 
-  async findById(
-    data: FindTransactionByIdInput,
-  ): Promise<PublicTransactionWithCategory | null> {
+  async findById(data: FindTransactionByIdInput): Promise<PublicTransactionWithCategory | null> {
     const [transaction] = await this.database
       .select(publicTransactionColumns(transactionsTable))
       .from(transactionsTable)
-      .innerJoin(
-        categoriesTable,
-        eq(transactionsTable.categoryId, categoriesTable.id),
-      )
-      .where(
-        and(
-          eq(transactionsTable.id, data.id),
-          eq(transactionsTable.userId, data.userId),
-        ),
-      )
+      .innerJoin(categoriesTable, eq(transactionsTable.categoryId, categoriesTable.id))
+      .where(and(eq(transactionsTable.id, data.id), eq(transactionsTable.userId, data.userId)))
 
     return transaction ?? null
   }
 
-  async findAll(
-    data: FindAllTransactionsInput,
-  ): Promise<PublicTransactionWithCategory[]> {
+  async findAll(data: FindAllTransactionsInput): Promise<PublicTransactionWithCategory[]> {
     const { limit = 10, offset = 0 } = data
     const transactions = await this.database
       .select(publicTransactionColumns(transactionsTable))
       .from(transactionsTable)
-      .innerJoin(
-        categoriesTable,
-        eq(transactionsTable.categoryId, categoriesTable.id),
-      )
+      .innerJoin(categoriesTable, eq(transactionsTable.categoryId, categoriesTable.id))
       .where(eq(transactionsTable.userId, data.userId))
       .orderBy(desc(transactionsTable.occurredOn), desc(transactionsTable.id))
       .limit(limit)
@@ -129,17 +103,10 @@ export class TransactionRepository {
     return transactions
   }
 
-  async delete(
-    data: DeleteTransactionInput,
-  ): Promise<Pick<Transaction, 'id'> | null> {
+  async delete(data: DeleteTransactionInput): Promise<Pick<Transaction, 'id'> | null> {
     const [transaction] = await this.database
       .delete(transactionsTable)
-      .where(
-        and(
-          eq(transactionsTable.id, data.id),
-          eq(transactionsTable.userId, data.userId),
-        ),
-      )
+      .where(and(eq(transactionsTable.id, data.id), eq(transactionsTable.userId, data.userId)))
       .returning({ id: transactionsTable.id })
 
     if (!transaction) return null

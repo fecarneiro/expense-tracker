@@ -3,9 +3,7 @@ type NewTransactionMessage = {
   categoryName: string
 }
 
-export function parseNewTransactionMessage(
-  message: string,
-): NewTransactionMessage {
+export function parseNewTransactionMessage(message: string): NewTransactionMessage {
   const [amount, ...rest] = message.split(' ')
 
   const amountInCents = Number(amount)

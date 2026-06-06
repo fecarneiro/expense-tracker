@@ -19,8 +19,7 @@ export const updateCategorySchema = z.object({
 })
 
 // Application inputs
-export type CreateCategoryInput = z.infer<typeof createCategorySchema> &
-  Pick<Category, 'userId'>
+export type CreateCategoryInput = z.infer<typeof createCategorySchema> & Pick<Category, 'userId'>
 
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema> &
   Pick<Category, 'id' | 'userId'>

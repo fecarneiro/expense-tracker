@@ -1,11 +1,6 @@
 import * as z from 'zod'
 
-export const emailField = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .max(254)
-  .pipe(z.email())
+export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email())
 
 export const strongPasswordField = z.string().min(8).max(72)
 

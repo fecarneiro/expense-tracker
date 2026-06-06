@@ -11,9 +11,7 @@ export function userIdentityMiddleware(telegramService: TelegramService) {
 
     const account = await telegramService.getUserIdByTelegramId({ telegramId })
     if (!account) {
-      await ctx.reply(
-        "You haven't linked your account yet. Use /me and link through the app.",
-      )
+      await ctx.reply("You haven't linked your account yet. Use /me and link through the app.")
       return
     }
 

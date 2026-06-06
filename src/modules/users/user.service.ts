@@ -41,10 +41,7 @@ export class UserService {
       throw new AuthenticatedUserNotFoundError()
     }
 
-    const validCredentials = await this.passwordHasher.compare(
-      data.password,
-      user.passwordHash,
-    )
+    const validCredentials = await this.passwordHasher.compare(data.password, user.passwordHash)
 
     if (!validCredentials) {
       throw new InvalidCredentialsError()
