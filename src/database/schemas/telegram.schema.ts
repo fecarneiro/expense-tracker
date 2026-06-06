@@ -8,11 +8,10 @@ export const telegramTable = pgTable('telegram', {
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
 
-  telegramId: bigint({ mode: 'bigint' }).unique().notNull(),
+  telegramId: bigint({ mode: 'number' }).unique().notNull(),
 
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 
 export type Telegram = typeof telegramTable.$inferSelect
 export type NewTelegram = typeof telegramTable.$inferInsert
-export type PublicTelegram = Pick<Telegram, 'id' | 'createdAt'>
