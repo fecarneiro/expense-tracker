@@ -4,6 +4,7 @@ import type {
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
+  FindCategoryByNameData,
   UpdateCategoryInput,
 } from './category.dto.js'
 import {
@@ -42,6 +43,14 @@ export class CategoryService {
       throw new CategoryNotFoundError()
     }
 
+    return category
+  }
+
+  async findByName(
+    data: FindCategoryByNameData,
+  ): Promise<PublicCategory | null> {
+    const category = await this.categoryRepository.findByName(data)
+    // dont throw error bc used only in telegram bot
     return category
   }
 
