@@ -14,6 +14,7 @@ import type {
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
+  FindCategoryByNameData,
   UpdateCategoryInput,
 } from './category.dto.js'
 import {
@@ -75,6 +76,22 @@ export class CategoryRepository {
       .where(
         and(
           eq(categoriesTable.id, data.id),
+          eq(categoriesTable.userId, data.userId),
+        ),
+      )
+
+    return category ?? null
+  }
+
+  async findByName(
+    data: FindCategoryByNameData,
+  ): Promise<PublicCategory | null> {
+    const [category] = await this.database
+      .select(publicCategoriesTableColumns)
+      .from(categoriesTable)
+      .where(
+        and(
+          eq(categoriesTable.name, data.name),
           eq(categoriesTable.userId, data.userId),
         ),
       )
