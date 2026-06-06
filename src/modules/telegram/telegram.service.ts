@@ -1,6 +1,9 @@
-import type { PublicTelegram } from '../../database/schemas/telegram.schema.js'
+import type { Telegram } from '../../database/schemas/telegram.schema.js'
 import type { AuthService } from '../auth/auth.service.js'
-import type { TelegramLinkAccountInput } from './telegram.dto.js'
+import type {
+  GetUserIdByTelegramIdData,
+  LinkTelegramAccountData,
+} from './telegram.dto.js'
 import { TelegramLinkAccountFailedError } from './telegram.error.js'
 import type { TelegramRepository } from './telegram.repository.js'
 
@@ -10,7 +13,7 @@ export class TelegramService {
     private readonly telegramRepository: TelegramRepository,
   ) {}
 
-  async linkAccount(data: TelegramLinkAccountInput): Promise<PublicTelegram> {
+  async linkAccount(data: LinkTelegramAccountData): Promise<Telegram> {
     const { email, password, telegramId } = data
 
     const verifiedAccount = await this.authService.verifyCredentials({
@@ -28,5 +31,11 @@ export class TelegramService {
     if (!telegramAccount) throw new TelegramLinkAccountFailedError()
 
     return telegramAccount
+  }
+
+  async getUserIdByTelegramId(
+    data: GetUserIdByTelegramIdData,
+  ): Promise<Pick<Telegram, 'userId'> | null> {
+    return await this.telegramRepository.findUserIdByTelegramId(data)
   }
 }
