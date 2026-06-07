@@ -15,8 +15,6 @@ import { errorHandler } from './telegram.error-handler.js'
 import { TelegramRepository } from './telegram.repository.js'
 import { TelegramService } from './telegram.service.js'
 
-const botToken = env.TELEGRAM_BOT_TOKEN
-
 export function createTelegramBot() {
   const userRepository = new UserRepository(db)
   const passwordHasher = new PasswordHasher()
@@ -28,7 +26,7 @@ export function createTelegramBot() {
   const transactionRepository = new TransactionRepository(db)
   const transactionService = new TransactionService(transactionRepository)
 
-  const bot = new Bot<BotContext>(botToken)
+  const bot = new Bot<BotContext>(env.TELEGRAM_BOT_TOKEN)
 
   bot.catch(errorHandler)
 
@@ -45,6 +43,13 @@ export function createTelegramBot() {
 
   // --- Handlers
   bot.use(transactionHandler(transactionService, categoryService))
+
+  // --- Commands
+  bot.api.setMyCommands([
+    { command: 'expense', description: 'Log an expense' },
+    { command: 'income', description: 'Log income' },
+    { command: 'report', description: 'Monthly summary' },
+  ])
 
   bot.start()
 }
