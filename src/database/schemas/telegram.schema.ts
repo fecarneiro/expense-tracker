@@ -5,6 +5,7 @@ export const telegramTable = pgTable('telegram', {
   id: uuid().primaryKey().defaultRandom(),
 
   userId: uuid()
+    .unique()
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
 
