@@ -3,10 +3,10 @@ type NewTransactionMessage = {
   categoryName: string
 }
 
-export function parseNewTransactionMessage(message: string): NewTransactionMessage {
+export function newTransactionParser(message: string): NewTransactionMessage {
   const [amount, ...rest] = message.split(' ')
 
-  const amountInCents = Number(amount)
+  const amountInCents = Number(amount) * 100
 
   const categoryName = rest.join(' ').trim()
 
