@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import {
@@ -71,7 +71,12 @@ export class CategoryRepository {
     const [category] = await this.database
       .select(publicCategoriesTableColumns)
       .from(categoriesTable)
-      .where(and(eq(categoriesTable.name, data.name), eq(categoriesTable.userId, data.userId)))
+      .where(
+        and(
+          eq(sql`lower(${categoriesTable.name})`, sql`lower(${data.name})`),
+          eq(categoriesTable.userId, data.userId),
+        ),
+      )
 
     return category ?? null
   }
