@@ -1,6 +1,5 @@
 import type { NextFunction } from 'grammy'
-import type { BotContext } from '../bot.js'
-
+import type { BotContext } from '../telegram.context.js'
 import type { TelegramService } from '../telegram.service.js'
 
 export function userIdentityMiddleware(telegramService: TelegramService) {
