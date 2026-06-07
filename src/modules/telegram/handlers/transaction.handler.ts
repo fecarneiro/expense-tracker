@@ -41,7 +41,7 @@ export function transactionHandler(
       notes: null,
     })
 
-    return ctx.reply(`Transaction amount: ${amountInCents / 100},00 for '${categoryName}' registed`)
+    return ctx.reply(`Transaction registed`)
   }
 
   return composer
