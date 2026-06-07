@@ -10,10 +10,12 @@ const transactionNotesFieldField = z
 
 export const transactionAmountInCentsField = z.number().int().positive()
 
+export const transactionTypeField = z.enum(['income', 'expense'])
+
 const transactionBaseSchema = z.object({
   occurredOn: z.iso.date(),
   categoryId: z.uuid(),
-  transactionType: z.enum(['income', 'expense']),
+  transactionType: transactionTypeField,
   amountInCents: transactionAmountInCentsField,
   notes: transactionNotesFieldField,
 })
@@ -33,6 +35,8 @@ export const updateTransactionSchema = transactionBaseSchema
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Inform at least 1 field to update',
   })
+
+export type TransactionType = z.infer<typeof transactionTypeField>
 
 // Application inputs
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema> &
