@@ -17,7 +17,7 @@ export function transactionHandler(
 
   async function handleNew(ctx: BotContext, transactionType: TransactionType, text: string) {
     const { userId } = ctx // guaranteed by user-identity middleware
-    if (!text) return ctx.reply('Usage: /expense 200 eating out')
+    if (!text) return ctx.reply(`Usage: /${transactionType} 200 eating out`)
 
     const parsed = newTransactionParser(text)
 

@@ -10,12 +10,13 @@ import { TransactionService } from '../transactions/transaction.service.js'
 import { UserRepository } from '../users/user.repository.js'
 import { transactionHandler } from './handlers/transaction.handler.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
+import { registerBotCommands } from './parsers/commands.js'
 import type { BotContext } from './telegram.context.js'
 import { errorHandler } from './telegram.error-handler.js'
 import { TelegramRepository } from './telegram.repository.js'
 import { TelegramService } from './telegram.service.js'
 
-export function createTelegramBot() {
+export async function createTelegramBot() {
   const userRepository = new UserRepository(db)
   const passwordHasher = new PasswordHasher()
   const telegramRepository = new TelegramRepository(db)
@@ -45,11 +46,7 @@ export function createTelegramBot() {
   bot.use(transactionHandler(transactionService, categoryService))
 
   // --- Commands
-  bot.api.setMyCommands([
-    { command: 'expense', description: 'Log an expense' },
-    { command: 'income', description: 'Log income' },
-    { command: 'report', description: 'Monthly summary' },
-  ])
+  await registerBotCommands(bot)
 
   bot.start()
 }
