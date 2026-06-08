@@ -7,5 +7,6 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     restoreMocks: true,
     reporters: ['verbose'],
+    setupFiles: ['./src/tests/setup-env.ts'],
   },
 })
