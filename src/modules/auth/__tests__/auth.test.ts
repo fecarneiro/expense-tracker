@@ -1,10 +1,10 @@
 import { beforeAll, beforeEach, expect, test } from 'vitest'
-import { createContainer } from '../../container.js'
-import type { Database } from '../../database/db.js'
-import { usersTable } from '../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../tests/setup-db-test.js'
-import { EmailAlreadyInUseError } from '../users/user.error.js'
-import { InvalidCredentialsError } from './auth.error.js'
+import { createContainer } from '../../../container.js'
+import type { Database } from '../../../database/db.js'
+import { usersTable } from '../../../database/schemas/user.schema.js'
+import { setupDbTest } from '../../../tests/setup-db-test.js'
+import { EmailAlreadyInUseError } from '../../users/user.error.js'
+import { InvalidCredentialsError } from '../auth.error.js'
 
 let dbTest: Database
 
