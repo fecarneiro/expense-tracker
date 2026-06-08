@@ -29,6 +29,13 @@
       "when": 1780514833189,
       "tag": "0003_absurd_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780911186787,
+      "tag": "0004_rich_fantastic_four",
+      "breakpoints": true
     }
   ]
 }
