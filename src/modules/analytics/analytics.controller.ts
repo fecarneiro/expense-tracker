@@ -11,6 +11,6 @@ export class AnalyticsController {
       userId,
     })
 
-    res.status(201).json(monthlyBalance)
+    res.status(200).json(monthlyBalance)
   }
 }
