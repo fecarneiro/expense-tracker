@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, expect, test } from 'vitest'
+import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
@@ -6,8 +7,6 @@ import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import { TransactionNotFoundError } from './transaction.error.js'
-import { TransactionRepository } from './transaction.repository.js'
-import { TransactionService } from './transaction.service.js'
 
 let dbTest: Database
 
@@ -51,10 +50,7 @@ async function seed(email = 'user@test.com') {
 }
 
 function sut() {
-  const transactionRepository = new TransactionRepository(dbTest)
-  const transactionService = new TransactionService(transactionRepository)
-
-  return { transactionService }
+  return createContainer(dbTest)
 }
 
 test('create returns the persisted transaction with its category', async () => {

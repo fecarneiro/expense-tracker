@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, expect, test } from 'vitest'
+import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
@@ -9,8 +10,6 @@ import {
   CategoryInUseError,
   CategoryNotFoundError,
 } from './category.error.js'
-import { CategoryRepository } from './category.repository.js'
-import { CategoryService } from './category.service.js'
 
 let dbTest: Database
 
@@ -44,10 +43,7 @@ async function seed(email = 'user@test.com') {
 }
 
 function sut() {
-  const categoryRepository = new CategoryRepository(dbTest)
-  const categoryService = new CategoryService(categoryRepository)
-
-  return { categoryService }
+  return createContainer(dbTest)
 }
 
 test('create returns the persisted category', async () => {

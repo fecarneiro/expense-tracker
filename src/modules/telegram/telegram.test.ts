@@ -1,14 +1,10 @@
 import { beforeAll, beforeEach, expect, test } from 'vitest'
+import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { telegramTable } from '../../database/schemas/telegram.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
-import { PasswordHasher } from '../../shared/password-hasher.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
-import { AuthService } from '../auth/auth.service.js'
-import { UserRepository } from '../users/user.repository.js'
-import { TelegramRepository } from './telegram.repository.js'
-import { TelegramService } from './telegram.service.js'
 
 let dbTest: Database
 
@@ -27,20 +23,16 @@ beforeEach(async () => {
 })
 
 function sut() {
-  const userRepository = new UserRepository(dbTest)
-  const passwordHasher = new PasswordHasher()
-  const telegramRepository = new TelegramRepository(dbTest)
-  const authService = new AuthService(userRepository, passwordHasher)
-  const telegramService = new TelegramService(authService, telegramRepository)
+  const container = createContainer(dbTest)
 
   async function createUser() {
-    return authService.register({
+    return container.authService.register({
       email: 'johndoe@email.com',
       password: '12345678',
     })
   }
 
-  return { telegramService, createUser }
+  return { ...container, createUser }
 }
 
 test('linkAccount links a telegram account to an existing user', async () => {
