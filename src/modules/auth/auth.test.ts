@@ -1,12 +1,10 @@
 import { beforeAll, beforeEach, expect, test } from 'vitest'
+import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
-import { PasswordHasher } from '../../shared/password-hasher.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
 import { EmailAlreadyInUseError } from '../users/user.error.js'
-import { UserRepository } from '../users/user.repository.js'
 import { InvalidCredentialsError } from './auth.error.js'
-import { AuthService } from './auth.service.js'
 
 let dbTest: Database
 
@@ -24,18 +22,15 @@ beforeEach(async () => {
 })
 
 function sut() {
-  const userRepository = new UserRepository(dbTest)
-  const passwordHasher = new PasswordHasher()
-  const authService = new AuthService(userRepository, passwordHasher)
-
+  const container = createContainer(dbTest)
   async function createUser() {
-    return authService.register({
+    return container.authService.register({
       email: 'johndoe@email.com',
       password: '12345678',
     })
   }
 
-  return { authService, createUser }
+  return { ...container, createUser }
 }
 
 test('register returns the public user without sensitive fields', async () => {
