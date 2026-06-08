@@ -15,9 +15,6 @@ export type NewUser = typeof usersTable.$inferInsert
 export type PublicUser = Pick<User, 'id' | 'email' | 'createdAt'>
 
 export function toPublicUser(user: User): PublicUser {
-  return {
-    id: user.id,
-    email: user.email,
-    createdAt: user.createdAt,
-  }
+  const { passwordHash, ...publicUser } = user
+  return publicUser
 }
