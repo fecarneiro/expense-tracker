@@ -37,6 +37,7 @@ export const updateTransactionSchema = transactionBaseSchema
   })
 
 export type TransactionType = z.infer<typeof transactionTypeField>
+export type TransactionAmountInCents = z.infer<typeof transactionAmountInCentsField>
 
 // Application inputs
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema> &
