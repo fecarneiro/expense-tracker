@@ -20,7 +20,7 @@ export async function errorHandler(err: BotError): Promise<void> {
   }
 
   try {
-    ctx.reply(replyMessage)
+    await ctx.reply(replyMessage)
   } catch (replyError) {
     console.log('Failed to send the error reply', replyError)
   }
