@@ -1,14 +1,16 @@
-type NewTransactionMessage = {
-  amountInCents: number
-  categoryName: string
-}
+import {
+  type TransactionAmountInCents,
+  transactionAmountInCentsField,
+} from '../../transactions/transaction.dto.js'
 
-export function newTransactionParser(message: string): NewTransactionMessage {
-  const [amount, ...rest] = message.split(' ')
+export function newTransactionParser(message: string): TransactionAmountInCents | null {
+  if (!message) return null
 
-  const amountInCents = Number(amount) * 100
+  const normalized = message.trim().replace(',', '.')
+  const numeric = Number(normalized)
+  const cents = Math.round(numeric * 100)
 
-  const categoryName = rest.join(' ').trim()
+  const result = transactionAmountInCentsField.safeParse(cents)
 
-  return { amountInCents, categoryName }
+  return result.success ? result.data : null
 }
