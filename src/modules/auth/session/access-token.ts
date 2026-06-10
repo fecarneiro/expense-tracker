@@ -3,7 +3,7 @@ import { env } from '../../../config/env.config.js'
 
 const secret = new TextEncoder().encode(env.JWT_SECRET)
 const alg = 'HS256'
-const issuer = 'expense-flow'
+const issuer = 'expense-tracker'
 
 export const TOKEN_TTL_SECONDS = 2 * 60 * 60
 
