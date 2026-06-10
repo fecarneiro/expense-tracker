@@ -1,38 +1,40 @@
-import { desc, eq, sql, sum } from 'drizzle-orm'
+import { and, desc, eq, gte, lt, sql } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
-import type { GetMonthlyBalanceInput, GetMonthlyBalanceOutput } from './analytics.dto.js'
+import type { GetMonthlyBalanceOutputQuery, GetMonthlyBalanceQuery } from './analytics.dto.js'
 
 const monthSql = sql<string>`
-  TO_CHAR(${transactionsTable.occurredOn}, 'YYYY-MM')
+  TO_CHAR(date_trunc('month', ${transactionsTable.occurredOn}), 'YYYY-MM')
+`
+const incomeTotalSql = sql<number>`
+  coalesce(sum(case when ${transactionsTable.transactionType} = 'income' then ${transactionsTable.amountInCents} else 0 end), 0)
 `
 
-const signedAmountSql = sql<number>`
-  CASE
-    WHEN ${transactionsTable.transactionType} = 'income'
-      THEN ${transactionsTable.amountInCents}
-    WHEN ${transactionsTable.transactionType} = 'expense'
-      THEN -${transactionsTable.amountInCents}
-    ELSE 0
-  END
+const expenseTotalSql = sql<number>`
+  coalesce(sum(case when ${transactionsTable.transactionType} = 'expense' then ${transactionsTable.amountInCents} else 0 end), 0)
 `
 
 export class AnalyticsQuery {
   constructor(private readonly database: Database) {}
 
-  async monthlyBalance(data: GetMonthlyBalanceInput): Promise<GetMonthlyBalanceOutput[]> {
-    const { userId } = data
+  async monthlyBalance(data: GetMonthlyBalanceQuery): Promise<GetMonthlyBalanceOutputQuery[]> {
+    const { userId, fromDate, untilDate } = data
 
-    const monthlyBalance = await this.database
+    return this.database
       .select({
-        month: monthSql.mapWith(String),
-        total: sum(signedAmountSql).mapWith(Number),
+        month: monthSql,
+        incomeTotal: incomeTotalSql.mapWith(Number),
+        expenseTotal: expenseTotalSql.mapWith(Number),
       })
       .from(transactionsTable)
-      .where(eq(transactionsTable.userId, userId))
+      .where(
+        and(
+          eq(transactionsTable.userId, userId),
+          gte(transactionsTable.occurredOn, fromDate),
+          lt(transactionsTable.occurredOn, untilDate),
+        ),
+      )
       .groupBy(monthSql)
       .orderBy(desc(monthSql))
-
-    return monthlyBalance
   }
 }
