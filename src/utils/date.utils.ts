@@ -1,14 +1,25 @@
 import z from 'zod'
 
+// ── Schemas (YYYY-MM | YYYY-MM-DD) ───────────────
 export const yearMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+export const yearMonthDaySchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/)
 
-export type YearMonth = z.infer<typeof yearMonthSchema>
-
-export function currentUtcMonth(): YearMonth {
+// ── Current (UTC) ────────────────────────────────
+export function currentUtcMonth() {
   return new Date().toISOString().slice(0, 7)
 }
 
-function addMonthsToYearMonth(yearMonth: YearMonth, amount: number): YearMonth {
+// ── Conversions ──────────────────────────────────
+export function monthToStartDate(yearMonth: string) {
+  return `${yearMonth}-01`
+}
+
+export function unixToDateString(unixTime: number) {
+  return new Date(unixTime * 1000).toISOString().slice(0, 10)
+}
+
+// ── Month arithmetic ─────────────────────────────
+function addMonthsToYearMonth(yearMonth: string, amount: number) {
   const year = Number(yearMonth.slice(0, 4))
   const month = Number(yearMonth.slice(5, 7))
 
@@ -22,14 +33,10 @@ function addMonthsToYearMonth(yearMonth: YearMonth, amount: number): YearMonth {
   return `${shiftedYear}-${String(shiftedMonth).padStart(2, '0')}`
 }
 
-export function nextMonth(yearMonth: YearMonth): YearMonth {
+export function nextMonth(yearMonth: string): string {
   return addMonthsToYearMonth(yearMonth, 1)
 }
 
-export function subtractMonths(yearMonth: YearMonth, amount: number): YearMonth {
+export function subtractMonths(yearMonth: string, amount: number): string {
   return addMonthsToYearMonth(yearMonth, -amount)
-}
-
-export function monthToStartDate(yearMonth: YearMonth): YearMonth {
-  return `${yearMonth}-01`
 }
