@@ -19,7 +19,7 @@
     "test:watch": "vitest",
     "check": "pnpm exec biome check",
     "check:fix": "pnpm exec biome check --write",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "packageManager": "pnpm@11.1.1",
   "dependencies": {
