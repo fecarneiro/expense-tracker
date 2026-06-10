@@ -19,7 +19,7 @@ import { userRouter } from './modules/users/user.routes.js'
 export function createApp(container: Container) {
   const app = express()
 
-  // Controllers — borda HTTP, montados a partir dos services do container
+  // Controllers
   const authController = new AuthController(container.authService)
   const userController = new UserController(container.userService)
   const categoryController = new CategoryController(container.categoryService)
@@ -33,16 +33,15 @@ export function createApp(container: Container) {
 
   app.use('/auth', authRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' })
+  })
 
   app.use(authMiddleware)
   app.use('/users', userRouter(userController))
   app.use('/categories', categoryRouter(categoryController))
   app.use('/transactions', transactionRouter(transactionController))
   app.use('/analytics', analyticRouter(analyticController))
-
-  app.use('/', (_req, res) => {
-    res.status(404).json({ message: 'Not found' })
-  })
 
   app.use(errorMiddleware)
 
