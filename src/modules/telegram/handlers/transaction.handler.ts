@@ -22,7 +22,9 @@ export function handleNewTransactionConversation(
     const userId = await conversation.external((ctx) => ctx.userId)
 
     // ── Amount Input ─────────────────────────────
-    await ctx.reply('How much did you spend?')
+    const transactionLabel = transactionType === 'expense' ? 'spend' : 'received'
+
+    await ctx.reply(`How much did you ${transactionLabel}?`)
     let amountInCents: TransactionAmountInCents | null = null
     let occurredAt = null
 
@@ -62,7 +64,6 @@ export function handleNewTransactionConversation(
 
     // ── Date Resolution ─────────────────────────────
     const occurredOn = unixToDateString(occurredAt)
-    console.log(occurredOn)
 
     await transactionService.create({
       userId,
