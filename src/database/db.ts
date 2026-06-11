@@ -5,6 +5,9 @@ import { schemas } from './schemas/schema.js'
 
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 })
 
 export const db = drizzle({
