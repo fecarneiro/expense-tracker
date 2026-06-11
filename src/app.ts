@@ -33,15 +33,12 @@ export function createApp(container: Container) {
 
   app.use('/auth', authRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
-  app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'ok' })
-  })
+  app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
 
-  app.use(authMiddleware)
-  app.use('/users', userRouter(userController))
-  app.use('/categories', categoryRouter(categoryController))
-  app.use('/transactions', transactionRouter(transactionController))
-  app.use('/analytics', analyticRouter(analyticController))
+  app.use('/users', authMiddleware, userRouter(userController))
+  app.use('/categories', authMiddleware, categoryRouter(categoryController))
+  app.use('/transactions', authMiddleware, transactionRouter(transactionController))
+  app.use('/analytics', authMiddleware, analyticRouter(analyticController))
 
   app.use(errorMiddleware)
 
