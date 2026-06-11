@@ -6,10 +6,13 @@ function required(name: string) {
   return value
 }
 
+export const isProduction = process.env.NODE_ENV === 'production'
+
 export const env = {
   PORT: Number(process.env.PORT ?? 3000),
   NODE_ENV: process.env.NODE_ENV ?? 'development',
   DATABASE_URL: required('DATABASE_URL'),
   JWT_SECRET: required('JWT_SECRET'),
   TELEGRAM_BOT_TOKEN: required('TELEGRAM_BOT_TOKEN'),
+  APP_URL: isProduction ? required('APP_URL') : '',
 }
