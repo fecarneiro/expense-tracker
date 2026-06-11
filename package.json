@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=24",
-    "pnpm": ">=10"
+    "node": "24.x"
   },
+  "packageManager": "pnpm@11.1.1",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -21,7 +21,6 @@
     "check:fix": "pnpm exec biome check --write",
     "prepare": "husky || true"
   },
-  "packageManager": "pnpm@11.1.1",
   "dependencies": {
     "@electric-sql/pglite": "^0.4.6",
     "@grammyjs/conversations": "^2.1.1",
