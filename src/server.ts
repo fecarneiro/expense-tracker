@@ -10,14 +10,14 @@ const app = createApp(container)
 const bot = createTelegramBot(container)
 
 if (isProduction) {
-  app.use(`/${env.TELEGRAM_BOT_TOKEN}`, webhookCallback(bot, 'express'))
+  app.use(`/${env.TELEGRAM_WEBHOOK_SECRET}`, webhookCallback(bot, 'express'))
 }
 
 const server = app.listen(env.PORT, async () => {
   console.log(`Server is running on port: ${env.PORT}`)
 
   if (isProduction) {
-    await bot.api.setWebhook(`${env.APP_URL}/${env.TELEGRAM_BOT_TOKEN}`)
+    await bot.api.setWebhook(`${env.APP_URL}/${env.TELEGRAM_WEBHOOK_SECRET}`)
     console.log(`Webhook set to: ${env.APP_URL}`)
   } else {
     bot.start() // long polling
