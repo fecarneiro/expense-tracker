@@ -65,7 +65,7 @@ test('POST /auth/login with wrong password returns 401', async () => {
 })
 
 test('protected route rejects request without cookie', async () => {
-  await request(app).delete('/auth/register').send(credentials).expect(401)
+  await request(app).get('/users/me').expect(401)
 })
 
 test('protected route accepts a valid session cookie', async () => {
