@@ -15,4 +15,5 @@ export const env = {
   JWT_SECRET: required('JWT_SECRET'),
   TELEGRAM_BOT_TOKEN: required('TELEGRAM_BOT_TOKEN'),
   APP_URL: isProduction ? required('APP_URL') : '',
+  TELEGRAM_WEBHOOK_SECRET: isProduction ? required('TELEGRAM_WEBHOOK_SECRET') : '',
 }
