@@ -4,6 +4,7 @@ import { env } from '../../config/env.config.js'
 import type { Container } from '../../container.js'
 import { registerBotCommands } from './commands.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
+import { handleLastTransactions } from './handlers/last-transactions.handler.js'
 import { handleNewTransactionConversation } from './handlers/transaction.handler.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
@@ -47,6 +48,10 @@ export function createTelegramBot(container: Container) {
 
   bot.command('report', async (ctx) => {
     await handleMonthlyBalance(ctx, analyticsService)
+  })
+
+  bot.command('last', async (ctx) => {
+    await handleLastTransactions(ctx, transactionService)
   })
 
   // ── Bot Commands Menu ─────────────────────────────────
