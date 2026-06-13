@@ -18,6 +18,17 @@ export function unixToDateString(unixTime: number) {
   return new Date(unixTime * 1000).toISOString().slice(0, 10)
 }
 
+export function dateToReadable(dateString: string) {
+  const date = new Date(`${dateString}T00:00:00Z`)
+
+  return new Intl.DateTimeFormat('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date)
+}
+
 export function monthToReadable(yearMonth: string) {
   const date = new Date(`${yearMonth}-01`)
 
