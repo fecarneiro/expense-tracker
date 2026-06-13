@@ -21,6 +21,14 @@ export function handleNewTransactionConversation(
   ) {
     const userId = await conversation.external((ctx) => ctx.userId)
 
+    // ── Fail Fast (no categories) ─────────────────
+    const categories = await conversation.external(() => categoryService.findAll({ userId }))
+
+    if (categories.length === 0) {
+      await ctx.reply('Create at least one category before adding a transaction.')
+      return
+    }
+
     // ── Amount Input ─────────────────────────────
     const transactionLabel = transactionType === 'expense' ? 'spend' : 'received'
 
@@ -38,7 +46,6 @@ export function handleNewTransactionConversation(
     } while (amountInCents == null)
 
     // ── Category Keyboard ─────────────────────────────
-    const categories = await conversation.external(() => categoryService.findAll({ userId }))
 
     const kb = new InlineKeyboard()
     for (const c of categories) kb.text(c.name, `cat:${c.id}`).row()
@@ -79,7 +86,5 @@ export function handleNewTransactionConversation(
 
     // ── Reply ─────────────────────────────────────
     return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
-
-    // TODO: overview + whatNextMenu
   }
 }
