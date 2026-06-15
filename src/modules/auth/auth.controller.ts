@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express'
+import { accessTokenConfig, generateToken } from '../../shared/access-token.js'
 import { loginSchema, registerSchema } from './auth.dto.js'
 import type { AuthService } from './auth.service.js'
-import { generateToken } from './session/access-token.js'
-import { cookieOptions } from './session/cookie-options.js'
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -17,14 +16,13 @@ export class AuthController {
     const data = loginSchema.parse(req.body)
     const user = await this.authService.verifyCredentials(data)
 
-    const token = await generateToken(user)
+    const accessToken = await generateToken(user)
 
-    res.cookie('token', token, cookieOptions)
-    res.status(200).json(user)
-  }
-
-  async logout(_req: Request, res: Response) {
-    res.clearCookie('token', cookieOptions)
-    res.status(200).json()
+    res.status(200).json({
+      user,
+      access_token: accessToken,
+      token_type: accessTokenConfig.tokenType,
+      expires_in: accessTokenConfig.expiresInSeconds,
+    })
   }
 }

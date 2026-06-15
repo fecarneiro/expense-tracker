@@ -1,18 +1,24 @@
 import type { NextFunction, Request, Response } from 'express'
 import { accessTokenPayloadSchema } from '../modules/auth/auth.dto.js'
 import { Unauthorized } from '../modules/auth/auth.error.js'
-import { verifyToken } from '../modules/auth/session/access-token.js'
+import { verifyToken } from '../shared/access-token.js'
 
 export async function authMiddleware(req: Request, _res: Response, next: NextFunction) {
-  const token = req.cookies.token
+  const authorization = req.headers.authorization
 
-  if (!token) {
+  if (!authorization) {
     throw new Unauthorized()
   }
 
-  const verifiedToken = await verifyToken(token)
+  const [scheme, token] = authorization.trim().split(/\s+/)
 
-  const parsedPayload = accessTokenPayloadSchema.safeParse(verifiedToken)
+  if (scheme !== 'Bearer' || !token) {
+    throw new Unauthorized()
+  }
+
+  const payload = await verifyToken(token)
+
+  const parsedPayload = accessTokenPayloadSchema.safeParse(payload)
 
   if (!parsedPayload.success) {
     throw new Unauthorized()
