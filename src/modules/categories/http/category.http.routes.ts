@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import type { CategoryController } from './category.controller.js'
+import type { CategoryHttpController } from './category.controller.http.js'
 
-export function categoryRouter(controller: CategoryController) {
+export function categoryHttpRouter(controller: CategoryHttpController) {
   const router = Router()
 
   router.post('/', (req, res) => controller.create(req, res))

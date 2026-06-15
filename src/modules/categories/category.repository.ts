@@ -7,14 +7,14 @@ import {
   type NewCategory,
   type PublicCategory,
 } from '../../database/schemas/category.schema.js'
+import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   FindCategoryByNameData,
   UpdateCategoryInput,
-} from './category.dto.js'
-import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
+} from './http/category.dto.http.js'
 
 const publicCategoriesTableColumns = {
   id: categoriesTable.id,

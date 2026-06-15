@@ -1,4 +1,6 @@
 import type { PublicCategory } from '../../database/schemas/category.schema.js'
+import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
+import type { CategoryRepository } from './category.repository.js'
 import type {
   CreateCategoryInput,
   DeleteCategoryInput,
@@ -6,9 +8,7 @@ import type {
   FindCategoryByIdInput,
   FindCategoryByNameData,
   UpdateCategoryInput,
-} from './category.dto.js'
-import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
-import type { CategoryRepository } from './category.repository.js'
+} from './http/category.dto.http.js'
 
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}

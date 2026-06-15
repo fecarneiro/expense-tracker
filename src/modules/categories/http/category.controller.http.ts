@@ -1,12 +1,12 @@
 import type { Request, Response } from 'express'
+import type { CategoryService } from '../category.service.js'
 import {
   categoryIdParamsSchema,
   createCategorySchema,
   updateCategorySchema,
-} from './category.dto.js'
-import type { CategoryService } from './category.service.js'
+} from './category.dto.http.js'
 
-export class CategoryController {
+export class CategoryHttpController {
   constructor(private readonly categoryService: CategoryService) {}
 
   async create(req: Request, res: Response) {
