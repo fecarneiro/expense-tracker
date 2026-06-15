@@ -1,3 +1,4 @@
+import { apiReference } from '@scalar/express-api-reference'
 import express from 'express'
 import type { Container } from './container.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
@@ -14,6 +15,7 @@ import { TransactionController } from './modules/transactions/transaction.contro
 import { transactionRouter } from './modules/transactions/transaction.routes.js'
 import { UserController } from './modules/users/http/user.http.controller.js'
 import { userRouter } from './modules/users/http/user.http.routes.js'
+import { openApiDocument } from './openapi/openapi.document.js'
 
 export function createApp(container: Container) {
   const app = express()
@@ -28,6 +30,12 @@ export function createApp(container: Container) {
 
   app.disable('x-powered-by')
   app.use(express.json())
+
+  app.get('/openapi.json', (_req, res) => {
+    res.status(200).json(openApiDocument)
+  })
+
+  app.use('/docs', apiReference({ url: '/openapi.json', theme: 'purple' }))
 
   app.use('/auth', authRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
