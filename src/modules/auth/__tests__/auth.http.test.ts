@@ -32,7 +32,6 @@ test('POST /auth/register returns 201 without sensitive fields', async () => {
   expect(res.body).toStrictEqual({
     id: expect.any(String),
     email: credentials.email,
-    createdAt: expect.any(String), // json serializes date as string
   })
 })
 
@@ -48,14 +47,6 @@ test('POST /auth/register with existing email returns 409', async () => {
   await request(app).post('/auth/register').send(credentials).expect(409)
 })
 
-test('POST /auth/login sets an httpOnly cookie', async () => {
-  await request(app).post('/auth/register').send(credentials)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-  const setCookie = res.headers['set-cookie']
-  expect(String(setCookie)).toMatch(/^token=/)
-  expect(String(setCookie)).toMatch(/HttpOnly/i)
-})
-
 test('POST /auth/login with wrong password returns 401', async () => {
   await request(app).post('/auth/register').send(credentials)
   await request(app)
@@ -64,18 +55,25 @@ test('POST /auth/login with wrong password returns 401', async () => {
     .expect(401)
 })
 
-test('protected route rejects request without cookie', async () => {
+test('protected route rejects request without authorization header', async () => {
   await request(app).get('/users/me').expect(401)
 })
 
-test('protected route accepts a valid session cookie', async () => {
+test('protected route accepts a valid authorization header', async () => {
   await request(app).post('/auth/register').send(credentials)
   const agent = request.agent(app)
-  await agent.post('/auth/login').send(credentials).expect(200)
-  const res = await agent.get('/users/me')
+  const res = await agent.post('/auth/login').send(credentials).expect(200)
+  const { access_token } = res.body
+
+  await agent.get('/users/me').set('Authorization', `Bearer ${access_token}`).expect(200)
+
   expect(res.body).toStrictEqual({
-    id: expect.any(String),
-    email: credentials.email,
-    createdAt: expect.any(String),
+    user: {
+      id: expect.any(String),
+      email: credentials.email,
+    },
+    access_token: expect.any(String),
+    token_type: 'Bearer',
+    expires_in: 60 * 60 * 2,
   })
 })
