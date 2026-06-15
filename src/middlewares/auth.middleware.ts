@@ -12,11 +12,17 @@ export async function authMiddleware(req: Request, _res: Response, next: NextFun
 
   const [scheme, token] = authorization.trim().split(/\s+/)
 
-  if (scheme !== 'Bearer' || !token) {
+  if (scheme?.toLowerCase() !== 'bearer' || !token) {
     throw new Unauthorized()
   }
 
-  const payload = await verifyToken(token)
+  let payload: Awaited<ReturnType<typeof verifyToken>>
+
+  try {
+    payload = await verifyToken(token)
+  } catch {
+    throw new Unauthorized()
+  }
 
   const parsedPayload = accessTokenPayloadSchema.safeParse(payload)
 
