@@ -1,75 +1,71 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import {
-  type Category,
-  categoriesTable,
-  type NewCategory,
-  type PublicCategory,
-} from '../../database/schemas/category.schema.js'
+import { categoriesTable, type NewCategoryRow } from '../../database/schemas/category.schema.js'
 import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
+  Category,
+  CreateCategoryInput,
   DeleteCategoryInput,
+  DeletedCategory,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
-  FindCategoryByNameData,
+  FindCategoryByNameInput,
   UpdateCategoryInput,
-} from './http/category.dto.http.js'
-
-const publicCategoriesTableColumns = {
-  id: categoriesTable.id,
-  name: categoriesTable.name,
-  createdAt: categoriesTable.createdAt,
-}
+} from './category.types.js'
 
 export class CategoryRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: NewCategory): Promise<PublicCategory | null> {
+  async create(data: CreateCategoryInput): Promise<Category | null> {
+    const values: NewCategoryRow = {
+      userId: data.userId,
+      name: data.name,
+    }
+
     try {
-      const [category] = await this.database
-        .insert(categoriesTable)
-        .values(data)
-        .returning(publicCategoriesTableColumns)
+      const [category] = await this.database.insert(categoriesTable).values(values).returning()
 
       return category ?? null
     } catch (err) {
       if (isUniqueViolation(err, 'unique_category_name')) {
         throw new CategoryAlreadyExistsError()
       }
+
       throw err
     }
   }
 
-  async update(data: UpdateCategoryInput): Promise<PublicCategory | null> {
+  async update(data: UpdateCategoryInput): Promise<Category | null> {
     try {
       const [category] = await this.database
         .update(categoriesTable)
         .set({ name: data.name })
         .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
-        .returning(publicCategoriesTableColumns)
+        .returning()
 
       return category ?? null
     } catch (err) {
       if (isUniqueViolation(err, 'unique_category_name')) {
         throw new CategoryAlreadyExistsError()
       }
+
       throw err
     }
   }
 
-  async findById(data: FindCategoryByIdInput): Promise<PublicCategory | null> {
+  async findById(data: FindCategoryByIdInput): Promise<Category | null> {
     const [category] = await this.database
-      .select(publicCategoriesTableColumns)
+      .select()
       .from(categoriesTable)
       .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
 
     return category ?? null
   }
 
-  async findByName(data: FindCategoryByNameData): Promise<PublicCategory | null> {
+  async findByName(data: FindCategoryByNameInput): Promise<Category | null> {
     const [category] = await this.database
-      .select(publicCategoriesTableColumns)
+      .select()
       .from(categoriesTable)
       .where(
         and(
@@ -81,25 +77,21 @@ export class CategoryRepository {
     return category ?? null
   }
 
-  async findAll(data: FindAllCategoriesInput): Promise<PublicCategory[]> {
-    const categories = await this.database
-      .select(publicCategoriesTableColumns)
+  async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
+    return this.database
+      .select()
       .from(categoriesTable)
       .where(eq(categoriesTable.userId, data.userId))
-
-    return categories
   }
 
-  async delete(data: DeleteCategoryInput): Promise<Pick<Category, 'id'> | null> {
+  async delete(data: DeleteCategoryInput): Promise<DeletedCategory | null> {
     try {
       const [category] = await this.database
         .delete(categoriesTable)
         .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
         .returning({ id: categoriesTable.id })
 
-      if (!category) return null
-
-      return category
+      return category ?? null
     } catch (err) {
       if (isForeignKeyViolation(err, 'transactions_category_user_fk')) {
         throw new CategoryInUseError()

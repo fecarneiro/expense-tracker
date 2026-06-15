@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { categoryNameField } from '../categories/http/category.dto.http.js'
+import { categoryNameField } from '../categories/http/category.http.dto.js'
 import { transactionAmountInCentsField } from '../transactions/transaction.dto.js'
 import { emailField } from '../users/user.dto.js'
 

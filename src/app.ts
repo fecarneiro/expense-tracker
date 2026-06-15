@@ -6,7 +6,7 @@ import { AnalyticsController } from './modules/analytics/analytics.controller.js
 import { analyticRouter } from './modules/analytics/analytics.routes.js'
 import { AuthController } from './modules/auth/auth.controller.js'
 import { authRouter } from './modules/auth/auth.routes.js'
-import { CategoryHttpController } from './modules/categories/http/category.controller.http.js'
+import { CategoryHttpController } from './modules/categories/http/category.http.controller.js'
 import { categoryHttpRouter } from './modules/categories/http/category.http.routes.js'
 import { TelegramController } from './modules/telegram/telegram.controller.js'
 import { telegramRouter } from './modules/telegram/telegram.routes.js'

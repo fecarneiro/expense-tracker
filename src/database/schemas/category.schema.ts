@@ -21,6 +21,5 @@ export const categoriesTable = pgTable(
   ],
 )
 
-export type Category = typeof categoriesTable.$inferSelect
-export type NewCategory = typeof categoriesTable.$inferInsert
-export type PublicCategory = Pick<Category, 'id' | 'name' | 'createdAt'>
+export type CategoryRow = typeof categoriesTable.$inferSelect
+export type NewCategoryRow = typeof categoriesTable.$inferInsert

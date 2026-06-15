@@ -57,6 +57,7 @@ test('create returns the persisted category', async () => {
 
   expect(created).toStrictEqual({
     id: created.id,
+    userId: owner.user.id,
     name: 'Hobbies',
     createdAt: expect.any(Date),
   })
@@ -115,6 +116,7 @@ test('update changes the fields of the owner category', async () => {
   expect(updated).toStrictEqual({
     id: created.id,
     name: 'Eating Out',
+    userId: owner.user.id,
     createdAt: expect.any(Date),
   })
 })
@@ -184,6 +186,7 @@ test('findById returns the category of the owner', async () => {
 
   expect(result).toStrictEqual({
     id: created.id,
+    userId: owner.user.id,
     name: 'Hobbies',
     createdAt: expect.any(Date),
   })
