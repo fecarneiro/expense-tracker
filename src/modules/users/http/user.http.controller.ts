@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
-import { changePasswordSchema, deleteUserSchema } from './user.dto.js'
-import type { UserService } from './user.service.js'
+import type { UserService } from '../user.service.js'
+import { changePasswordSchema, deleteUserSchema } from './user.http.dto.js'
 
 export class UserController {
   constructor(private readonly userService: UserService) {}

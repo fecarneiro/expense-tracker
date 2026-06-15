@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { emailField, strongPasswordField } from '../users/user.dto.js'
+import { emailField, strongPasswordField } from '../users/http/user.http.dto.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 

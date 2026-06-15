@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { type NewUser, type User, usersTable } from '../../database/schemas/user.schema.js'
-import type { DeleteRepositoryData, UpdatePasswordRepositoryData } from './user.dto.js'
+import type { DeleteRepositoryData, UpdatePasswordRepositoryData } from './http/user.http.dto.js'
 
 export class UserRepository {
   constructor(private readonly database: Database) {}

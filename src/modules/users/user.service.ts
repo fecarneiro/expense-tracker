@@ -1,7 +1,7 @@
 import { type PublicUser, toPublicUser } from '../../database/schemas/user.schema.js'
 import type { PasswordHasher } from '../../shared/password-hasher.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
-import type { ChangePasswordData, DeleteUserData } from './user.dto.js'
+import type { ChangePasswordData, DeleteUserData } from './http/user.http.dto.js'
 import { AuthenticatedUserNotFoundError } from './user.error.js'
 import type { UserRepository } from './user.repository.js'
 

@@ -12,8 +12,8 @@ import { TelegramController } from './modules/telegram/telegram.controller.js'
 import { telegramRouter } from './modules/telegram/telegram.routes.js'
 import { TransactionController } from './modules/transactions/transaction.controller.js'
 import { transactionRouter } from './modules/transactions/transaction.routes.js'
-import { UserController } from './modules/users/user.controller.js'
-import { userRouter } from './modules/users/user.routes.js'
+import { UserController } from './modules/users/http/user.http.controller.js'
+import { userRouter } from './modules/users/http/user.http.routes.js'
 
 export function createApp(container: Container) {
   const app = express()
