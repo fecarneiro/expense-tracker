@@ -40,7 +40,6 @@ test('register returns the public user without sensitive fields', async () => {
   expect(createdUser).toStrictEqual({
     id: expect.any(String),
     email: 'johndoe@email.com',
-    createdAt: expect.any(Date),
   })
 })
 
@@ -69,7 +68,6 @@ test('verifyCredentials returns the public user with valid credentials', async (
   expect(result).toStrictEqual({
     id: expect.any(String),
     email: 'johndoe@email.com',
-    createdAt: expect.any(Date),
   })
 })
 

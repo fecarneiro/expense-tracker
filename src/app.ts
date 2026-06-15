@@ -1,4 +1,3 @@
-import cookieParser from 'cookie-parser'
 import express from 'express'
 import type { Container } from './container.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
@@ -28,7 +27,6 @@ export function createApp(container: Container) {
   const telegramController = new TelegramController(container.telegramService)
 
   app.disable('x-powered-by')
-  app.use(cookieParser())
   app.use(express.json())
 
   app.use('/auth', authRouter(authController))

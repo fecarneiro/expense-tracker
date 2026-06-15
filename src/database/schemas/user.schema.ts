@@ -12,9 +12,11 @@ export const usersTable = pgTable('users', {
 
 export type User = typeof usersTable.$inferSelect
 export type NewUser = typeof usersTable.$inferInsert
-export type PublicUser = Pick<User, 'id' | 'email' | 'createdAt'>
+export type PublicUser = Pick<User, 'id' | 'email'>
 
 export function toPublicUser(user: User): PublicUser {
-  const { passwordHash, ...publicUser } = user
-  return publicUser
+  return {
+    id: user.id,
+    email: user.email,
+  }
 }
