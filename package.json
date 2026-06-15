@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "check": "pnpm exec biome check",
     "check:fix": "pnpm exec biome check --write",
+    "validate": "pnpm typecheck && pnpm check && pnpm test",
     "prepare": "husky || true"
   },
   "dependencies": {
