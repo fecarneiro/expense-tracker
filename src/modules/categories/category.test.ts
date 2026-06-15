@@ -210,6 +210,58 @@ test('findById fails when the user is not the owner', async () => {
   ).rejects.toThrow(new CategoryNotFoundError())
 })
 
+test('findByName returns the category of the owner ignoring capitalization', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  const created = await categoryService.create({
+    userId: owner.user.id,
+    name: 'Hobbies',
+  })
+
+  const result = await categoryService.findByName({
+    name: 'hobbies',
+    userId: owner.user.id,
+  })
+
+  expect(result).toStrictEqual({
+    id: created.id,
+    userId: owner.user.id,
+    name: 'Hobbies',
+    createdAt: expect.any(Date),
+  })
+})
+
+test('findByName returns null when the category does not exist', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  const result = await categoryService.findByName({
+    name: 'Nonexistent',
+    userId: owner.user.id,
+  })
+
+  expect(result).toBeNull()
+})
+
+test('findByName does not return categories from another user', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+  const other = await seed('other@domain.com')
+
+  await categoryService.create({
+    userId: other.user.id,
+    name: 'Hobbies',
+  })
+
+  const result = await categoryService.findByName({
+    name: 'Hobbies',
+    userId: owner.user.id,
+  })
+
+  expect(result).toBeNull()
+})
+
 test('findAll returns only the categories of the given user', async () => {
   const { categoryService } = sut()
   const owner = await seed()
@@ -229,8 +281,14 @@ test('findAll returns only the categories of the given user', async () => {
     userId: owner.user.id,
   })
 
-  expect(result).toHaveLength(1)
-  expect(result[0]?.name).toBe('Hobbies')
+  expect(result).toStrictEqual([
+    {
+      id: expect.any(String),
+      userId: owner.user.id,
+      name: 'Hobbies',
+      createdAt: expect.any(Date),
+    },
+  ])
 })
 
 test('delete removes the category of the owner', async () => {
