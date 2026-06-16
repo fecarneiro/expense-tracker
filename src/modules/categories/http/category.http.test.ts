@@ -477,3 +477,26 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
 })
+
+test('POST /categories without authorization header returns 401', async () => {
+  await request(app).post('/categories').send({ name: 'Food' }).expect(401)
+})
+
+test('GET /categories without authorization header returns 401', async () => {
+  await request(app).get('/categories').expect(401)
+})
+
+test('GET /categories/:id without authorization header returns 401', async () => {
+  await request(app).get('/categories/00000000-0000-0000-0000-000000000000').expect(401)
+})
+
+test('PATCH /categories/:id without authorization header returns 401', async () => {
+  await request(app)
+    .patch('/categories/00000000-0000-0000-0000-000000000000')
+    .send({ name: 'Updated' })
+    .expect(401)
+})
+
+test('DELETE /categories/:id without authorization header returns 401', async () => {
+  await request(app).delete('/categories/00000000-0000-0000-0000-000000000000').expect(401)
+})
