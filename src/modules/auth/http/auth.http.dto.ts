@@ -1,17 +1,45 @@
 import * as z from 'zod'
-import { emailField, passwordField } from '../../users/http/user.http.dto.js'
+import {
+  emailField,
+  passwordField,
+  userHttpResponseSchema,
+} from '../../users/http/user.http.dto.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
-export const registerBodySchema = z.object({
-  email: emailField,
-  password: passwordField,
-})
+export const registerBodySchema = z
+  .strictObject({
+    email: emailField,
+    password: passwordField,
+  })
+  .meta({
+    id: 'RegisterBody',
+  })
 
-export const loginBodySchema = z.object({
-  email: emailField,
-  password: z.string().min(1),
-})
+export const loginBodySchema = z
+  .strictObject({
+    email: emailField,
+    password: z.string().min(1),
+  })
+  .meta({
+    id: 'LoginBody',
+  })
 
-export type RegisterUserData = z.infer<typeof registerBodySchema>
-export type LoginData = z.infer<typeof loginBodySchema>
+export const registerHttpResponseSchema = userHttpResponseSchema
+
+export const loginHttpResponseSchema = z
+  .object({
+    user: userHttpResponseSchema,
+    access_token: z.string().meta({
+      example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+    }),
+    token_type: z.string().meta({
+      example: 'Bearer',
+    }),
+    expires_in: z.number().meta({
+      example: 7200,
+    }),
+  })
+  .meta({
+    id: 'LoginHttpResponse',
+  })
