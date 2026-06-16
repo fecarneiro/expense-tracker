@@ -5,6 +5,7 @@ import { authOpenApiPaths } from '../modules/auth/http/auth.openapi.js'
 import { categoryOpenApiPaths } from '../modules/categories/http/category.openapi.js'
 import { transactionOpenApiPaths } from '../modules/transactions/http/transactions.openapi.js'
 import { userOpenApiPaths } from '../modules/users/http/user.openapi.js'
+import { healthOpenApiPaths } from './health.openapi.js'
 
 export const openApiDocument = createDocument({
   openapi: '3.1.0',
@@ -40,6 +41,10 @@ export const openApiDocument = createDocument({
       name: 'Analytics',
       description: 'Financial reports and summaries',
     },
+    {
+      name: 'Health',
+      description: 'Service health checks',
+    },
   ],
   components: {
     securitySchemes: {
@@ -56,5 +61,6 @@ export const openApiDocument = createDocument({
     ...userOpenApiPaths,
     ...transactionOpenApiPaths,
     ...analyticsOpenApiPaths,
+    ...healthOpenApiPaths,
   },
 })
