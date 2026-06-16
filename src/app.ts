@@ -25,7 +25,7 @@ export function createApp(container: Container) {
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionHttpController(container.transactionService)
-  const analyticController = new AnalyticsHttpController(container.analyticsService)
+  const analyticsController = new AnalyticsHttpController(container.analyticsService)
   const telegramController = new TelegramController(container.telegramService)
 
   app.disable('x-powered-by')
@@ -35,7 +35,13 @@ export function createApp(container: Container) {
     res.status(200).json(openApiDocument)
   })
 
-  app.use('/docs', apiReference({ url: '/openapi.json', theme: 'deepSpace' }))
+  app.use(
+    '/docs',
+    apiReference({
+      content: openApiDocument,
+      theme: 'deepSpace',
+    }),
+  )
 
   app.use('/auth', authHttpRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
@@ -44,7 +50,7 @@ export function createApp(container: Container) {
   app.use('/users', authMiddleware, userHttpRouter(userController))
   app.use('/categories', authMiddleware, categoryHttpRouter(categoryHttpController))
   app.use('/transactions', authMiddleware, transactionHttpRouter(transactionController))
-  app.use('/analytics', authMiddleware, analyticsHttpRouter(analyticController))
+  app.use('/analytics', authMiddleware, analyticsHttpRouter(analyticsController))
 
   app.use(errorMiddleware)
 
