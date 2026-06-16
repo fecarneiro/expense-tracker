@@ -13,7 +13,7 @@ export class TelegramService {
   async linkAccount(data: LinkTelegramAccountData): Promise<Telegram> {
     const { email, password, telegramId } = data
 
-    const verifiedAccount = await this.authService.verifyCredentials({
+    const verifiedAccount = await this.authService.login({
       email,
       password,
     })

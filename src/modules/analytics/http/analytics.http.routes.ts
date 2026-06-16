@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import type { AnalyticsController } from './analytics.controller.js'
+import type { AnalyticsHttpController } from './analytics.http.controller.js'
 
-export function analyticRouter(controller: AnalyticsController) {
+export function analyticsHttpRouter(controller: AnalyticsHttpController) {
   const router = Router()
 
   router.get('/balances', (req, res) => controller.monthlyBalance(req, res))

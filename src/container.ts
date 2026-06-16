@@ -24,8 +24,8 @@ export function createContainer(db: Database) {
   const telegramRepository = new TelegramRepository(db)
 
   // services
-  const authService = new AuthService(userRepository, passwordHasher)
   const userService = new UserService(userRepository, passwordHasher)
+  const authService = new AuthService(userService)
   const categoryService = new CategoryService(categoryRepository)
   const transactionService = new TransactionService(transactionRepository)
   const analyticsService = new AnalyticsService(analyticsQuery)
