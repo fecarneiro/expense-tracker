@@ -85,19 +85,19 @@ test('GET /analytics/balances returns 200 with monthly totals', async () => {
   await createTransaction(access_token, {
     categoryId: category.body.id,
     occurredOn: '2026-01-15',
-    amountInCents: 100_000,
+    amountInCents: 100000,
     transactionType: 'income',
   })
   await createTransaction(access_token, {
     categoryId: category.body.id,
     occurredOn: '2026-01-20',
-    amountInCents: 30_000,
+    amountInCents: 30000,
     transactionType: 'expense',
   })
   await createTransaction(access_token, {
     categoryId: category.body.id,
     occurredOn: '2026-02-10',
-    amountInCents: 5_000,
+    amountInCents: 5000,
     transactionType: 'expense',
   })
 
@@ -110,14 +110,14 @@ test('GET /analytics/balances returns 200 with monthly totals', async () => {
     {
       month: '2026-02',
       incomeTotal: 0,
-      expenseTotal: 5_000,
-      balance: -5_000,
+      expenseTotal: 5000,
+      balance: -5000,
     },
     {
       month: '2026-01',
-      incomeTotal: 100_000,
-      expenseTotal: 30_000,
-      balance: 70_000,
+      incomeTotal: 100000,
+      expenseTotal: 30000,
+      balance: 70000,
     },
   ])
 })
@@ -129,13 +129,13 @@ test('GET /analytics/balances respects startMonth and endMonth query params', as
   await createTransaction(access_token, {
     categoryId: category.body.id,
     occurredOn: '2026-01-10',
-    amountInCents: 10_000,
+    amountInCents: 10000,
     transactionType: 'income',
   })
   await createTransaction(access_token, {
     categoryId: category.body.id,
     occurredOn: '2026-03-10',
-    amountInCents: 20_000,
+    amountInCents: 20000,
     transactionType: 'income',
   })
 
@@ -158,7 +158,7 @@ test('GET /analytics/balances does not include other users transactions', async 
   await createTransaction(access_token_user2, {
     categoryId: category_user2.body.id,
     occurredOn: '2026-01-10',
-    amountInCents: 50_000,
+    amountInCents: 50000,
     transactionType: 'income',
   })
 

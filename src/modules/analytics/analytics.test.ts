@@ -60,14 +60,14 @@ test('monthlyBalance returns balance as incomeTotal minus expenseTotal', async (
     categoryId: category.id,
     occurredOn: '2026-01-15',
     transactionType: 'income',
-    amountInCents: 100_000,
+    amountInCents: 100000,
   })
   await dbTest.insert(transactionsTable).values({
     userId: user.id,
     categoryId: category.id,
     occurredOn: '2026-01-20',
     transactionType: 'expense',
-    amountInCents: 30_000,
+    amountInCents: 30000,
   })
 
   const result = await analyticsService.monthlyBalance({
@@ -79,9 +79,9 @@ test('monthlyBalance returns balance as incomeTotal minus expenseTotal', async (
   expect(result).toStrictEqual([
     {
       month: '2026-01',
-      incomeTotal: 100_000,
-      expenseTotal: 30_000,
-      balance: 70_000,
+      incomeTotal: 100000,
+      expenseTotal: 30000,
+      balance: 70000,
     },
   ])
 })
@@ -96,14 +96,14 @@ test('monthlyBalance returns only the authenticated user data', async () => {
     categoryId: owner.category.id,
     occurredOn: '2026-02-10',
     transactionType: 'expense',
-    amountInCents: 5_000,
+    amountInCents: 5000,
   })
   await dbTest.insert(transactionsTable).values({
     userId: other.user.id,
     categoryId: other.category.id,
     occurredOn: '2026-02-10',
     transactionType: 'income',
-    amountInCents: 99_000,
+    amountInCents: 99000,
   })
 
   const result = await analyticsService.monthlyBalance({
@@ -116,8 +116,8 @@ test('monthlyBalance returns only the authenticated user data', async () => {
     {
       month: '2026-02',
       incomeTotal: 0,
-      expenseTotal: 5_000,
-      balance: -5_000,
+      expenseTotal: 5000,
+      balance: -5000,
     },
   ])
 })
