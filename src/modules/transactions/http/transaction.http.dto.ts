@@ -6,6 +6,7 @@ export const transactionIdField = z.uuid().meta({
 })
 
 export const transactionAmountInCentsField = z.number().int().positive().meta({
+  description: 'Amount in cents.',
   example: 10000,
 })
 
