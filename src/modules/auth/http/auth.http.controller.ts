@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express'
-import { accessTokenConfig, generateToken } from '../../shared/access-token.js'
-import { loginSchema, registerSchema } from './auth.dto.js'
-import type { AuthService } from './auth.service.js'
+import { accessTokenConfig, generateToken } from '../../../shared/access-token.js'
+import type { AuthService } from '../auth.service.js'
+import { loginSchema, registerSchema } from './auth.http.dto.js'
 
-export class AuthController {
+export class AuthHttpController {
   constructor(private readonly authService: AuthService) {}
 
   async register(req: Request, res: Response) {

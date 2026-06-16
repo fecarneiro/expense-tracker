@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import type { AuthController } from './auth.controller.js'
+import type { AuthHttpController } from './auth.http.controller.js'
 
-export function authRouter(controller: AuthController) {
+export function authHttpRouter(controller: AuthHttpController) {
   const router = Router()
 
   router.post('/register', (req, res) => controller.register(req, res))

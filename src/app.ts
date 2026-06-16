@@ -5,8 +5,8 @@ import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
 import { AnalyticsController } from './modules/analytics/analytics.controller.js'
 import { analyticRouter } from './modules/analytics/analytics.routes.js'
-import { AuthController } from './modules/auth/auth.controller.js'
-import { authRouter } from './modules/auth/auth.routes.js'
+import { AuthHttpController } from './modules/auth/http/auth.http.controller.js'
+import { authHttpRouter } from './modules/auth/http/auth.http.routes.js'
 import { CategoryHttpController } from './modules/categories/http/category.http.controller.js'
 import { categoryHttpRouter } from './modules/categories/http/category.http.routes.js'
 import { TelegramController } from './modules/telegram/telegram.controller.js'
@@ -21,7 +21,7 @@ export function createApp(container: Container) {
   const app = express()
 
   // Controllers
-  const authController = new AuthController(container.authService)
+  const authController = new AuthHttpController(container.authService)
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionController(container.transactionService)
@@ -37,7 +37,7 @@ export function createApp(container: Container) {
 
   app.use('/docs', apiReference({ url: '/openapi.json', theme: 'deepSpace' }))
 
-  app.use('/auth', authRouter(authController))
+  app.use('/auth', authHttpRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
   app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
 
