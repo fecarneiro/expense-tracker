@@ -20,7 +20,9 @@ const server = app.listen(env.PORT, async () => {
     await bot.api.setWebhook(`${env.APP_URL}/${env.TELEGRAM_WEBHOOK_SECRET}`)
     console.log(`Webhook set to: ${env.APP_URL}`)
   } else {
-    bot.start() // long polling
+    bot.start().catch((error: unknown) => {
+      console.error('Telegram bot failed to start. API server will keep running.', error)
+    })
     console.log('Bot started in long-polling mode.')
   }
 })
