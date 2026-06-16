@@ -60,7 +60,7 @@ test('GET /users/me does not return sensitive fields', async () => {
   expect(res.body).not.toHaveProperty('passwordHash')
 })
 
-test('GET /users/me rejects request without authorization header', async () => {
+test('GET /users/me without authorization header returns 401', async () => {
   await request(app).get('/users/me').expect(401)
 })
 
