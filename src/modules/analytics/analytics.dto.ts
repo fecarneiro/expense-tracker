@@ -1,6 +1,6 @@
 import z from 'zod'
-import type { Transaction } from '../../database/schemas/transaction.schema.js'
 import { yearMonthSchema } from '../../utils/date.utils.js'
+import type { Transaction } from '../transactions/transaction.types.js'
 
 export const getMonthlyBalanceSchema = z.object({
   startMonth: yearMonthSchema.optional(),

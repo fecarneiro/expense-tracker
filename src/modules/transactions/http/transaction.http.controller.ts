@@ -1,17 +1,19 @@
 import type { Request, Response } from 'express'
+import type { TransactionService } from '../transaction.service.js'
 import {
-  createTransactionSchema,
+  createTransactionBodySchema,
+  transactionHttpResponseSchema,
   transactionIdParamsSchema,
   transactionQueryParamsSchema,
-  updateTransactionSchema,
-} from './transaction.dto.js'
-import type { TransactionService } from './transaction.service.js'
+  transactionsHttpResponseSchema,
+  updateTransactionBodySchema,
+} from './transaction.http.dto.js'
 
-export class TransactionController {
+export class TransactionHttpController {
   constructor(private readonly transactionService: TransactionService) {}
 
   async create(req: Request, res: Response) {
-    const input = createTransactionSchema.parse(req.body)
+    const input = createTransactionBodySchema.parse(req.body)
     const userId = req.auth.userId
 
     const transaction = await this.transactionService.create({
@@ -19,12 +21,12 @@ export class TransactionController {
       ...input,
     })
 
-    res.status(201).json(transaction)
+    res.status(201).json(transactionHttpResponseSchema.parse(transaction))
   }
 
   async update(req: Request, res: Response) {
     const { id } = transactionIdParamsSchema.parse(req.params)
-    const input = updateTransactionSchema.parse(req.body)
+    const input = updateTransactionBodySchema.parse(req.body)
     const userId = req.auth.userId
 
     const transaction = await this.transactionService.update({
@@ -33,7 +35,7 @@ export class TransactionController {
       ...input,
     })
 
-    res.status(200).json(transaction)
+    res.status(200).json(transactionHttpResponseSchema.parse(transaction))
   }
 
   async findById(req: Request, res: Response) {
@@ -45,7 +47,7 @@ export class TransactionController {
       userId,
     })
 
-    res.status(200).json(transaction)
+    res.status(200).json(transactionHttpResponseSchema.parse(transaction))
   }
 
   async findAll(req: Request, res: Response) {
@@ -58,7 +60,7 @@ export class TransactionController {
       offset,
     })
 
-    res.status(200).json(transactions)
+    res.status(200).json(transactionsHttpResponseSchema.parse(transactions))
   }
 
   async delete(req: Request, res: Response) {

@@ -11,8 +11,8 @@ import { CategoryHttpController } from './modules/categories/http/category.http.
 import { categoryHttpRouter } from './modules/categories/http/category.http.routes.js'
 import { TelegramController } from './modules/telegram/telegram.controller.js'
 import { telegramRouter } from './modules/telegram/telegram.routes.js'
-import { TransactionController } from './modules/transactions/transaction.controller.js'
-import { transactionRouter } from './modules/transactions/transaction.routes.js'
+import { TransactionHttpController } from './modules/transactions/http/transaction.http.controller.js'
+import { transactionHttpRouter } from './modules/transactions/http/transaction.http.routes.js'
 import { UserHttpController } from './modules/users/http/user.http.controller.js'
 import { userHttpRouter } from './modules/users/http/user.http.routes.js'
 import { openApiDocument } from './openapi/openapi.document.js'
@@ -24,7 +24,7 @@ export function createApp(container: Container) {
   const authController = new AuthHttpController(container.authService)
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
-  const transactionController = new TransactionController(container.transactionService)
+  const transactionController = new TransactionHttpController(container.transactionService)
   const analyticController = new AnalyticsController(container.analyticsService)
   const telegramController = new TelegramController(container.telegramService)
 
@@ -43,7 +43,7 @@ export function createApp(container: Container) {
 
   app.use('/users', authMiddleware, userHttpRouter(userController))
   app.use('/categories', authMiddleware, categoryHttpRouter(categoryHttpController))
-  app.use('/transactions', authMiddleware, transactionRouter(transactionController))
+  app.use('/transactions', authMiddleware, transactionHttpRouter(transactionController))
   app.use('/analytics', authMiddleware, analyticRouter(analyticController))
 
   app.use(errorMiddleware)

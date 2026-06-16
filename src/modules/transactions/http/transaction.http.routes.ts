@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import type { TransactionController } from './transaction.controller.js'
+import type { TransactionHttpController } from './transaction.http.controller.js'
 
-export function transactionRouter(controller: TransactionController) {
+export function transactionHttpRouter(controller: TransactionHttpController) {
   const router = Router()
 
   router.post('/', (req, res) => controller.create(req, res))

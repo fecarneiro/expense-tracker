@@ -2,11 +2,11 @@ import { InlineKeyboard } from 'grammy'
 import { unixToDateString } from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
 import type { CategoryService } from '../../categories/category.service.js'
+import type { TransactionService } from '../../transactions/transaction.service.js'
 import type {
   TransactionAmountInCents,
   TransactionType,
-} from '../../transactions/transaction.dto.js'
-import type { TransactionService } from '../../transactions/transaction.service.js'
+} from '../../transactions/transaction.types.js'
 import { newTransactionParser } from '../parsers/new-transaction.parser.js'
 import type { BotConversation, BotConversationContext } from '../telegram.context.js'
 
