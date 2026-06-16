@@ -13,14 +13,14 @@ export const passwordField = z.string().min(8).max(72).meta({
   example: 'password123',
 })
 
-export const createUserBodySchema = z
-  .strictObject({
-    email: emailField,
-    password: passwordField,
-  })
-  .meta({
-    id: 'CreateUserBody',
-  })
+export const userCredentialsBodySchema = z.strictObject({
+  email: emailField,
+  password: passwordField,
+})
+
+export const createUserBodySchema = userCredentialsBodySchema.meta({
+  id: 'CreateUserBody',
+})
 
 export const changePasswordBodySchema = z
   .strictObject({

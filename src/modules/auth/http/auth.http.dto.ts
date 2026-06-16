@@ -1,20 +1,15 @@
 import * as z from 'zod'
 import {
   emailField,
-  passwordField,
+  userCredentialsBodySchema,
   userHttpResponseSchema,
 } from '../../users/http/user.http.dto.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
-export const registerBodySchema = z
-  .strictObject({
-    email: emailField,
-    password: passwordField,
-  })
-  .meta({
-    id: 'RegisterBody',
-  })
+export const registerBodySchema = userCredentialsBodySchema.meta({
+  id: 'RegisterBody',
+})
 
 export const loginBodySchema = z
   .strictObject({

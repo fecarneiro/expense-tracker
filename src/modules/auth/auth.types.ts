@@ -1,9 +1,5 @@
-export type RegisterInput = {
-  email: string
-  password: string
-}
+import type { CreateUserInput, VerifyPasswordInput } from '../users/user.types.js'
 
-export type LoginInput = {
-  email: string
-  password: string
-}
+export type RegisterInput = CreateUserInput
+
+export type LoginInput = VerifyPasswordInput
