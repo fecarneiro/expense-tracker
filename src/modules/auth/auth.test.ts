@@ -32,11 +32,11 @@ function sut() {
   return { ...container, createUser }
 }
 
-test('verifyCredentials returns the public user with valid credentials', async () => {
+test('login returns the public user with valid credentials', async () => {
   const { authService, createUser } = sut()
   await createUser()
 
-  const result = await authService.verifyCredentials({
+  const result = await authService.login({
     email: 'johndoe@email.com',
     password: '12345678',
   })
@@ -47,7 +47,7 @@ test('verifyCredentials returns the public user with valid credentials', async (
   })
 })
 
-test('verifyCredentials fails when the email does not exist', async () => {
+test('login fails when the email does not exist', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
@@ -57,12 +57,10 @@ test('verifyCredentials fails when the email does not exist', async () => {
     password: '12345678',
   }
 
-  await expect(authService.verifyCredentials(loginInput)).rejects.toThrow(
-    new InvalidCredentialsError(),
-  )
+  await expect(authService.login(loginInput)).rejects.toThrow(new InvalidCredentialsError())
 })
 
-test('verifyCredentials fails when the password is wrong', async () => {
+test('login fails when the password is wrong', async () => {
   const { authService, createUser } = sut()
 
   await createUser()
@@ -72,7 +70,5 @@ test('verifyCredentials fails when the password is wrong', async () => {
     password: '123456789',
   }
 
-  await expect(authService.verifyCredentials(loginInput)).rejects.toThrow(
-    new InvalidCredentialsError(),
-  )
+  await expect(authService.login(loginInput)).rejects.toThrow(new InvalidCredentialsError())
 })

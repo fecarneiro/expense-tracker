@@ -1,16 +1,16 @@
 import type { UserService } from '../users/user.service.js'
 import type { PublicUser } from '../users/user.types.js'
 import { InvalidCredentialsError } from './auth.error.js'
-import type { LoginData, RegisterUserData } from './http/auth.http.dto.js'
+import type { LoginInput, RegisterInput } from './auth.types.js'
 
 export class AuthService {
   constructor(private readonly userService: UserService) {}
 
-  async register(data: RegisterUserData): Promise<PublicUser> {
+  async register(data: RegisterInput): Promise<PublicUser> {
     return this.userService.createWithPassword(data)
   }
 
-  async verifyCredentials(data: LoginData): Promise<PublicUser> {
+  async login(data: LoginInput): Promise<PublicUser> {
     const user = await this.userService.verifyPassword(data)
 
     if (!user) {
