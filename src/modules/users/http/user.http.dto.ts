@@ -51,8 +51,3 @@ export const userHttpResponseSchema = z
   .meta({
     id: 'User',
   })
-
-export type UserHttpResponse = z.infer<typeof userHttpResponseSchema>
-export type CreateUserBody = z.infer<typeof createUserBodySchema>
-export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>
-export type DeleteUserBody = z.infer<typeof deleteUserBodySchema>
