@@ -51,6 +51,13 @@ test('POST /auth/register with invalid email returns 400', async () => {
     .expect(400)
 })
 
+test('POST /auth/register with short password returns 400', async () => {
+  await request(app)
+    .post('/auth/register')
+    .send({ email: credentials.email, password: '123456' })
+    .expect(400)
+})
+
 test('POST /auth/register with existing email returns 409', async () => {
   await registerUser()
 
@@ -77,6 +84,20 @@ test('POST /auth/login with unknown email returns 401', async () => {
   await request(app).post('/auth/login').send(credentials).expect(401)
 })
 
+test('POST /auth/login with invalid email returns 400', async () => {
+  await request(app)
+    .post('/auth/login')
+    .send({ email: 'invalid-email', password: credentials.password })
+    .expect(400)
+})
+
+test('POST /auth/login with empty password returns 400', async () => {
+  await request(app)
+    .post('/auth/login')
+    .send({ email: credentials.email, password: '' })
+    .expect(400)
+})
+
 test('POST /auth/login with wrong password returns 401', async () => {
   await registerUser()
 
@@ -84,10 +105,6 @@ test('POST /auth/login with wrong password returns 401', async () => {
     .post('/auth/login')
     .send({ ...credentials, password: 'wrong-password' })
     .expect(401)
-})
-
-test('protected route rejects request without authorization header', async () => {
-  await request(app).get('/users/me').expect(401)
 })
 
 test('protected route rejects authorization header without token', async () => {

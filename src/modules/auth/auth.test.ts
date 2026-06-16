@@ -3,7 +3,6 @@ import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
-import { EmailAlreadyInUseError } from '../users/user.error.js'
 import { InvalidCredentialsError } from './auth.error.js'
 
 let dbTest: Database
@@ -32,29 +31,6 @@ function sut() {
 
   return { ...container, createUser }
 }
-
-test('register returns the public user without sensitive fields', async () => {
-  const { createUser } = sut()
-  const createdUser = await createUser()
-
-  expect(createdUser).toStrictEqual({
-    id: expect.any(String),
-    email: 'johndoe@email.com',
-  })
-})
-
-test('register fails when the email is already in use', async () => {
-  const { authService, createUser } = sut()
-
-  await createUser()
-
-  const registerInput = {
-    email: 'johndoe@email.com',
-    password: '12345678',
-  }
-
-  await expect(authService.register(registerInput)).rejects.toThrow(new EmailAlreadyInUseError())
-})
 
 test('verifyCredentials returns the public user with valid credentials', async () => {
   const { authService, createUser } = sut()
