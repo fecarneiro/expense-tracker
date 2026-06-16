@@ -181,12 +181,6 @@ test('GET /categories/:id with invalid id returns 400', async () => {
   const access_token = await getAccessToken()
 
   await request(app)
-    .post('/categories')
-    .send({ name: 'New Category' })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(201)
-
-  await request(app)
     .get('/categories/invalid-uuid')
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
