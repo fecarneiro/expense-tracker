@@ -1,35 +1,53 @@
 import * as z from 'zod'
 
-export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email())
-
-export const strongPasswordField = z.string().min(8).max(72)
-
-// Controller Layer (HTTP bodies)
-
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
-  newPassword: strongPasswordField,
+export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email()).meta({
+  description: 'Email',
+  example: 'johndoe@email.com',
 })
 
-export const deleteUserSchema = z.object({
-  password: z.string().min(1),
+export const passwordField = z.string().min(8).max(72).meta({
+  description: 'Password. Must be between 8 and 72 characters.',
+  example: 'password123',
 })
 
-// Service Layer
-export type ChangePasswordData = z.infer<typeof changePasswordSchema> & {
-  userId: string
-}
+export const createUserBodySchema = z
+  .strictObject({
+    email: emailField,
+    password: passwordField,
+  })
+  .meta({
+    id: 'CreateUserBody',
+    description: 'Payload for creating a user',
+  })
 
-export type DeleteUserData = z.infer<typeof deleteUserSchema> & {
-  userId: string
-}
+export const changePasswordBodySchema = z
+  .strictObject({
+    currentPassword: z.string().min(1),
+    newPassword: passwordField,
+  })
+  .meta({
+    id: 'ChangePasswordBody',
+    description: 'Payload for changing password',
+  })
 
-// Repository Layer
-export interface UpdatePasswordRepositoryData {
-  userId: string
-  passwordHash: string
-}
+export const deleteUserSchema = z
+  .strictObject({
+    password: z.string().min(1),
+  })
+  .meta({
+    id: 'DeleteUserBody',
+    description: 'Payload for deleting a user',
+  })
 
-export interface DeleteRepositoryData {
-  userId: string
-}
+export const userHttpResponseSchema = z
+  .object({
+    id: z.uuid().meta({
+      description: 'User unique identifier',
+      example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
+    }),
+    email: emailField,
+  })
+  .meta({
+    id: 'User',
+    description: 'User returned by the API',
+  })

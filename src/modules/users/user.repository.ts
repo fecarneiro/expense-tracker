@@ -1,47 +1,60 @@
 import { eq } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
-import { type NewUser, type User, usersTable } from '../../database/schemas/user.schema.js'
-import type { DeleteRepositoryData, UpdatePasswordRepositoryData } from './http/user.http.dto.js'
+import { type NewUserRow, usersTable } from '../../database/schemas/user.schema.js'
+import type {
+  CreateUserRepositoryInput,
+  DeletedUser,
+  DeleteUserRepositoryInput,
+  FindUserByEmailInput,
+  FindUserByIdInput,
+  UpdatePasswordRepositoryInput,
+  User,
+} from './user.types.js'
 
 export class UserRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: NewUser): Promise<User | null> {
-    const [user] = await this.database.insert(usersTable).values(data).returning()
+  async create(data: CreateUserRepositoryInput): Promise<User | null> {
+    const values: NewUserRow = {
+      email: data.email,
+      passwordHash: data.passwordHash,
+    }
+    const [user] = await this.database.insert(usersTable).values(values).returning()
 
     return user ?? null
   }
 
-  async findById(id: string): Promise<User | null> {
-    const [user] = await this.database.select().from(usersTable).where(eq(usersTable.id, id))
+  async findById(data: FindUserByIdInput): Promise<User | null> {
+    const [user] = await this.database.select().from(usersTable).where(eq(usersTable.id, data.id))
 
     return user ?? null
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    const [user] = await this.database.select().from(usersTable).where(eq(usersTable.email, email))
+  async findByEmail(data: FindUserByEmailInput): Promise<User | null> {
+    const [user] = await this.database
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
 
     return user ?? null
   }
 
-  async updatePassword(data: UpdatePasswordRepositoryData): Promise<User | null> {
+  async updatePassword(data: UpdatePasswordRepositoryInput): Promise<User | null> {
     const [user] = await this.database
       .update(usersTable)
       .set({ passwordHash: data.passwordHash })
-      .where(eq(usersTable.id, data.userId))
+      .where(eq(usersTable.id, data.id))
       .returning()
 
     return user ?? null
   }
 
-  async delete(data: DeleteRepositoryData): Promise<Pick<User, 'id'> | null> {
+  async delete(data: DeleteUserRepositoryInput): Promise<DeletedUser | null> {
     const [user] = await this.database
       .delete(usersTable)
-      .where(eq(usersTable.id, data.userId))
+      .where(eq(usersTable.id, data.id))
       .returning({ id: usersTable.id })
 
-    if (!user) return null
-
-    return user
+    return user ?? null
   }
 }

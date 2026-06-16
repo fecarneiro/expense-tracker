@@ -1,9 +1,23 @@
-import { type PublicUser, toPublicUser } from '../../database/schemas/user.schema.js'
 import type { PasswordHasher } from '../../shared/password-hasher.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
-import type { ChangePasswordData, DeleteUserData } from './http/user.http.dto.js'
-import { AuthenticatedUserNotFoundError } from './user.error.js'
+import {
+  AuthenticatedUserNotFoundError,
+  EmailAlreadyInUseError,
+  UserCreationFailedError,
+} from './user.error.js'
+import { toPublicUser } from './user.mapper.js'
+
 import type { UserRepository } from './user.repository.js'
+import type {
+  ChangePasswordInput,
+  CreateUserInput,
+  DeleteUserInput,
+  FindUserByEmailInput,
+  FindUserByIdInput,
+  PublicUser,
+  User,
+  VerifyPasswordInput,
+} from './user.types.js'
 
 export class UserService {
   constructor(
@@ -11,16 +25,41 @@ export class UserService {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async getProfile(userId: string): Promise<PublicUser> {
-    const user = await this.userRepository.findById(userId)
+  async createWithPassword(data: CreateUserInput): Promise<PublicUser> {
+    const existingUser = await this.userRepository.findByEmail({ email: data.email })
+
+    if (existingUser) {
+      throw new EmailAlreadyInUseError()
+    }
+
+    const passwordHash = await this.passwordHasher.hash(data.password)
+
+    const createdUser = await this.userRepository.create({
+      email: data.email,
+      passwordHash,
+    })
+
+    if (!createdUser) {
+      throw new UserCreationFailedError()
+    }
+
+    return toPublicUser(createdUser)
+  }
+
+  async findByEmail(data: FindUserByEmailInput): Promise<User | null> {
+    return this.userRepository.findByEmail({ email: data.email })
+  }
+
+  async getCurrentUser(data: FindUserByIdInput): Promise<PublicUser> {
+    const user = await this.userRepository.findById({ id: data.id })
     if (!user) {
       throw new AuthenticatedUserNotFoundError()
     }
     return toPublicUser(user)
   }
 
-  async changePassword(data: ChangePasswordData): Promise<void> {
-    const user = await this.userRepository.findById(data.userId)
+  async changePassword(data: ChangePasswordInput): Promise<void> {
+    const user = await this.userRepository.findById({ id: data.id })
 
     if (!user) {
       throw new AuthenticatedUserNotFoundError()
@@ -38,13 +77,29 @@ export class UserService {
     const newPasswordHashed = await this.passwordHasher.hash(data.newPassword)
 
     await this.userRepository.updatePassword({
-      userId: user.id,
+      id: user.id,
       passwordHash: newPasswordHashed,
     })
   }
 
-  async delete(data: DeleteUserData): Promise<void> {
-    const user = await this.userRepository.findById(data.userId)
+  async verifyPassword(data: VerifyPasswordInput): Promise<PublicUser | null> {
+    const user = await this.userRepository.findByEmail({ email: data.email })
+
+    if (!user) {
+      return null
+    }
+
+    const validCredentials = await this.passwordHasher.compare(data.password, user.passwordHash)
+
+    if (!validCredentials) {
+      return null
+    }
+
+    return toPublicUser(user)
+  }
+
+  async delete(data: DeleteUserInput): Promise<void> {
+    const user = await this.userRepository.findById({ id: data.id })
 
     if (!user) {
       throw new AuthenticatedUserNotFoundError()
@@ -56,6 +111,6 @@ export class UserService {
       throw new InvalidCredentialsError()
     }
 
-    await this.userRepository.delete({ userId: data.userId })
+    await this.userRepository.delete({ id: data.id })
   }
 }

@@ -13,8 +13,8 @@ import { TelegramController } from './modules/telegram/telegram.controller.js'
 import { telegramRouter } from './modules/telegram/telegram.routes.js'
 import { TransactionController } from './modules/transactions/transaction.controller.js'
 import { transactionRouter } from './modules/transactions/transaction.routes.js'
-import { UserController } from './modules/users/http/user.http.controller.js'
-import { userRouter } from './modules/users/http/user.http.routes.js'
+import { UserHttpController } from './modules/users/http/user.http.controller.js'
+import { userHttpRouter } from './modules/users/http/user.http.routes.js'
 import { openApiDocument } from './openapi/openapi.document.js'
 
 export function createApp(container: Container) {
@@ -22,7 +22,7 @@ export function createApp(container: Container) {
 
   // Controllers
   const authController = new AuthController(container.authService)
-  const userController = new UserController(container.userService)
+  const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionController(container.transactionService)
   const analyticController = new AnalyticsController(container.analyticsService)
@@ -35,13 +35,13 @@ export function createApp(container: Container) {
     res.status(200).json(openApiDocument)
   })
 
-  app.use('/docs', apiReference({ url: '/openapi.json', theme: 'purple' }))
+  app.use('/docs', apiReference({ url: '/openapi.json', theme: 'deepSpace' }))
 
   app.use('/auth', authRouter(authController))
   app.use('/telegram', telegramRouter(telegramController))
   app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
 
-  app.use('/users', authMiddleware, userRouter(userController))
+  app.use('/users', authMiddleware, userHttpRouter(userController))
   app.use('/categories', authMiddleware, categoryHttpRouter(categoryHttpController))
   app.use('/transactions', authMiddleware, transactionRouter(transactionController))
   app.use('/analytics', authMiddleware, analyticRouter(analyticController))

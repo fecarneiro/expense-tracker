@@ -1,11 +1,11 @@
 import * as z from 'zod'
-import { emailField, strongPasswordField } from '../users/http/user.http.dto.js'
+import { emailField, passwordField } from '../users/http/user.http.dto.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
 export const registerSchema = z.object({
   email: emailField,
-  password: strongPasswordField,
+  password: passwordField,
 })
 
 export const loginSchema = z.object({

@@ -1,22 +1,22 @@
 import type { Request, Response } from 'express'
 import type { UserService } from '../user.service.js'
-import { changePasswordSchema, deleteUserSchema } from './user.http.dto.js'
+import { changePasswordBodySchema, deleteUserSchema } from './user.http.dto.js'
 
-export class UserController {
+export class UserHttpController {
   constructor(private readonly userService: UserService) {}
 
-  async findById(req: Request, res: Response) {
+  async getCurrentUser(req: Request, res: Response) {
     const userId = req.auth.userId
-    const user = await this.userService.getProfile(userId)
+    const user = await this.userService.getCurrentUser({ id: userId })
     res.status(200).json(user)
   }
 
-  async update(req: Request, res: Response) {
-    const data = changePasswordSchema.parse(req.body)
+  async changePassword(req: Request, res: Response) {
+    const data = changePasswordBodySchema.parse(req.body)
     const userId = req.auth.userId
 
     await this.userService.changePassword({
-      userId,
+      id: userId,
       currentPassword: data.currentPassword,
       newPassword: data.newPassword,
     })
@@ -27,7 +27,7 @@ export class UserController {
     const data = deleteUserSchema.parse(req.body)
     const userId = req.auth.userId
 
-    await this.userService.delete({ userId, password: data.password })
+    await this.userService.delete({ id: userId, password: data.password })
     res.status(204).send()
   }
 }
