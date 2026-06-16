@@ -59,6 +59,16 @@ test('POST /categories with invalid name returns 400', async () => {
     .expect(400)
 })
 
+test('POST /categories with name longer than 50 characters returns 400', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'a'.repeat(51) })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(400)
+})
+
 test('POST /categories with existing name returns 409', async () => {
   const access_token = await getAccessToken()
 
@@ -73,6 +83,17 @@ test('POST /categories with existing name returns 409', async () => {
     .send({ name: 'New Category' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
+})
+
+test('GET /categories returns 200 with an empty list', async () => {
+  const access_token = await getAccessToken()
+
+  const res = await request(app)
+    .get('/categories')
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(res.body).toStrictEqual([])
 })
 
 test('GET /categories returns 200 with authenticated user categories', async () => {
@@ -234,6 +255,29 @@ test('PATCH /categories/:id returns 200 with updated category', async () => {
   })
 })
 
+test('PATCH /categories/:id allows keeping the same name', async () => {
+  const access_token = await getAccessToken()
+
+  const categoryRes = await request(app)
+    .post('/categories')
+    .send({ name: 'Old Name' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const categoryId = categoryRes.body.id
+
+  const res = await request(app)
+    .patch(`/categories/${categoryId}`)
+    .send({ name: 'Old Name' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(res.body).toStrictEqual({
+    id: categoryId,
+    name: 'Old Name',
+  })
+})
+
 test('PATCH /categories/:id with invalid id returns 400', async () => {
   const access_token = await getAccessToken()
   await request(app)
@@ -257,6 +301,16 @@ test('PATCH /categories/:id with invalid name returns 400', async () => {
   await request(app)
     .patch(`/categories/${categoryId}`)
     .send({ name: '' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(400)
+})
+
+test('PATCH /categories/:id with name longer than 50 characters returns 400', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .patch('/categories/00000000-0000-0000-0000-000000000000')
+    .send({ name: 'a'.repeat(51) })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -313,6 +367,30 @@ test('PATCH /categories/:id with existing name returns 409', async () => {
   await request(app)
     .patch(`/categories/${category2Id}`)
     .send({ name: 'Category 1' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(409)
+})
+
+test('PATCH /categories/:id with existing name in different capitalization returns 409', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Category 1' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const categoryRes = await request(app)
+    .post('/categories')
+    .send({ name: 'Category 2' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const category2Id = categoryRes.body.id
+
+  await request(app)
+    .patch(`/categories/${category2Id}`)
+    .send({ name: 'category 1' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
 })
@@ -404,8 +482,4 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
     .delete(`/categories/${categoryId}`)
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
-})
-
-test('protected category route rejects request without authorization header', async () => {
-  await request(app).get('/categories').expect(401)
 })

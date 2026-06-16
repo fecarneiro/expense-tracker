@@ -121,6 +121,29 @@ test('update changes the fields of the owner category', async () => {
   })
 })
 
+test('update allows keeping the same name', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  const created = await categoryService.create({
+    userId: owner.user.id,
+    name: 'Hobbies',
+  })
+
+  const updated = await categoryService.update({
+    id: created.id,
+    userId: owner.user.id,
+    name: 'Hobbies',
+  })
+
+  expect(updated).toStrictEqual({
+    id: created.id,
+    name: 'Hobbies',
+    userId: owner.user.id,
+    createdAt: expect.any(Date),
+  })
+})
+
 test('update fails when the name already exists', async () => {
   const { categoryService } = sut()
   const owner = await seed()
@@ -141,6 +164,25 @@ test('update fails when the name already exists', async () => {
       userId: owner.user.id,
       name: 'Sports',
     }),
+  ).rejects.toThrow(new CategoryAlreadyExistsError())
+})
+
+test('update fails when the name already exists with different capitalization', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  await categoryService.create({
+    userId: owner.user.id,
+    name: 'Sports',
+  })
+
+  const created = await categoryService.create({
+    userId: owner.user.id,
+    name: 'Hobbies',
+  })
+
+  await expect(
+    categoryService.update({ id: created.id, userId: owner.user.id, name: 'sports' }),
   ).rejects.toThrow(new CategoryAlreadyExistsError())
 })
 
@@ -260,6 +302,17 @@ test('findByName does not return categories from another user', async () => {
   })
 
   expect(result).toBeNull()
+})
+
+test('findAll returns an empty list when the user has no categories', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  const result = await categoryService.findAll({
+    userId: owner.user.id,
+  })
+
+  expect(result).toStrictEqual([])
 })
 
 test('findAll returns only the categories of the given user', async () => {
