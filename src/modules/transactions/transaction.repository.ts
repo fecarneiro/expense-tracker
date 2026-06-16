@@ -3,22 +3,19 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/category.schema.js'
-import {
-  type NewTransaction,
-  type PublicTransaction,
-  type PublicTransactionWithCategory,
-  type Transaction,
-  transactionsTable,
-} from '../../database/schemas/transaction.schema.js'
+import { transactionsTable } from '../../database/schemas/transaction.schema.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
+  CreateTransactionInput,
   DeleteTransactionInput,
   FindAllTransactionsInput,
   FindTransactionByIdInput,
+  PublicTransactionWithCategory,
+  Transaction,
   UpdateTransactionInput,
-} from './transaction.dto.js'
+} from './transaction.types.js'
 
-const publicTransactionColumns = (source: Record<keyof PublicTransaction, AnyPgColumn>) => ({
+const publicTransactionColumns = (source: Record<keyof Transaction, AnyPgColumn>) => ({
   id: source.id,
   occurredOn: source.occurredOn,
   transactionType: source.transactionType,
@@ -31,7 +28,7 @@ const publicTransactionColumns = (source: Record<keyof PublicTransaction, AnyPgC
 export class TransactionRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: NewTransaction): Promise<PublicTransactionWithCategory | null> {
+  async create(data: CreateTransactionInput): Promise<PublicTransactionWithCategory | null> {
     try {
       const inserted = this.database
         .$with('inserted')

@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { categoryNameField } from '../categories/category.dto.js'
-import { transactionAmountInCentsField } from '../transactions/transaction.dto.js'
-import { emailField } from '../users/user.dto.js'
+import { categoryNameField } from '../categories/http/category.http.dto.js'
+import { transactionAmountInCentsField } from '../transactions/http/transaction.http.dto.js'
+import { emailField } from '../users/http/user.http.dto.js'
 
 const telegramIdField = z.int().positive() // group id are negative
 

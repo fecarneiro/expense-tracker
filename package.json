@@ -13,24 +13,28 @@
     "start": "node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:deploy": "node dist/database/migrate.js",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm exec biome check",
     "check:fix": "pnpm exec biome check --write",
+    "validate": "pnpm typecheck && pnpm check && pnpm test",
     "prepare": "husky || true"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.4.6",
     "@grammyjs/conversations": "^2.1.1",
+    "@scalar/express-api-reference": "^0.10.3",
     "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "grammy": "^1.43.0",
     "jose": "^6.2.3",
     "pg": "^8.20.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zod-openapi": "^6.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.14",

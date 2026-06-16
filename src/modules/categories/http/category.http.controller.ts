@@ -1,16 +1,18 @@
 import type { Request, Response } from 'express'
+import type { CategoryService } from '../category.service.js'
 import {
+  categoriesHttpResponseSchema,
+  categoryHttpResponseSchema,
   categoryIdParamsSchema,
-  createCategorySchema,
-  updateCategorySchema,
-} from './category.dto.js'
-import type { CategoryService } from './category.service.js'
+  createCategoryBodySchema,
+  updateCategoryBodySchema,
+} from './category.http.dto.js'
 
-export class CategoryController {
+export class CategoryHttpController {
   constructor(private readonly categoryService: CategoryService) {}
 
   async create(req: Request, res: Response) {
-    const input = createCategorySchema.parse(req.body)
+    const input = createCategoryBodySchema.parse(req.body)
     const userId = req.auth.userId
 
     const category = await this.categoryService.create({
@@ -18,21 +20,21 @@ export class CategoryController {
       name: input.name,
     })
 
-    res.status(201).json(category)
+    res.status(201).json(categoryHttpResponseSchema.parse(category))
   }
 
   async update(req: Request, res: Response) {
     const { id } = categoryIdParamsSchema.parse(req.params)
+    const input = updateCategoryBodySchema.parse(req.body)
     const userId = req.auth.userId
-    const { name } = updateCategorySchema.parse(req.body)
 
     const category = await this.categoryService.update({
       id,
       userId,
-      name,
+      name: input.name,
     })
 
-    res.status(200).json(category)
+    res.status(200).json(categoryHttpResponseSchema.parse(category))
   }
 
   async findById(req: Request, res: Response) {
@@ -44,7 +46,7 @@ export class CategoryController {
       userId,
     })
 
-    res.status(200).json(category)
+    res.status(200).json(categoryHttpResponseSchema.parse(category))
   }
 
   async findAll(req: Request, res: Response) {
@@ -54,7 +56,7 @@ export class CategoryController {
       userId,
     })
 
-    res.status(200).json(categories)
+    res.status(200).json(categoriesHttpResponseSchema.parse(categories))
   }
 
   async delete(req: Request, res: Response) {

@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, lt, sql } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
-import type { GetMonthlyBalanceOutputQuery, GetMonthlyBalanceQuery } from './analytics.dto.js'
+import type { GetMonthlyBalanceOutputQuery, GetMonthlyBalanceQuery } from './analytics.types.js'
 
 const monthSql = sql<string>`
   TO_CHAR(date_trunc('month', ${transactionsTable.occurredOn}), 'YYYY-MM')

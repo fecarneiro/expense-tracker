@@ -1,0 +1,94 @@
+import type { ZodOpenApiPathsObject } from 'zod-openapi'
+import { jsonRequestBody } from '../../../openapi/openapi.requests.js'
+import {
+  conflictResponse,
+  jsonResponse,
+  noContentResponse,
+  notFoundResponse,
+  unauthorizedResponse,
+  validationErrorResponse,
+} from '../../../openapi/openapi.responses.js'
+import {
+  categoriesHttpResponseSchema,
+  categoryHttpResponseSchema,
+  categoryIdParamsSchema,
+  createCategoryBodySchema,
+  updateCategoryBodySchema,
+} from './category.http.dto.js'
+
+export const categoryOpenApiPaths = {
+  '/categories': {
+    post: {
+      tags: ['Categories'],
+      summary: 'Create a category',
+      security: [{ bearerAuth: [] }],
+      requestBody: jsonRequestBody(createCategoryBodySchema),
+      responses: {
+        '201': jsonResponse('Category created', categoryHttpResponseSchema),
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
+        '409': conflictResponse('Category already exists'),
+      },
+    },
+
+    get: {
+      tags: ['Categories'],
+      summary: 'List categories',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        '200': jsonResponse('Category list', categoriesHttpResponseSchema),
+        '401': unauthorizedResponse,
+      },
+    },
+  },
+
+  '/categories/{id}': {
+    get: {
+      tags: ['Categories'],
+      summary: 'Get a category',
+      security: [{ bearerAuth: [] }],
+      requestParams: {
+        path: categoryIdParamsSchema,
+      },
+      responses: {
+        '200': jsonResponse('Category found', categoryHttpResponseSchema),
+        '401': unauthorizedResponse,
+        '404': notFoundResponse('Category not found'),
+      },
+    },
+
+    patch: {
+      tags: ['Categories'],
+      summary: 'Update a category',
+      security: [{ bearerAuth: [] }],
+      requestParams: {
+        path: categoryIdParamsSchema,
+      },
+      requestBody: jsonRequestBody(updateCategoryBodySchema),
+      responses: {
+        '200': jsonResponse('Category updated', categoryHttpResponseSchema),
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
+        '404': notFoundResponse('Category not found'),
+        '409': conflictResponse('Category already exists'),
+      },
+    },
+
+    delete: {
+      tags: ['Categories'],
+      summary: 'Delete a category',
+      description: 'Only categories that are not used by transactions can be deleted.',
+      security: [{ bearerAuth: [] }],
+      requestParams: {
+        path: categoryIdParamsSchema,
+      },
+      responses: {
+        '204': noContentResponse,
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
+        '404': notFoundResponse('Category not found'),
+        '409': conflictResponse('Category in use'),
+      },
+    },
+  },
+} satisfies ZodOpenApiPathsObject

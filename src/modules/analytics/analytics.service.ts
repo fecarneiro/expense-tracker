@@ -4,8 +4,8 @@ import {
   nextMonth,
   subtractMonths,
 } from '../../utils/date.utils.js'
-import type { GetMonthlyBalanceInput, GetMonthlyBalanceOutput } from './analytics.dto.js'
 import type { AnalyticsQuery } from './analytics.query.js'
+import type { GetMonthlyBalanceInput, GetMonthlyBalanceOutput } from './analytics.types.js'
 
 const DEFAULT_MONTH_RANGE_SIZE = 3
 

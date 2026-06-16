@@ -1,19 +1,19 @@
-import type { PublicCategory } from '../../database/schemas/category.schema.js'
+import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
+import type { CategoryRepository } from './category.repository.js'
 import type {
+  Category,
   CreateCategoryInput,
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
-  FindCategoryByNameData,
+  FindCategoryByNameInput,
   UpdateCategoryInput,
-} from './category.dto.js'
-import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
-import type { CategoryRepository } from './category.repository.js'
+} from './category.types.js'
 
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
 
-  async create(data: CreateCategoryInput): Promise<PublicCategory> {
+  async create(data: CreateCategoryInput): Promise<Category> {
     const category = await this.categoryRepository.create(data)
 
     if (!category) {
@@ -23,7 +23,7 @@ export class CategoryService {
     return category
   }
 
-  async update(data: UpdateCategoryInput): Promise<PublicCategory> {
+  async update(data: UpdateCategoryInput): Promise<Category> {
     const category = await this.categoryRepository.update(data)
 
     if (!category) {
@@ -33,7 +33,7 @@ export class CategoryService {
     return category
   }
 
-  async findById(data: FindCategoryByIdInput): Promise<PublicCategory> {
+  async findById(data: FindCategoryByIdInput): Promise<Category> {
     const category = await this.categoryRepository.findById(data)
 
     if (!category) {
@@ -43,20 +43,20 @@ export class CategoryService {
     return category
   }
 
-  async findByName(data: FindCategoryByNameData): Promise<PublicCategory | null> {
-    const category = await this.categoryRepository.findByName(data)
-    // dont throw error bc used only in telegram bot
-    return category
+  async findByName(data: FindCategoryByNameInput): Promise<Category | null> {
+    // Does not throw because it is used by Telegram bot flows.
+    return this.categoryRepository.findByName(data)
   }
 
-  async findAll(data: FindAllCategoriesInput): Promise<PublicCategory[]> {
-    const categories = await this.categoryRepository.findAll(data)
-    return categories
+  async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
+    return this.categoryRepository.findAll(data)
   }
 
   async delete(data: DeleteCategoryInput): Promise<void> {
     const category = await this.categoryRepository.delete(data)
 
-    if (!category) throw new CategoryNotFoundError()
+    if (!category) {
+      throw new CategoryNotFoundError()
+    }
   }
 }
