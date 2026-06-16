@@ -1,14 +1,10 @@
-import z from 'zod'
-import { yearMonthSchema } from '../../utils/date.utils.js'
 import type { Transaction } from '../transactions/transaction.types.js'
 
-export const getMonthlyBalanceSchema = z.object({
-  startMonth: yearMonthSchema.optional(),
-  endMonth: yearMonthSchema.optional(),
-})
-
-export type GetMonthlyBalanceInput = z.infer<typeof getMonthlyBalanceSchema> &
-  Pick<Transaction, 'userId'>
+export type GetMonthlyBalanceInput = {
+  userId: string
+  startMonth?: string | undefined
+  endMonth?: string | undefined
+}
 
 export type GetMonthlyBalanceQuery = Pick<Transaction, 'userId'> & {
   fromDate: string

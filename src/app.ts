@@ -3,8 +3,8 @@ import express from 'express'
 import type { Container } from './container.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
-import { AnalyticsController } from './modules/analytics/analytics.controller.js'
-import { analyticRouter } from './modules/analytics/analytics.routes.js'
+import { AnalyticsHttpController } from './modules/analytics/http/analytics.http.controller.js'
+import { analyticsHttpRouter } from './modules/analytics/http/analytics.http.routes.js'
 import { AuthHttpController } from './modules/auth/http/auth.http.controller.js'
 import { authHttpRouter } from './modules/auth/http/auth.http.routes.js'
 import { CategoryHttpController } from './modules/categories/http/category.http.controller.js'
@@ -25,7 +25,7 @@ export function createApp(container: Container) {
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionHttpController(container.transactionService)
-  const analyticController = new AnalyticsController(container.analyticsService)
+  const analyticController = new AnalyticsHttpController(container.analyticsService)
   const telegramController = new TelegramController(container.telegramService)
 
   app.disable('x-powered-by')
@@ -44,7 +44,7 @@ export function createApp(container: Container) {
   app.use('/users', authMiddleware, userHttpRouter(userController))
   app.use('/categories', authMiddleware, categoryHttpRouter(categoryHttpController))
   app.use('/transactions', authMiddleware, transactionHttpRouter(transactionController))
-  app.use('/analytics', authMiddleware, analyticRouter(analyticController))
+  app.use('/analytics', authMiddleware, analyticsHttpRouter(analyticController))
 
   app.use(errorMiddleware)
 
