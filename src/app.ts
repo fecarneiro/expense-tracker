@@ -15,7 +15,7 @@ import { TransactionHttpController } from './modules/transactions/http/transacti
 import { transactionHttpRouter } from './modules/transactions/http/transaction.http.routes.js'
 import { UserHttpController } from './modules/users/http/user.http.controller.js'
 import { userHttpRouter } from './modules/users/http/user.http.routes.js'
-import { openApiDocument } from './openapi/openapi.document.js'
+import { openApiDocument } from './openapi/openapi.js'
 
 export function createApp(container: Container) {
   const app = express()

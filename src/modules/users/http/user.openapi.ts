@@ -1,11 +1,14 @@
 import type { ZodOpenApiPathsObject } from 'zod-openapi'
+import { jsonRequestBody } from '../../../openapi/openapi.requests.js'
 import {
-  errorResponseSchema,
-  validationErrorResponseSchema,
-} from '../../../openapi/openapi.schemas.js'
+  jsonResponse,
+  noContentResponse,
+  unauthorizedResponse,
+  validationErrorResponse,
+} from '../../../openapi/openapi.responses.js'
 import {
   changePasswordBodySchema,
-  deleteUserSchema,
+  deleteUserBodySchema,
   userHttpResponseSchema,
 } from './user.http.dto.js'
 
@@ -14,25 +17,10 @@ export const userOpenApiPaths = {
     get: {
       tags: ['Users'],
       summary: 'Get current user',
-      description: 'Returns the authenticated user profile.',
       security: [{ bearerAuth: [] }],
       responses: {
-        '200': {
-          description: 'Current user',
-          content: {
-            'application/json': {
-              schema: userHttpResponseSchema,
-            },
-          },
-        },
-        '401': {
-          description: 'Unauthorized',
-          content: {
-            'application/json': {
-              schema: errorResponseSchema,
-            },
-          },
-        },
+        '200': jsonResponse('Current user', userHttpResponseSchema),
+        '401': unauthorizedResponse,
       },
     },
 
@@ -41,34 +29,11 @@ export const userOpenApiPaths = {
       summary: 'Delete current user',
       description: 'Deletes the authenticated user after password confirmation.',
       security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: deleteUserSchema,
-          },
-        },
-      },
+      requestBody: jsonRequestBody(deleteUserBodySchema),
       responses: {
-        '204': {
-          description: 'User deleted',
-        },
-        '400': {
-          description: 'Validation error',
-          content: {
-            'application/json': {
-              schema: validationErrorResponseSchema,
-            },
-          },
-        },
-        '401': {
-          description: 'Unauthorized',
-          content: {
-            'application/json': {
-              schema: errorResponseSchema,
-            },
-          },
-        },
+        '204': noContentResponse,
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
       },
     },
   },
@@ -79,34 +44,11 @@ export const userOpenApiPaths = {
       summary: 'Change password',
       description: 'Changes the authenticated user password after validating the current password.',
       security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: changePasswordBodySchema,
-          },
-        },
-      },
+      requestBody: jsonRequestBody(changePasswordBodySchema),
       responses: {
-        '204': {
-          description: 'Password changed',
-        },
-        '400': {
-          description: 'Validation error',
-          content: {
-            'application/json': {
-              schema: validationErrorResponseSchema,
-            },
-          },
-        },
-        '401': {
-          description: 'Unauthorized',
-          content: {
-            'application/json': {
-              schema: errorResponseSchema,
-            },
-          },
-        },
+        '204': noContentResponse,
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
       },
     },
   },

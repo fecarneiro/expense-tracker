@@ -1,6 +1,7 @@
 import 'zod-openapi'
 import { createDocument } from 'zod-openapi'
 import { categoryOpenApiPaths } from '../modules/categories/http/category.openapi.js'
+import { transactionOpenApiPaths } from '../modules/transactions/http/transactions.openapi.js'
 import { userOpenApiPaths } from '../modules/users/http/user.openapi.js'
 
 export const openApiDocument = createDocument({
@@ -25,6 +26,10 @@ export const openApiDocument = createDocument({
       name: 'Users',
       description: 'Manage the authenticated user profile',
     },
+    {
+      name: 'Transactions',
+      description: 'Manage income and expense records',
+    },
   ],
   components: {
     securitySchemes: {
@@ -38,5 +43,6 @@ export const openApiDocument = createDocument({
   paths: {
     ...categoryOpenApiPaths,
     ...userOpenApiPaths,
+    ...transactionOpenApiPaths,
   },
 })
