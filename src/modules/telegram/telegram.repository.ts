@@ -20,7 +20,7 @@ export class TelegramRepository {
 
       return telegram ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_telegram_account_id')) {
+      if (isUniqueViolation(err, 'telegram_telegramId_unique')) {
         throw new TelegramAccountAlreadyExistsError()
       }
       throw err
