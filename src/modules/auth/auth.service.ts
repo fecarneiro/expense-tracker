@@ -10,7 +10,7 @@ export class AuthService {
     return this.userService.createWithPassword(data)
   }
 
-  async login(data: LoginInput): Promise<PublicUser> {
+  async verifyCredentials(data: LoginInput): Promise<PublicUser> {
     const user = await this.userService.verifyPassword(data)
 
     if (!user) {
