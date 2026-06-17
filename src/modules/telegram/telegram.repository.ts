@@ -7,7 +7,7 @@ import {
   telegramTable,
 } from '../../database/schemas/telegram.schema.js'
 import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema.js'
-import type { GetUserIdByTelegramIdData } from './telegram.dto.js'
+import type { GetUserIdByTelegramIdData } from './http/telegram.http.dto.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
 import type { SaveLinkingCodeResult, SaveTelegramLinkingCode } from './telegram.types.js'
 
