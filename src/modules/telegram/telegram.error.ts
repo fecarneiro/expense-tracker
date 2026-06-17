@@ -7,6 +7,13 @@ export class TelegramAccountAlreadyExistsError extends AppError {
   }
 }
 
+export class TelegramGenerateCodeFailedError extends AppError {
+  constructor() {
+    super('Could not generate telegram code', 500)
+    this.name = 'TelegramGenerateCodeFailedError'
+  }
+}
+
 export class TelegramLinkAccountFailedError extends AppError {
   constructor() {
     super('Could not link telegram account', 500)

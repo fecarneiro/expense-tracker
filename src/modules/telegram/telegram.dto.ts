@@ -17,10 +17,17 @@ export const getUserIdByTelegramIdSchema = z.object({
   telegramId: telegramIdField,
 })
 
+export const createUniqueTelegramLinkingCodeSchema = z.strictObject({
+  email: emailField,
+  password: z.string().min(1),
+})
+
 export const createNewTransactionFromTelegramSchema = z.object({
   categoryName: categoryNameField,
   amountInCents: transactionAmountInCentsField,
 })
+
+export type CreateUniqueTelegramCodeInput = z.infer<typeof createUniqueTelegramLinkingCodeSchema>
 
 export type LinkTelegramAccountData = z.infer<typeof telegramBaseSchema>
 
