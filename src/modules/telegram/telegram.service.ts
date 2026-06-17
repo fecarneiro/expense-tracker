@@ -2,22 +2,31 @@ import { randomInt } from 'node:crypto'
 import type { Telegram } from '../../database/schemas/telegram.schema.js'
 import type { AuthService } from '../auth/auth.service.js'
 import type {
-  CreateUniqueTelegramCodeInput,
   GetUserIdByTelegramIdData,
   LinkTelegramAccountData,
-} from './telegram.dto.js'
+} from './http/telegram.http.dto.js'
 import {
   TelegramGenerateCodeFailedError,
   TelegramLinkAccountFailedError,
 } from './telegram.error.js'
 import type { TelegramRepository } from './telegram.repository.js'
-import type { GeneratedLinkingCode } from './telegram.types.js'
+import type { CreateLinkingCodeBodyInput, GeneratedLinkingCode } from './telegram.types.js'
+
+export const MAX_ATTEMPTS = 5
+export const MIN_CODE = 100_000
+export const MAX_CODE = 1_000_000
 
 export class TelegramService {
   constructor(
     private readonly authService: AuthService,
     private readonly telegramRepository: TelegramRepository,
   ) {}
+
+  async getUserIdByTelegramId(
+    data: GetUserIdByTelegramIdData,
+  ): Promise<Pick<Telegram, 'userId'> | null> {
+    return await this.telegramRepository.findUserIdByTelegramId(data)
+  }
 
   async linkAccount(data: LinkTelegramAccountData): Promise<Telegram> {
     const { email, password, telegramId } = data
@@ -39,20 +48,11 @@ export class TelegramService {
     return telegramAccount
   }
 
-  async createUniqueTelegramLinkingCode(
-    data: CreateUniqueTelegramCodeInput,
-  ): Promise<GeneratedLinkingCode> {
-    const { email, password } = data
+  async createLinkingCode(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCode> {
+    const userId = data.userId
 
-    const verifiedAccount = await this.authService.verifyCredentials({
-      email,
-      password,
-    })
-
-    for (let attempt = 1; attempt <= 5; attempt++) {
-      const { id: userId } = verifiedAccount
-
-      const code = randomInt(100_000, 1_000_000)
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const code = randomInt(MIN_CODE, MAX_CODE)
       const result = await this.telegramRepository.saveLinkingCode({ userId, code })
 
       if (!result.saved) {
@@ -62,11 +62,5 @@ export class TelegramService {
       return result.generatedLinkingCode
     }
     throw new TelegramGenerateCodeFailedError()
-  }
-
-  async getUserIdByTelegramId(
-    data: GetUserIdByTelegramIdData,
-  ): Promise<Pick<Telegram, 'userId'> | null> {
-    return await this.telegramRepository.findUserIdByTelegramId(data)
   }
 }

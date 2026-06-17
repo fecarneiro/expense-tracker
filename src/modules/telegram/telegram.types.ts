@@ -1,3 +1,7 @@
+export type CreateLinkingCodeBodyInput = {
+  userId: string
+}
+
 export type SaveTelegramLinkingCode = {
   userId: string
   code: number
