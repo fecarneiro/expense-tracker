@@ -3,12 +3,12 @@ import { Bot } from 'grammy'
 import { env } from '../../config/env.config.js'
 import type { Container } from '../../container.js'
 import { registerBotCommands } from './commands.js'
+import { errorHandler } from './error-handler.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
 import { handleLastTransactions } from './handlers/last-transactions.handler.js'
 import { handleNewTransactionConversation } from './handlers/transaction.handler.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
-import { errorHandler } from './telegram.error-handler.js'
 
 export function createTelegramBot(container: Container) {
   const { telegramService, categoryService, transactionService, analyticsService } = container
