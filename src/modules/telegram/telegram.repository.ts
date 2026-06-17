@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import {
@@ -6,8 +6,10 @@ import {
   type Telegram,
   telegramTable,
 } from '../../database/schemas/telegram.schema.js'
+import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import type { GetUserIdByTelegramIdData } from './telegram.dto.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
+import type { SaveLinkingCodeResult, SaveTelegramLinkingCode } from './telegram.types.js'
 
 export class TelegramRepository {
   constructor(private readonly database: Database) {}
@@ -24,6 +26,40 @@ export class TelegramRepository {
       throw err
     }
   }
+
+  async saveLinkingCode(data: SaveTelegramLinkingCode): Promise<SaveLinkingCodeResult> {
+    const { userId, code } = data
+
+    try {
+      const [generatedLinkingCode] = await this.database
+        .insert(telegramCodesTable)
+        .values({ userId, code })
+        .onConflictDoUpdate({
+          target: telegramCodesTable.userId,
+          set: { code, createdAt: sql`now()` },
+        })
+        .returning({
+          code: telegramCodesTable.code,
+          createdAt: telegramCodesTable.createdAt,
+        })
+
+      if (!generatedLinkingCode) {
+        return { saved: false }
+      }
+
+      return {
+        saved: true as const,
+        generatedLinkingCode,
+      }
+    } catch (err) {
+      if (isUniqueViolation(err, 'unique_telegram_code')) {
+        return { saved: false }
+      }
+
+      throw err
+    }
+  }
+
   async findUserIdByTelegramId(
     data: GetUserIdByTelegramIdData,
   ): Promise<Pick<Telegram, 'userId'> | null> {
