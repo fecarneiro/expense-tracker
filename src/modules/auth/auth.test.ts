@@ -36,7 +36,7 @@ test('login returns the public user with valid credentials', async () => {
   const { authService, createUser } = sut()
   await createUser()
 
-  const result = await authService.login({
+  const result = await authService.verifyCredentials({
     email: 'johndoe@email.com',
     password: '12345678',
   })
@@ -57,7 +57,9 @@ test('login fails when the email does not exist', async () => {
     password: '12345678',
   }
 
-  await expect(authService.login(loginInput)).rejects.toThrow(new InvalidCredentialsError())
+  await expect(authService.verifyCredentials(loginInput)).rejects.toThrow(
+    new InvalidCredentialsError(),
+  )
 })
 
 test('login fails when the password is wrong', async () => {
@@ -70,5 +72,7 @@ test('login fails when the password is wrong', async () => {
     password: '123456789',
   }
 
-  await expect(authService.login(loginInput)).rejects.toThrow(new InvalidCredentialsError())
+  await expect(authService.verifyCredentials(loginInput)).rejects.toThrow(
+    new InvalidCredentialsError(),
+  )
 })

@@ -19,7 +19,7 @@ export class AuthHttpController {
 
   async login(req: Request, res: Response) {
     const data = loginBodySchema.parse(req.body)
-    const user = await this.authService.login(data)
+    const user = await this.authService.verifyCredentials(data)
 
     const accessToken = await generateToken(user)
 
