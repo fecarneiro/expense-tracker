@@ -7,6 +7,6 @@ export const telegramCodesTable = pgTable('telegram_codes', {
     .unique()
     .notNull()
     .references(() => usersTable.id, { onDelete: 'cascade' }),
-  code: integer().notNull().unique(),
+  code: integer().notNull().unique('unique_telegram_code'),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
