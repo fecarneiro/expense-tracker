@@ -1,5 +1,5 @@
 import * as jose from 'jose'
-import { env } from '../config/env.config.js'
+import { env } from '../config/app.config.js'
 
 const secret = new TextEncoder().encode(env.JWT_SECRET)
 const alg = 'HS256'

@@ -1,8 +1,8 @@
 import { conversations, createConversation } from '@grammyjs/conversations'
 import { Bot } from 'grammy'
-import { env } from '../../config/env.config.js'
 import type { Container } from '../../container.js'
 import { registerBotCommands } from './commands.js'
+import type { TelegramRuntimeConfig } from './config/telegram.config.js'
 import { errorHandler } from './error-handler.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
 import { handleLastTransactions } from './handlers/last-transactions.handler.js'
@@ -11,10 +11,13 @@ import { handleNewTransactionConversation } from './handlers/transaction.handler
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
 
-export function createTelegramBot(container: Container) {
+export function createTelegramBot(
+  container: Container,
+  config: Pick<TelegramRuntimeConfig, 'botToken'>,
+) {
   const { telegramService, categoryService, transactionService, analyticsService } = container
 
-  const bot = new Bot<BotContext>(env.TELEGRAM_BOT_TOKEN)
+  const bot = new Bot<BotContext>(config.botToken)
 
   bot.catch(errorHandler)
 
