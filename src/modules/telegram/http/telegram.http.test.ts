@@ -55,13 +55,17 @@ test('GET /telegram/generate-linking-code without authorization header returns 4
 })
 
 test('POST /telegram/link-account returns 201 with linked telegram account', async () => {
-  //
-})
+  const access_token = await getAccessToken()
 
-test('POST /telegram/link-account returns 400 when body is invalid', async () => {
-  //
-})
+  const res = await request(app)
+    .get('/telegram/generate-linking-code')
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
 
-test('POST /telegram/link-account returns 401 without authorization header', async () => {
-  //
+  expect(res.body).toStrictEqual({
+    code: expect.any(Number),
+    createdAt: expect.any(String),
+  })
+  expect(res.body.code).toBeGreaterThanOrEqual(LINKING_CODE_MIN_NUMBER)
+  expect(res.body.code).toBeLessThan(LINKING_CODE_MAX_NUMBER)
 })
