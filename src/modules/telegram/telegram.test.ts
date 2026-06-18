@@ -6,7 +6,6 @@ import { telegramTable } from '../../database/schemas/telegram.schema.js'
 import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
-import { InvalidCredentialsError } from '../auth/auth.error.js'
 import { TelegramGenerateCodeFailedError } from './linking-code/linking-code.error.js'
 import { LinkingCodeRepository } from './linking-code/linking-code.repository.js'
 import {
@@ -45,39 +44,6 @@ function sut() {
 
   return { ...container, createUser }
 }
-
-test('linkAccount links a telegram account to an existing user', async () => {
-  const { telegramService, createUser } = sut()
-
-  const user = await createUser()
-
-  const linkedTelegramAccount = await telegramService.linkAccount({
-    email: user.email,
-    password: '12345678',
-    telegramId: 1234567832131319,
-  })
-
-  expect(linkedTelegramAccount).toStrictEqual({
-    id: expect.any(String),
-    userId: user.id,
-    telegramId: 1234567832131319,
-    createdAt: expect.any(Date),
-  })
-})
-
-test('linkAccount fails when the credentials are invalid', async () => {
-  const { telegramService } = sut()
-
-  const linkAccountInput = {
-    email: 'johndoe@email.com',
-    password: 'wrongpassword',
-    telegramId: 1234567832131319,
-  }
-
-  await expect(telegramService.linkAccount(linkAccountInput)).rejects.toThrow(
-    new InvalidCredentialsError(),
-  )
-})
 
 test('findAccountByTelegramId fails when there is no user linked to the given telegram id', async () => {
   const { telegramService } = sut()

@@ -13,7 +13,8 @@ export async function handleLinkAccount(ctx: BotContext, telegramService: Telegr
 
   if (!codeInput) {
     await ctx.reply(
-      'Generate a linking code in the app, then add your 6-digit code to this command (e.g. 123456).',
+      'Generate a linking code in the app, then run the link command and add your 6-digit code.',
+      { parse_mode: 'HTML' },
     )
     return
   }
