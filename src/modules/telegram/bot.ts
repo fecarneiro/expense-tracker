@@ -6,6 +6,7 @@ import { registerBotCommands } from './commands.js'
 import { errorHandler } from './error-handler.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
 import { handleLastTransactions } from './handlers/last-transactions.handler.js'
+import { handleLinkAccount } from './handlers/link-account.handler.js'
 import { handleNewTransactionConversation } from './handlers/transaction.handler.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
@@ -19,13 +20,10 @@ export function createTelegramBot(container: Container) {
 
   // ── Public Commands ───────────────────────────────────
   bot.command('start', (ctx) => ctx.reply('Welcome! Up and running.'))
-  bot.command('me', (ctx) => {
-    if (!ctx.from) return ctx.reply('Error getting Telegram ID')
-    return ctx.reply(ctx.from.id.toString())
-  })
+  bot.command('link', (ctx) => handleLinkAccount(ctx, telegramService))
 
   // ── Authenticated Commands ─────────────────────────────
-  // User Identity Middleware
+  // Middleware
   bot.use(userIdentityMiddleware(telegramService))
 
   // Conversations

@@ -53,15 +53,3 @@ test('GET /telegram/generate-linking-code returns 201 with linking code', async 
 test('GET /telegram/generate-linking-code without authorization header returns 401', async () => {
   await request(app).get('/telegram/generate-linking-code').expect(401)
 })
-
-test('POST /telegram/link-account returns 201 with linked telegram account', async () => {
-  //
-})
-
-test('POST /telegram/link-account returns 400 when body is invalid', async () => {
-  //
-})
-
-test('POST /telegram/link-account returns 401 without authorization header', async () => {
-  //
-})
