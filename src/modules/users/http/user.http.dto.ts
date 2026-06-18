@@ -5,7 +5,7 @@ export const userIdField = z.uuid().meta({
 })
 
 export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email()).meta({
-  example: 'johndoe@email.com',
+  example: '{{$randomEmail}}',
 })
 
 export const passwordField = z.string().min(8).max(72).meta({
