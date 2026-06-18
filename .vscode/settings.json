@@ -1,6 +1,4 @@
 {
-  "editor.formatOnSave": true,
-
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
@@ -22,13 +20,5 @@
 
   "biome.requireConfiguration": true,
 
-  "js/ts.tsdk.path": "node_modules/typescript/lib",
-
-  "js/ts.updateImportsOnFileMove.enabled": "always",
-  "js/ts.updateImportsOnPaste.enabled": true,
-  "js/ts.suggest.autoImports": true,
-  "js/ts.preferences.importModuleSpecifier": "relative",
-  "js/ts.preferences.importModuleSpecifierEnding": "js",
-  "js/ts.preferences.quoteStyle": "single",
-  "js/ts.preferences.preferTypeOnlyAutoImports": true
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
