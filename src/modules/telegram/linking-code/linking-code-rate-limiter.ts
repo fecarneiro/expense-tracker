@@ -1,6 +1,6 @@
-import { TelegramLinkingRateLimitError } from './telegram.error.js'
+import { TelegramLinkingRateLimitError } from './linking-code.error.js'
 
-export const LINKING_CODE_MAX_ATTEMPTS = 3
+export const LINKING_CODE_VERIFICATION_MAX_ATTEMPTS = 3
 export const LINKING_CODE_WINDOW_SIZE = 10 * 60 * 1000
 
 export class LinkingCodeRateLimiter {
@@ -15,7 +15,7 @@ export class LinkingCodeRateLimiter {
   }
 
   assertAllowed(telegramId: number): void {
-    if (this.getRecentAttempts(telegramId).length >= LINKING_CODE_MAX_ATTEMPTS) {
+    if (this.getRecentAttempts(telegramId).length >= LINKING_CODE_VERIFICATION_MAX_ATTEMPTS) {
       throw new TelegramLinkingRateLimitError()
     }
   }
