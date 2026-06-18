@@ -1,17 +1,4 @@
-export type CreateLinkingCodeBodyInput = {
-  userId: string
-}
-
-export type SaveTelegramLinkingCode = {
-  userId: string
+export type VerifyAndLinkAccount = {
+  telegramId: number
   code: number
 }
-
-export type GeneratedLinkingCode = {
-  code: number
-  createdAt: Date
-}
-
-export type SaveLinkingCodeResult =
-  | { saved: true; generatedLinkingCode: GeneratedLinkingCode }
-  | { saved: false }

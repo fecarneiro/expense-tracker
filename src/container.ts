@@ -4,6 +4,9 @@ import { AnalyticsService } from './modules/analytics/analytics.service.js'
 import { AuthService } from './modules/auth/auth.service.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
+import { LinkingCodeRepository } from './modules/telegram/linking-code/linking-code.repository.js'
+import { LinkingCodeService } from './modules/telegram/linking-code/linking-code.service.js'
+import { LinkingCodeRateLimiter } from './modules/telegram/linking-code/linking-code-rate-limiter.js'
 import { TelegramRepository } from './modules/telegram/telegram.repository.js'
 import { TelegramService } from './modules/telegram/telegram.service.js'
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
@@ -22,6 +25,8 @@ export function createContainer(db: Database) {
   const transactionRepository = new TransactionRepository(db)
   const analyticsQuery = new AnalyticsQuery(db)
   const telegramRepository = new TelegramRepository(db)
+  const linkingCodeRepository = new LinkingCodeRepository(db)
+  const linkingCodeRateLimiter = new LinkingCodeRateLimiter()
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -29,7 +34,8 @@ export function createContainer(db: Database) {
   const categoryService = new CategoryService(categoryRepository)
   const transactionService = new TransactionService(transactionRepository)
   const analyticsService = new AnalyticsService(analyticsQuery)
-  const telegramService = new TelegramService(authService, telegramRepository)
+  const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
+  const telegramService = new TelegramService(authService, telegramRepository, linkingCodeService)
 
   return {
     authService,
