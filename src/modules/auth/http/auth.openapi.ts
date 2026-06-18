@@ -3,6 +3,7 @@ import { jsonRequestBody } from '../../../openapi/openapi.requests.js'
 import {
   conflictResponse,
   jsonResponse,
+  tooManyRequestsResponse,
   unauthorizedResponse,
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
@@ -23,6 +24,7 @@ export const authOpenApiPaths = {
         '201': jsonResponse('User registered', registerHttpResponseSchema),
         '400': validationErrorResponse,
         '409': conflictResponse('Email already exists'),
+        '429': tooManyRequestsResponse,
       },
     },
   },
@@ -36,6 +38,7 @@ export const authOpenApiPaths = {
         '200': jsonResponse('Authenticated user', loginHttpResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },

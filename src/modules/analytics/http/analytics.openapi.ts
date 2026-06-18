@@ -1,6 +1,7 @@
 import type { ZodOpenApiPathsObject } from 'zod-openapi'
 import {
   jsonResponse,
+  tooManyRequestsResponse,
   unauthorizedResponse,
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
@@ -24,6 +25,7 @@ export const analyticsOpenApiPaths = {
         '200': jsonResponse('Monthly balance', monthlyBalanceHttpResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },

@@ -3,6 +3,7 @@ import { jsonRequestBody } from '../../../openapi/openapi.requests.js'
 import {
   jsonResponse,
   noContentResponse,
+  tooManyRequestsResponse,
   unauthorizedResponse,
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
@@ -21,6 +22,7 @@ export const userOpenApiPaths = {
       responses: {
         '200': jsonResponse('Current user', userHttpResponseSchema),
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -34,6 +36,7 @@ export const userOpenApiPaths = {
         '204': noContentResponse,
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },
@@ -49,6 +52,7 @@ export const userOpenApiPaths = {
         '204': noContentResponse,
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },

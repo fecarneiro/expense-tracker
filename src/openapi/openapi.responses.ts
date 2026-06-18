@@ -23,6 +23,8 @@ export const validationErrorResponse = jsonResponse(
 
 export const unauthorizedResponse = jsonResponse('Unauthorized', errorResponseSchema)
 
+export const tooManyRequestsResponse = jsonResponse('Too many requests', errorResponseSchema)
+
 export const notFoundResponse = (description = 'Resource not found') =>
   jsonResponse(description, errorResponseSchema)
 

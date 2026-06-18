@@ -5,6 +5,7 @@ import {
   jsonResponse,
   noContentResponse,
   notFoundResponse,
+  tooManyRequestsResponse,
   unauthorizedResponse,
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
@@ -28,6 +29,7 @@ export const categoryOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '409': conflictResponse('Category already exists'),
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -38,6 +40,7 @@ export const categoryOpenApiPaths = {
       responses: {
         '200': jsonResponse('Category list', categoriesHttpResponseSchema),
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },
@@ -54,6 +57,7 @@ export const categoryOpenApiPaths = {
         '200': jsonResponse('Category found', categoryHttpResponseSchema),
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -71,6 +75,7 @@ export const categoryOpenApiPaths = {
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
         '409': conflictResponse('Category already exists'),
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -88,6 +93,7 @@ export const categoryOpenApiPaths = {
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
         '409': conflictResponse('Category in use'),
+        '429': tooManyRequestsResponse,
       },
     },
   },

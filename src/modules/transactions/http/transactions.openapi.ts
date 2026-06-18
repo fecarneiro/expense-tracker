@@ -4,6 +4,7 @@ import {
   jsonResponse,
   noContentResponse,
   notFoundResponse,
+  tooManyRequestsResponse,
   unauthorizedResponse,
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
@@ -29,6 +30,7 @@ export const transactionOpenApiPaths = {
         '200': jsonResponse('Transaction list', transactionsHttpResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -42,6 +44,7 @@ export const transactionOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
+        '429': tooManyRequestsResponse,
       },
     },
   },
@@ -59,6 +62,7 @@ export const transactionOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Transaction not found'),
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -75,6 +79,7 @@ export const transactionOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Transaction not found'),
+        '429': tooManyRequestsResponse,
       },
     },
 
@@ -90,6 +95,7 @@ export const transactionOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Transaction not found'),
+        '429': tooManyRequestsResponse,
       },
     },
   },

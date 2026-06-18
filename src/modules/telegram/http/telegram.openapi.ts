@@ -1,5 +1,9 @@
 import type { ZodOpenApiPathsObject } from 'zod-openapi'
-import { jsonResponse, unauthorizedResponse } from '../../../openapi/openapi.responses.js'
+import {
+  jsonResponse,
+  tooManyRequestsResponse,
+  unauthorizedResponse,
+} from '../../../openapi/openapi.responses.js'
 import { generatedLinkingCodeHttpResponseSchema } from './telegram.http.dto.js'
 
 export const telegramOpenApiPaths = {
@@ -15,6 +19,7 @@ export const telegramOpenApiPaths = {
           generatedLinkingCodeHttpResponseSchema,
         ),
         '401': unauthorizedResponse,
+        '429': tooManyRequestsResponse,
       },
     },
   },
