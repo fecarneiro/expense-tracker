@@ -1,20 +1,25 @@
 import { eq } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import {
-  type NewTelegram,
-  type Telegram,
-  telegramTable,
-} from '../../database/schemas/telegram.schema.js'
-import type { GetUserIdByTelegramIdData } from './http/telegram.http.dto.js'
+import { type NewTelegram, telegramTable } from '../../database/schemas/telegram.schema.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
+import type {
+  FindAccountByTelegramIdInput,
+  LinkTelegramAccountRepositoryInput,
+  TelegramAccount,
+} from './telegram.types.js'
 
 export class TelegramRepository {
   constructor(private readonly database: Database) {}
 
-  async linkAccount(data: NewTelegram): Promise<Telegram | null> {
+  async linkAccount(data: LinkTelegramAccountRepositoryInput): Promise<TelegramAccount | null> {
+    const values: NewTelegram = {
+      userId: data.userId,
+      telegramId: data.telegramId,
+    }
+
     try {
-      const [telegram] = await this.database.insert(telegramTable).values(data).returning()
+      const [telegram] = await this.database.insert(telegramTable).values(values).returning()
 
       return telegram ?? null
     } catch (err) {
@@ -25,11 +30,11 @@ export class TelegramRepository {
     }
   }
 
-  async findUserIdByTelegramId(
-    data: GetUserIdByTelegramIdData,
-  ): Promise<Pick<Telegram, 'userId'> | null> {
+  async findAccountByTelegramId(
+    data: FindAccountByTelegramIdInput,
+  ): Promise<TelegramAccount | null> {
     const [user] = await this.database
-      .select({ userId: telegramTable.userId })
+      .select()
       .from(telegramTable)
       .where(eq(telegramTable.telegramId, data.telegramId))
 
