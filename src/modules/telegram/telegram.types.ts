@@ -5,12 +5,6 @@ export interface TelegramAccount {
   createdAt: Date
 }
 
-export type LinkTelegramAccountInput = {
-  email: string
-  password: string
-  telegramId: number
-}
-
 export type LinkTelegramAccountRepositoryInput = Pick<TelegramAccount, 'userId' | 'telegramId'>
 
 export type FindAccountByTelegramIdInput = Pick<TelegramAccount, 'telegramId'>

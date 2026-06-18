@@ -35,7 +35,7 @@ export function createContainer(db: Database) {
   const transactionService = new TransactionService(transactionRepository)
   const analyticsService = new AnalyticsService(analyticsQuery)
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
-  const telegramService = new TelegramService(authService, telegramRepository, linkingCodeService)
+  const telegramService = new TelegramService(telegramRepository, linkingCodeService)
 
   return {
     authService,
