@@ -7,7 +7,7 @@ import type {
   TransactionAmountInCents,
   TransactionType,
 } from '../../transactions/transaction.types.js'
-import { newTransactionParser } from '../parsers/new-transaction.parser.js'
+import { transactionAmountParser } from '../parsers/transaction-amount.parser.js'
 import type { BotConversation, BotConversationContext } from '../telegram.context.js'
 
 export function handleNewTransactionConversation(
@@ -38,7 +38,7 @@ export function handleNewTransactionConversation(
 
     do {
       const { message } = await conversation.waitFor('message:text')
-      amountInCents = newTransactionParser(message.text)
+      amountInCents = transactionAmountParser(message.text)
       occurredAt = message.date
 
       if (amountInCents == null)
