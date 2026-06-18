@@ -2,13 +2,13 @@
   "$schema": "https://www.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "target": "ES2025",
-    "lib": ["ES2025"],
+    // "target": "ES2025",
+    // "lib": ["ES2025"],
 
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
