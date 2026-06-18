@@ -7,9 +7,13 @@ import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
-import { TelegramGenerateCodeFailedError } from './telegram.error.js'
-import { TelegramRepository } from './telegram.repository.js'
-import { MAX_ATTEMPTS, MAX_CODE, MIN_CODE } from './telegram.service.js'
+import { TelegramGenerateCodeFailedError } from './linking-code/linking-code.error.js'
+import { LinkingCodeRepository } from './linking-code/linking-code.repository.js'
+import {
+  LINKING_CODE_GENERATION_MAX_ATTEMPTS,
+  LINKING_CODE_MAX_NUMBER,
+  LINKING_CODE_MIN_NUMBER,
+} from './linking-code/linking-code.service.js'
 
 let dbTest: Database
 
@@ -24,6 +28,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await dbTest.delete(telegramTable)
+  await dbTest.delete(telegramCodesTable)
   await dbTest.delete(usersTable)
 })
 
@@ -113,8 +118,8 @@ test('createLinkingCode creates and persists a linking code for an existing user
     code: expect.any(Number),
     createdAt: expect.any(Date),
   })
-  expect(linkingCode.code).toBeGreaterThanOrEqual(MIN_CODE)
-  expect(linkingCode.code).toBeLessThan(MAX_CODE)
+  expect(linkingCode.code).toBeGreaterThanOrEqual(LINKING_CODE_MIN_NUMBER)
+  expect(linkingCode.code).toBeLessThan(LINKING_CODE_MAX_NUMBER)
 
   const [persistedLinkingCode] = await dbTest
     .select()
@@ -159,20 +164,20 @@ test('createLinkingCode throws when all generation attempts fail', async () => {
   const user = await createUser()
 
   const saveLinkingCodeSpy = vi
-    .spyOn(TelegramRepository.prototype, 'saveLinkingCode')
+    .spyOn(LinkingCodeRepository.prototype, 'saveLinkingCode')
     .mockResolvedValue({ saved: false })
 
   await expect(telegramService.createLinkingCode({ userId: user.id })).rejects.toThrow(
     new TelegramGenerateCodeFailedError(),
   )
 
-  expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(MAX_ATTEMPTS)
+  expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE_GENERATION_MAX_ATTEMPTS)
   saveLinkingCodeSpy.mockRestore()
 })
 
 test('saveLinkingCode does not persist when the code is already used by another user', async () => {
   const { createUser } = sut()
-  const repository = new TelegramRepository(dbTest)
+  const repository = new LinkingCodeRepository(dbTest)
 
   const firstUser = await createUser()
   const secondUser = await createUser('jane@email.com')

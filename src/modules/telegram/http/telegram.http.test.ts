@@ -5,7 +5,10 @@ import { createContainer } from '../../../container.js'
 import type { Database } from '../../../database/db.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
-import { MAX_CODE, MIN_CODE } from '../telegram.service.js'
+import {
+  LINKING_CODE_MAX_NUMBER,
+  LINKING_CODE_MIN_NUMBER,
+} from '../linking-code/linking-code.service.js'
 
 let app: ReturnType<typeof createApp>
 let dbTest: Database
@@ -43,8 +46,8 @@ test('GET /telegram/generate-linking-code returns 201 with linking code', async 
     code: expect.any(Number),
     createdAt: expect.any(String),
   })
-  expect(res.body.code).toBeGreaterThanOrEqual(MIN_CODE)
-  expect(res.body.code).toBeLessThan(MAX_CODE)
+  expect(res.body.code).toBeGreaterThanOrEqual(LINKING_CODE_MIN_NUMBER)
+  expect(res.body.code).toBeLessThan(LINKING_CODE_MAX_NUMBER)
 })
 
 test('GET /telegram/generate-linking-code without authorization header returns 401', async () => {
