@@ -1,9 +1,4 @@
-import type { Telegram } from '../../database/schemas/telegram.schema.js'
 import type { AuthService } from '../auth/auth.service.js'
-import type {
-  GetUserIdByTelegramIdData,
-  LinkTelegramAccountData,
-} from './http/telegram.http.dto.js'
 import type { LinkingCodeService } from './linking-code/linking-code.service.js'
 import type {
   CreateLinkingCodeBodyInput,
@@ -11,7 +6,12 @@ import type {
 } from './linking-code/linking-code.types.js'
 import { TelegramLinkAccountFailedError } from './telegram.error.js'
 import type { TelegramRepository } from './telegram.repository.js'
-import type { VerifyAndLinkAccount } from './telegram.types.js'
+import type {
+  FindAccountByTelegramIdInput,
+  LinkTelegramAccountInput,
+  TelegramAccount,
+  VerifyAndLinkAccountInput,
+} from './telegram.types.js'
 
 export class TelegramService {
   constructor(
@@ -20,13 +20,13 @@ export class TelegramService {
     private readonly linkingCodeService: LinkingCodeService,
   ) {}
 
-  async getUserIdByTelegramId(
-    data: GetUserIdByTelegramIdData,
-  ): Promise<Pick<Telegram, 'userId'> | null> {
-    return await this.telegramRepository.findUserIdByTelegramId(data)
+  async findAccountByTelegramId(
+    data: FindAccountByTelegramIdInput,
+  ): Promise<TelegramAccount | null> {
+    return await this.telegramRepository.findAccountByTelegramId(data)
   }
 
-  async linkAccount(data: LinkTelegramAccountData): Promise<Telegram> {
+  async linkAccount(data: LinkTelegramAccountInput): Promise<TelegramAccount> {
     const { email, password, telegramId } = data
     const verifiedAccount = await this.authService.verifyCredentials({
       email,
@@ -46,7 +46,7 @@ export class TelegramService {
     return this.linkingCodeService.create(data)
   }
 
-  async verifyAndLinkAccount(data: VerifyAndLinkAccount): Promise<void> {
+  async verifyAndLinkAccount(data: VerifyAndLinkAccountInput): Promise<void> {
     const { telegramId, code } = data
     const { userId } = await this.linkingCodeService.verify({ telegramId, code })
     const linked = await this.telegramRepository.linkAccount({ userId, telegramId })
