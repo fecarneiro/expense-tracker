@@ -9,3 +9,4 @@ const envSchema = z.object({
 
 export const env = envSchema.parse(process.env)
 export const isProduction = env.NODE_ENV === 'production'
+export const isTest = env.NODE_ENV === 'test'

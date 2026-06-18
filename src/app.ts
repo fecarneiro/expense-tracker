@@ -1,5 +1,7 @@
 import { apiReference } from '@scalar/express-api-reference'
 import express from 'express'
+import { isProduction } from './config/app.config.js'
+import { authRateLimiter, globalRateLimiter } from './config/rate-limit.config.js'
 import type { Container } from './container.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
@@ -28,8 +30,16 @@ export function createApp(container: Container) {
   const analyticsController = new AnalyticsHttpController(container.analyticsService)
   const telegramController = new TelegramHttpController(container.telegramService)
 
+  if (isProduction) {
+    app.set('trust proxy', 1)
+  }
+
   app.disable('x-powered-by')
   app.use(express.json())
+
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' })
+  })
 
   app.get('/openapi.json', (_req, res) => {
     res.status(200).json(openApiDocument)
@@ -43,17 +53,24 @@ export function createApp(container: Container) {
     }),
   )
 
-  app.use('/auth', authHttpRouter(authController))
-  app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'ok' })
-  })
+  app.use('/auth', authRateLimiter, authHttpRouter(authController))
+  app.use('/users', globalRateLimiter, authMiddleware, userHttpRouter(userController))
 
-  app.use('/users', authMiddleware, userHttpRouter(userController))
-  app.use('/categories', authMiddleware, categoryHttpRouter(categoryHttpController))
-  app.use('/transactions', authMiddleware, transactionHttpRouter(transactionController))
-  app.use('/analytics', authMiddleware, analyticsHttpRouter(analyticsController))
+  app.use(
+    '/categories',
+    globalRateLimiter,
+    authMiddleware,
+    categoryHttpRouter(categoryHttpController),
+  )
+  app.use(
+    '/transactions',
+    globalRateLimiter,
+    authMiddleware,
+    transactionHttpRouter(transactionController),
+  )
+  app.use('/analytics', globalRateLimiter, authMiddleware, analyticsHttpRouter(analyticsController))
 
-  app.use('/telegram', authMiddleware, telegramHttpRouter(telegramController))
+  app.use('/telegram', globalRateLimiter, authMiddleware, telegramHttpRouter(telegramController))
 
   app.use(errorMiddleware)
 
