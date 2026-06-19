@@ -11,7 +11,6 @@ integration.
 ![Express](https://img.shields.io/badge/Express-5.x-informational)
 ![TypeScript](https://img.shields.io/badge/TypeScript-informational)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-informational)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Links
 
@@ -242,7 +241,3 @@ src/
 ## Support
 
 Maintained by Felipe Carneiro. For questions, bugs or suggestions, open a GitHub issue.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
