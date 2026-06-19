@@ -7,6 +7,7 @@ import { errorHandler } from './error-handler.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
 import { handleLastTransactions } from './handlers/last-transactions.handler.js'
 import { handleLinkAccount } from './handlers/link-account.handler.js'
+import { handleStart } from './handlers/start.handler.js'
 import { handleNewTransactionConversation } from './handlers/transaction.handler.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
@@ -22,7 +23,7 @@ export function createTelegramBot(
   bot.catch(errorHandler)
 
   // ── Public Commands ───────────────────────────────────
-  bot.command('start', (ctx) => ctx.reply('Welcome! Up and running.'))
+  bot.command('start', (ctx) => handleStart(ctx))
   bot.command('link', (ctx) => handleLinkAccount(ctx, telegramService))
 
   // ── Authenticated Commands ─────────────────────────────

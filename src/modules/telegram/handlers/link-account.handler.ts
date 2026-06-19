@@ -13,7 +13,7 @@ export async function handleLinkAccount(ctx: BotContext, telegramService: Telegr
 
   if (!codeInput) {
     await ctx.reply(
-      'Generate a linking code in the app, then run the link command and add your 6-digit code.',
+      'Generate a linking code in the API, then run the link command and add your 6-digit code.',
       { parse_mode: 'HTML' },
     )
     return
@@ -31,5 +31,7 @@ export async function handleLinkAccount(ctx: BotContext, telegramService: Telegr
     code: linkingCode,
   })
 
-  await ctx.reply('Account linked successfully! You can now use /expense, /income, and /report.')
+  await ctx.reply(
+    'Account linked successfully! You can now use /expense, /income to register your first transactions.',
+  )
 }
