@@ -18,8 +18,8 @@ integration.
 | Service | URL |
 |---|---|
 | API Docs | https://expenses.fecarneiro.dev/docs |
-| OpenAPI JSON | https://expenses.fecarneiro.dev/openapi.json |
-| Telegram Bot | Search for `@expenses_fecarneiro_bot` in Telegram |
+| Bot Setup Docs | https://expenses.fecarneiro.dev/docs/bot |
+| Open bot in Telegram | https://expenses.fecarneiro.dev/redirect-to-bot |
 
 ## Features
 
@@ -68,6 +68,7 @@ JWT_SECRET=a-string-secret-at-least-256-bits-long
 
 # Optional Telegram bot
 TELEGRAM_BOT_TOKEN=
+TELEGRAM_BOT_USERNAME=your-telegram-bot-username
 
 # Required in production when TELEGRAM_BOT_TOKEN is defined
 APP_URL=
@@ -104,10 +105,15 @@ The API runs at `http://localhost:3000`.
 
 ## API Documentation
 
-- Hosted docs: `https://expenses.fecarneiro.dev/docs`
-- Local docs: `http://localhost:3000/docs`
-- Raw OpenAPI: `http://localhost:3000/openapi.json`
-- Health check: `GET /health`
+### Hosted
+- API docs: https://expenses.fecarneiro.dev/docs
+- Bot setup: https://expenses.fecarneiro.dev/docs/bot
+
+### Local (`pnpm dev`)
+- API docs: http://localhost:3000/docs
+- Bot setup: http://localhost:3000/docs/bot
+- OpenAPI: `/openapi.json`, `/openapi.bot.json`
+- Health: `GET /health`
 
 ## Main Resources
 
@@ -121,9 +127,6 @@ The API runs at `http://localhost:3000`.
 | `/telegram` | Telegram account linking |
 
 ## Quick API Example
-
-The interactive docs use Scalar's `{{$randomEmail}}` variable for email examples. If you run
-the curl examples below, replace `john@example.com` with an unused email.
 
 ```bash
 curl -X POST https://expenses.fecarneiro.dev/auth/register \
@@ -201,7 +204,9 @@ In development, the bot runs in polling mode. In production, it uses webhook mod
 {APP_URL}/{TELEGRAM_WEBHOOK_SECRET}
 ```
 
-To try the hosted bot, search for `@expenses_fecarneiro_bot` inside Telegram.
+To link your account and use the bot, follow the step-by-step guide at
+[`/docs/bot`](https://expenses.fecarneiro.dev/docs/bot). To open the bot in Telegram, use
+[`/redirect-to-bot`](https://expenses.fecarneiro.dev/redirect-to-bot).
 
 ## Common Commands
 
