@@ -5,12 +5,16 @@ import { createContainer } from './container.js'
 import { db, pool } from './database/db.js'
 import { createTelegramBot } from './modules/telegram/bot.js'
 import { parseTelegramEnv } from './modules/telegram/config/telegram.config.js'
+import { registerTelegramPublicRoutes } from './modules/telegram/http/telegram-public.routes.js'
 
 const container = createContainer(db)
 const app = createApp(container)
-
 const telegramConfig = parseTelegramEnv(env.NODE_ENV)
 const bot = telegramConfig ? createTelegramBot(container, telegramConfig) : null
+
+if (telegramConfig) {
+  registerTelegramPublicRoutes(app, telegramConfig.botUsername)
+}
 
 if (bot && telegramConfig?.mode === 'webhook') {
   app.use(`/${telegramConfig.webhookSecret}`, webhookCallback(bot, 'express'))
