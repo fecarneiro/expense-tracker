@@ -3,7 +3,7 @@ import type { BotContext } from '../telegram.context.js'
 export async function handleStart(ctx: BotContext) {
   return await ctx.reply(
     `
-Welcome to Expense Tracker, ${ctx.from.first_name}! 📊
+Welcome to Expense Tracker! 📊
 
 Getting started:
 1. First, visit the <a href="https://expenses.fecarneiro.dev/docs">API Documentation</a>.
