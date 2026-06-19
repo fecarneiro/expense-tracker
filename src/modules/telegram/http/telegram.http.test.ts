@@ -5,10 +5,7 @@ import { createContainer } from '../../../container.js'
 import type { Database } from '../../../database/db.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
-import {
-  LINKING_CODE_MAX_NUMBER,
-  LINKING_CODE_MIN_NUMBER,
-} from '../linking-code/linking-code.service.js'
+import { LINKING_CODE_MAX_NUMBER, LINKING_CODE_MIN_NUMBER } from '../telegram.constants.js'
 
 let app: ReturnType<typeof createApp>
 let dbTest: Database

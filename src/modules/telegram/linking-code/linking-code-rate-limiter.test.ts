@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { TelegramLinkingRateLimitError } from './linking-code.error.js'
 import {
   LINKING_CODE_VERIFICATION_MAX_ATTEMPTS,
   LINKING_CODE_WINDOW_SIZE,
-  LinkingCodeRateLimiter,
-} from './linking-code-rate-limiter.js'
+} from '../telegram.constants.js'
+import { TelegramLinkingRateLimitError } from './linking-code.error.js'
+import { LinkingCodeRateLimiter } from './linking-code-rate-limiter.js'
 
 let rateLimiter: LinkingCodeRateLimiter
 const telegramId = 1234567890

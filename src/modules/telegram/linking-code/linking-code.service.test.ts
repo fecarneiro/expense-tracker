@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { LINKING_CODE_TTL_MS } from '../telegram.constants.js'
 import { InvalidOrExpiredLinkingCodeError } from './linking-code.error.js'
 import type { LinkingCodeRepository } from './linking-code.repository.js'
-import { LINKING_CODE_TTL_MS, LinkingCodeService } from './linking-code.service.js'
+import { LinkingCodeService } from './linking-code.service.js'
 import type { LinkingCodeRateLimiter } from './linking-code-rate-limiter.js'
 
 const telegramId = 1_234_567_890

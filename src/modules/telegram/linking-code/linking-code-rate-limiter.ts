@@ -1,7 +1,8 @@
+import {
+  LINKING_CODE_VERIFICATION_MAX_ATTEMPTS,
+  LINKING_CODE_WINDOW_SIZE,
+} from '../telegram.constants.js'
 import { TelegramLinkingRateLimitError } from './linking-code.error.js'
-
-export const LINKING_CODE_VERIFICATION_MAX_ATTEMPTS = 3
-export const LINKING_CODE_WINDOW_SIZE = 10 * 60 * 1000
 
 export class LinkingCodeRateLimiter {
   private readonly attemptStore = new Map<number, number[]>()

@@ -1,5 +1,11 @@
 import { randomInt } from 'node:crypto'
 import {
+  LINKING_CODE_GENERATION_RETRIES,
+  LINKING_CODE_MAX_NUMBER,
+  LINKING_CODE_MIN_NUMBER,
+  LINKING_CODE_TTL_MS,
+} from '../telegram.constants.js'
+import {
   InvalidOrExpiredLinkingCodeError,
   TelegramGenerateCodeFailedError,
 } from './linking-code.error.js'
@@ -12,11 +18,6 @@ import type {
 } from './linking-code.types.js'
 import type { LinkingCodeRateLimiter } from './linking-code-rate-limiter.js'
 
-export const LINKING_CODE_GENERATION_MAX_ATTEMPTS = 5
-export const LINKING_CODE_MIN_NUMBER = 100_000
-export const LINKING_CODE_MAX_NUMBER = 1_000_000
-export const LINKING_CODE_TTL_MS = 15 * 60 * 1000
-
 export class LinkingCodeService {
   constructor(
     private readonly linkingCodeRepository: LinkingCodeRepository,
@@ -26,7 +27,7 @@ export class LinkingCodeService {
   async create(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCode> {
     const userId = data.userId
 
-    for (let attempt = 1; attempt <= LINKING_CODE_GENERATION_MAX_ATTEMPTS; attempt++) {
+    for (let attempt = 1; attempt <= LINKING_CODE_GENERATION_RETRIES; attempt++) {
       const code = randomInt(LINKING_CODE_MIN_NUMBER, LINKING_CODE_MAX_NUMBER)
       const result = await this.linkingCodeRepository.saveLinkingCode({ userId, code })
 

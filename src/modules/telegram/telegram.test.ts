@@ -9,10 +9,10 @@ import { setupDbTest } from '../../tests/setup-db-test.js'
 import { TelegramGenerateCodeFailedError } from './linking-code/linking-code.error.js'
 import { LinkingCodeRepository } from './linking-code/linking-code.repository.js'
 import {
-  LINKING_CODE_GENERATION_MAX_ATTEMPTS,
+  LINKING_CODE_GENERATION_RETRIES,
   LINKING_CODE_MAX_NUMBER,
   LINKING_CODE_MIN_NUMBER,
-} from './linking-code/linking-code.service.js'
+} from './telegram.constants.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
 
 let dbTest: Database
@@ -118,7 +118,7 @@ test('createLinkingCode throws when all generation attempts fail', async () => {
     new TelegramGenerateCodeFailedError(),
   )
 
-  expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE_GENERATION_MAX_ATTEMPTS)
+  expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE_GENERATION_RETRIES)
   saveLinkingCodeSpy.mockRestore()
 })
 
