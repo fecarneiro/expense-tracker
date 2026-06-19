@@ -17,6 +17,7 @@ import { TransactionHttpController } from './modules/transactions/http/transacti
 import { transactionHttpRouter } from './modules/transactions/http/transaction.http.routes.js'
 import { UserHttpController } from './modules/users/http/user.http.controller.js'
 import { userHttpRouter } from './modules/users/http/user.http.routes.js'
+import { botOpenApiDocument } from './openapi/bot/openapi.bot.openapi.js'
 import { openApiDocument } from './openapi/openapi.js'
 
 export function createApp(container: Container) {
@@ -44,6 +45,18 @@ export function createApp(container: Container) {
   app.get('/openapi.json', (_req, res) => {
     res.status(200).json(openApiDocument)
   })
+
+  app.get('/openapi.bot.json', (_req, res) => {
+    res.status(200).json(botOpenApiDocument)
+  })
+
+  app.use(
+    '/docs/bot',
+    apiReference({
+      content: botOpenApiDocument,
+      theme: 'deepSpace',
+    }),
+  )
 
   app.use(
     '/docs',

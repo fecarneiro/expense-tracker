@@ -7,14 +7,16 @@ import { telegramOpenApiPaths } from '../modules/telegram/http/telegram.openapi.
 import { transactionOpenApiPaths } from '../modules/transactions/http/transactions.openapi.js'
 import { userOpenApiPaths } from '../modules/users/http/user.openapi.js'
 import { healthOpenApiPaths } from './health.openapi.js'
+import { apiDescription } from './openapi.description.js'
 
 export const openApiDocument = createDocument({
   openapi: '3.1.0',
   info: {
     title: 'Expense Tracker API',
     version: '1.0.0',
-    description: 'Personal finance API for managing users, categories, transactions and reports.',
+    description: apiDescription,
   },
+
   servers: [
     {
       url: '/',
