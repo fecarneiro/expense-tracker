@@ -3,7 +3,7 @@ import { beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { telegramAccountsTable } from '../../database/schemas/telegram-accounts.schema.js'
-import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema.js'
+import { telegramLinkingCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
 import { TelegramGenerateCodeFailedError } from './linking-code/linking-code.error.js'
@@ -28,7 +28,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await dbTest.delete(telegramAccountsTable)
-  await dbTest.delete(telegramCodesTable)
+  await dbTest.delete(telegramLinkingCodesTable)
   await dbTest.delete(usersTable)
 })
 
@@ -70,8 +70,8 @@ test('createLinkingCode creates and persists a linking code for an existing user
 
   const [persistedLinkingCode] = await dbTest
     .select()
-    .from(telegramCodesTable)
-    .where(eq(telegramCodesTable.userId, user.id))
+    .from(telegramLinkingCodesTable)
+    .where(eq(telegramLinkingCodesTable.userId, user.id))
 
   expect(persistedLinkingCode).toStrictEqual({
     id: expect.any(String),
@@ -94,8 +94,8 @@ test('createLinkingCode replaces the linking code when called again for the same
 
   const persistedLinkingCodes = await dbTest
     .select()
-    .from(telegramCodesTable)
-    .where(eq(telegramCodesTable.userId, user.id))
+    .from(telegramLinkingCodesTable)
+    .where(eq(telegramLinkingCodesTable.userId, user.id))
 
   expect(persistedLinkingCodes).toHaveLength(1)
   expect(persistedLinkingCodes[0]).toStrictEqual({
@@ -142,8 +142,8 @@ test('saveLinkingCode does not persist when the code is already used by another 
 
   const persistedCodes = await dbTest
     .select()
-    .from(telegramCodesTable)
-    .where(eq(telegramCodesTable.code, code))
+    .from(telegramLinkingCodesTable)
+    .where(eq(telegramLinkingCodesTable.code, code))
 
   expect(persistedCodes).toHaveLength(1)
   expect(persistedCodes[0]).toMatchObject({ userId: firstUser.id, code })
@@ -169,8 +169,8 @@ test('verifyAndLinkAccount links account and deletes the linking code on success
 
   const persistedLinkingCodes = await dbTest
     .select()
-    .from(telegramCodesTable)
-    .where(eq(telegramCodesTable.userId, user.id))
+    .from(telegramLinkingCodesTable)
+    .where(eq(telegramLinkingCodesTable.userId, user.id))
 
   expect(persistedLinkingCodes).toHaveLength(0)
 })

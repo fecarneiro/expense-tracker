@@ -3,7 +3,7 @@ import { isUniqueViolation } from '../../../database/db.error.js'
 import type { Database } from '../../../database/db.js'
 import {
   type NewLinkingCode,
-  telegramCodesTable,
+  telegramLinkingCodesTable,
 } from '../../../database/schemas/telegram-codes.schema.js'
 import type {
   DeleteLinkingCodeByUserIdInput,
@@ -19,15 +19,15 @@ export class LinkingCodeRepository {
 
     try {
       const [generatedLinkingCode] = await this.database
-        .insert(telegramCodesTable)
+        .insert(telegramLinkingCodesTable)
         .values({ userId, code })
         .onConflictDoUpdate({
-          target: telegramCodesTable.userId,
+          target: telegramLinkingCodesTable.userId,
           set: { code, createdAt: sql`now()` },
         })
         .returning({
-          code: telegramCodesTable.code,
-          createdAt: telegramCodesTable.createdAt,
+          code: telegramLinkingCodesTable.code,
+          createdAt: telegramLinkingCodesTable.createdAt,
         })
 
       if (!generatedLinkingCode) {
@@ -39,7 +39,7 @@ export class LinkingCodeRepository {
         generatedLinkingCode,
       }
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_telegram_code')) {
+      if (isUniqueViolation(err, 'telegram_linking_codes_unique')) {
         return { saved: false }
       }
 
@@ -52,13 +52,15 @@ export class LinkingCodeRepository {
 
     const [user] = await this.database
       .select()
-      .from(telegramCodesTable)
-      .where(eq(telegramCodesTable.code, code))
+      .from(telegramLinkingCodesTable)
+      .where(eq(telegramLinkingCodesTable.code, code))
 
     return user ?? null
   }
 
   async deleteByUserId(data: DeleteLinkingCodeByUserIdInput) {
-    await this.database.delete(telegramCodesTable).where(eq(telegramCodesTable.userId, data.userId))
+    await this.database
+      .delete(telegramLinkingCodesTable)
+      .where(eq(telegramLinkingCodesTable.userId, data.userId))
   }
 }

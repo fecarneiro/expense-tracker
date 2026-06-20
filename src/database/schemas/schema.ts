@@ -1,6 +1,6 @@
 import { categoriesTable } from './category.schema.js'
 import { telegramAccountsTable } from './telegram-accounts.schema.js'
-import { telegramCodesTable } from './telegram-codes.schema.js'
+import { telegramLinkingCodesTable } from './telegram-codes.schema.js'
 import { transactionsTable } from './transaction.schema.js'
 import { usersTable } from './user.schema.js'
 
@@ -9,5 +9,5 @@ export const schemas = {
   transactions: transactionsTable,
   categories: categoriesTable,
   telegram: telegramAccountsTable,
-  telegramCodes: telegramCodesTable,
+  telegramCodes: telegramLinkingCodesTable,
 }

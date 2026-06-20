@@ -57,6 +57,13 @@
       "when": 1781977936738,
       "tag": "0007_fast_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781978531106,
+      "tag": "0008_mushy_the_fallen",
+      "breakpoints": true
     }
   ]
 }
