@@ -50,6 +50,13 @@
       "when": 1781972600215,
       "tag": "0006_condemned_iron_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781977936738,
+      "tag": "0007_fast_the_call",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
-import { telegramTable } from '../../database/schemas/telegram.schema.js'
+import { telegramAccountsTable } from '../../database/schemas/telegram-accounts.schema.js'
 import { telegramCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
@@ -27,7 +27,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await dbTest.delete(telegramTable)
+  await dbTest.delete(telegramAccountsTable)
   await dbTest.delete(telegramCodesTable)
   await dbTest.delete(usersTable)
 })
