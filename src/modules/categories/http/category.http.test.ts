@@ -607,7 +607,7 @@ test('PATCH /categories without categoryType returns 400', async () => {
     .expect(400)
 })
 
-test('POST /categories rejects duplicate name for the same user even when categoryType differs (current uniqueness is only on name)', async () => {
+test('POST /categories allows the same name for the same user when categoryType differs', async () => {
   const access_token = await getAccessToken()
 
   await request(app)
@@ -616,14 +616,11 @@ test('POST /categories rejects duplicate name for the same user even when catego
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
-  // Current unique constraint is on (user, lower(name)) only.
-  // Same name + different categoryType will be allowed after the upcoming migration
-  // that changes uniqueness to (name, categoryType).
   await request(app)
     .post('/categories')
     .send({ name: 'UniqueName', categoryType: 'income' })
     .set('Authorization', `Bearer ${access_token}`)
-    .expect(409)
+    .expect(201)
 })
 
 test('POST /categories without authorization header returns 401', async () => {

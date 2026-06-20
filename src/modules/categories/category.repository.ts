@@ -29,7 +29,7 @@ export class CategoryRepository {
 
       return category ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_category_name')) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()
       }
 
@@ -49,7 +49,7 @@ export class CategoryRepository {
 
       return category ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_category_name')) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()
       }
 

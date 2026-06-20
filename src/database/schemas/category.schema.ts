@@ -17,7 +17,11 @@ export const categoriesTable = pgTable(
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex('unique_category_name').on(table.userId, sql`lower(${table.name})`),
+    uniqueIndex('unique_category_name_type').on(
+      table.userId,
+      table.categoryType,
+      sql`lower(${table.name})`,
+    ),
     unique('unique_category_id_user_id').on(table.id, table.userId),
   ],
 )
