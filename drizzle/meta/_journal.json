@@ -43,6 +43,13 @@
       "when": 1781689568147,
       "tag": "0005_past_silhouette",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781972600215,
+      "tag": "0006_condemned_iron_patriot",
+      "breakpoints": true
     }
   ]
 }
