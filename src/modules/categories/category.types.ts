@@ -1,13 +1,16 @@
+export type CategoryType = 'income' | 'expense'
+
 export interface Category {
   id: string
   userId: string
   name: string
+  categoryType: CategoryType
   createdAt: Date
 }
 
-export type CreateCategoryInput = Pick<Category, 'userId' | 'name'>
+export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 
-export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name'>
+export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name' | 'categoryType'>
 
 export type FindCategoryByIdInput = Pick<Category, 'id' | 'userId'>
 

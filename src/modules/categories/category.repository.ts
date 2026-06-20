@@ -21,6 +21,7 @@ export class CategoryRepository {
     const values: NewCategoryRow = {
       userId: data.userId,
       name: data.name,
+      categoryType: data.categoryType,
     }
 
     try {
@@ -37,10 +38,12 @@ export class CategoryRepository {
   }
 
   async update(data: UpdateCategoryInput): Promise<Category | null> {
+    const { id, userId, ...updateData } = data
+
     try {
       const [category] = await this.database
         .update(categoriesTable)
-        .set({ name: data.name })
+        .set(updateData)
         .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
         .returning()
 

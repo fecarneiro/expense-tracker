@@ -18,6 +18,7 @@ export class CategoryHttpController {
     const category = await this.categoryService.create({
       userId,
       name: input.name,
+      categoryType: input.categoryType,
     })
 
     res.status(201).json(categoryHttpResponseSchema.parse(category))
@@ -32,6 +33,7 @@ export class CategoryHttpController {
       id,
       userId,
       name: input.name,
+      categoryType: input.categoryType,
     })
 
     res.status(200).json(categoryHttpResponseSchema.parse(category))

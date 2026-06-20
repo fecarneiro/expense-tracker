@@ -1,5 +1,9 @@
 import * as z from 'zod'
 
+export const categoryTypeField = z.enum(['income', 'expense']).meta({
+  example: 'expense',
+})
+
 export const categoryNameField = z.string().trim().min(1).max(50).meta({
   example: 'Food',
 })
@@ -15,6 +19,7 @@ export const categoryIdParamsSchema = z.strictObject({
 export const createCategoryBodySchema = z
   .strictObject({
     name: categoryNameField,
+    categoryType: categoryTypeField,
   })
   .meta({
     id: 'CreateCategoryBody',
@@ -23,6 +28,7 @@ export const createCategoryBodySchema = z
 export const updateCategoryBodySchema = z
   .strictObject({
     name: categoryNameField,
+    categoryType: categoryTypeField,
   })
   .meta({
     id: 'UpdateCategoryBody',
@@ -32,6 +38,7 @@ export const categoryHttpResponseSchema = z
   .object({
     id: categoryIdField,
     name: categoryNameField,
+    categoryType: categoryTypeField,
   })
   .meta({
     id: 'Category',
