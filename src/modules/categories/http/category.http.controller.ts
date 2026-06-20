@@ -4,6 +4,7 @@ import {
   categoriesHttpResponseSchema,
   categoryHttpResponseSchema,
   categoryIdParamsSchema,
+  categoryTypeQuerySchema,
   createCategoryBodySchema,
   updateCategoryBodySchema,
 } from './category.http.dto.js'
@@ -53,10 +54,16 @@ export class CategoryHttpController {
 
   async findAll(req: Request, res: Response) {
     const userId = req.auth.userId
+    const { categoryType } = categoryTypeQuerySchema.parse(req.query)
 
-    const categories = await this.categoryService.findAll({
-      userId,
-    })
+    const categories = categoryType
+      ? await this.categoryService.findByType({
+          userId,
+          categoryType,
+        })
+      : await this.categoryService.findAll({
+          userId,
+        })
 
     res.status(200).json(categoriesHttpResponseSchema.parse(categories))
   }

@@ -7,6 +7,7 @@ import type {
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   FindCategoryByNameInput,
+  FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
 
@@ -41,6 +42,10 @@ export class CategoryService {
     }
 
     return category
+  }
+
+  async findByType(data: FindCategoryByTypeInput): Promise<Category[]> {
+    return this.categoryRepository.findByType(data)
   }
 
   async findByName(data: FindCategoryByNameInput): Promise<Category | null> {

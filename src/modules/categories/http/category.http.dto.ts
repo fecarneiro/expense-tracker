@@ -12,6 +12,14 @@ export const categoryIdField = z.uuid().meta({
   example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
 })
 
+export const categoryTypeQuerySchema = z
+  .strictObject({
+    categoryType: categoryTypeField.optional(),
+  })
+  .meta({
+    id: 'CategoryTypeQuery',
+  })
+
 export const categoryIdParamsSchema = z.strictObject({
   id: categoryIdField,
 })

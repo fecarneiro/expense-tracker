@@ -14,7 +14,7 @@ import {
 import { categoriesTable } from './category.schema.js'
 import { usersTable } from './user.schema.js'
 
-export const transactionTypeEnum = pgEnum('type', ['income', 'expense'])
+export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expense'])
 
 export const transactionsTable = pgTable(
   'transactions',

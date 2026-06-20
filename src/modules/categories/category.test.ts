@@ -279,6 +279,70 @@ test('findById fails when the user is not the owner', async () => {
   ).rejects.toThrow(new CategoryNotFoundError())
 })
 
+test('findByType returns the category specified by type of the owner', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  await categoryService.create({
+    userId: owner.user.id,
+    name: 'Hobbies',
+    categoryType: 'expense',
+  })
+
+  await categoryService.create({
+    userId: owner.user.id,
+    name: 'Sports',
+    categoryType: 'expense',
+  })
+
+  await categoryService.create({
+    userId: owner.user.id,
+    name: 'Salary',
+    categoryType: 'income',
+  })
+
+  const categories = await categoryService.findByType({
+    categoryType: 'expense',
+    userId: owner.user.id,
+  })
+
+  expect(categories.length).toBe(2)
+  expect(categories).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: 'Hobbies', categoryType: 'expense' }),
+      expect.objectContaining({ name: 'Sports', categoryType: 'expense' }),
+    ]),
+  )
+})
+
+test('findByType only returns categories of the given user', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+  const other = await seed('other@test.com')
+
+  await categoryService.create({
+    userId: owner.user.id,
+    name: 'Hobbies',
+    categoryType: 'expense',
+  })
+
+  await expect(
+    categoryService.findByType({ categoryType: 'expense', userId: owner.user.id }),
+  ).resolves.toStrictEqual([
+    {
+      id: expect.any(String),
+      userId: owner.user.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+      createdAt: expect.any(Date),
+    },
+  ])
+
+  await expect(
+    categoryService.findByType({ categoryType: 'expense', userId: other.user.id }),
+  ).resolves.toStrictEqual([])
+})
+
 test('findByName returns the category of the owner ignoring capitalization', async () => {
   const { categoryService } = sut()
   const owner = await seed()

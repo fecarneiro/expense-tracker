@@ -132,6 +132,64 @@ test('GET /categories returns 200 with authenticated user categories', async () 
   )
 })
 
+test('GET /categories with categoryType=expense returns only expense categories', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Salary', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Food', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const res = await request(app)
+    .get('/categories?categoryType=expense')
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(res.body).toStrictEqual([
+    {
+      id: expect.any(String),
+      name: 'Food',
+      categoryType: 'expense',
+    },
+  ])
+})
+
+test('GET /categories with categoryType=income returns only income categories', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Salary', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Food', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const res = await request(app)
+    .get('/categories?categoryType=income')
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(res.body).toStrictEqual([
+    {
+      id: expect.any(String),
+      name: 'Salary',
+      categoryType: 'income',
+    },
+  ])
+})
+
 test('GET /categories does not return categories from other users', async () => {
   const access_token_user1 = await getAccessToken({
     email: 'tester@domain.com',

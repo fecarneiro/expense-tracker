@@ -14,6 +14,8 @@ export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name' | 'cat
 
 export type FindCategoryByIdInput = Pick<Category, 'id' | 'userId'>
 
+export type FindCategoryByTypeInput = Pick<Category, 'userId' | 'categoryType'>
+
 export type FindCategoryByNameInput = Pick<Category, 'userId' | 'name'>
 
 export type FindAllCategoriesInput = Pick<Category, 'userId'>
