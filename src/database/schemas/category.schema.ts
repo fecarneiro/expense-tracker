@@ -1,18 +1,19 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, timestamp, unique, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { pgEnum, pgTable, timestamp, unique, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+
 import { usersTable } from './user.schema.js'
+
+export const categoryTypeEnum = pgEnum('category_type', ['income', 'expense'])
 
 export const categoriesTable = pgTable(
   'categories',
   {
     id: uuid().primaryKey().defaultRandom(),
-
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
-
     name: varchar({ length: 50 }).notNull(),
-
+    categoryType: categoryTypeEnum().notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
