@@ -215,6 +215,7 @@ test('delete removes user-owned categories and transactions', async () => {
     .values({
       userId: created.id,
       name: 'Test Category',
+      categoryType: 'expense',
     })
     .returning()
 

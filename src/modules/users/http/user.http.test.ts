@@ -200,7 +200,7 @@ test('DELETE /users/me removes user-owned categories and transactions', async ()
   const categoryRes = await request(app)
     .post('/categories')
     .set('Authorization', `Bearer ${access_token}`)
-    .send({ name: 'Test Category' })
+    .send({ name: 'Test Category', categoryType: 'expense' })
     .expect(201)
 
   await request(app)

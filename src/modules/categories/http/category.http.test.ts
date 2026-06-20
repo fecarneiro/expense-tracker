@@ -39,13 +39,14 @@ test('POST /categories returns 201 with created category', async () => {
 
   const res = await request(app)
     .post('/categories')
-    .send({ name: 'New Category' })
+    .send({ name: 'New Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
   expect(res.body).toStrictEqual({
     id: expect.any(String),
     name: 'New Category',
+    categoryType: 'expense',
   })
 })
 
@@ -54,7 +55,7 @@ test('POST /categories with invalid name returns 400', async () => {
 
   await request(app)
     .post('/categories')
-    .send({ name: '' })
+    .send({ name: '', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -64,7 +65,7 @@ test('POST /categories with name longer than 50 characters returns 400', async (
 
   await request(app)
     .post('/categories')
-    .send({ name: 'a'.repeat(51) })
+    .send({ name: 'a'.repeat(51), categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -74,13 +75,13 @@ test('POST /categories with existing name returns 409', async () => {
 
   await request(app)
     .post('/categories')
-    .send({ name: 'New Category' })
+    .send({ name: 'New Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
   await request(app)
     .post('/categories')
-    .send({ name: 'New Category' })
+    .send({ name: 'New Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
 })
@@ -103,7 +104,7 @@ test('GET /categories returns 200 with authenticated user categories', async () 
   for (const name of categoryNames) {
     await request(app)
       .post('/categories')
-      .send({ name })
+      .send({ name, categoryType: 'expense' })
       .set('Authorization', `Bearer ${access_token}`)
       .expect(201)
   }
@@ -116,9 +117,17 @@ test('GET /categories returns 200 with authenticated user categories', async () 
   expect(res.body).toHaveLength(3)
   expect(res.body).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ id: expect.any(String), name: 'Food' }),
-      expect.objectContaining({ id: expect.any(String), name: 'Transport' }),
-      expect.objectContaining({ id: expect.any(String), name: 'Entertainment' }),
+      expect.objectContaining({ id: expect.any(String), name: 'Food', categoryType: 'expense' }),
+      expect.objectContaining({
+        id: expect.any(String),
+        name: 'Transport',
+        categoryType: 'expense',
+      }),
+      expect.objectContaining({
+        id: expect.any(String),
+        name: 'Entertainment',
+        categoryType: 'expense',
+      }),
     ]),
   )
 })
@@ -132,13 +141,13 @@ test('GET /categories does not return categories from other users', async () => 
 
   await request(app)
     .post('/categories')
-    .send({ name: 'User 1 Category' })
+    .send({ name: 'User 1 Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user1}`)
     .expect(201)
 
   await request(app)
     .post('/categories')
-    .send({ name: 'User 2 Category' })
+    .send({ name: 'User 2 Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user2}`)
     .expect(201)
 
@@ -151,6 +160,7 @@ test('GET /categories does not return categories from other users', async () => 
     {
       id: expect.any(String),
       name: 'User 2 Category',
+      categoryType: 'expense',
     },
   ])
 })
@@ -160,7 +170,7 @@ test('GET /categories/:id returns 200 with category', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'New Category' })
+    .send({ name: 'New Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -174,6 +184,7 @@ test('GET /categories/:id returns 200 with category', async () => {
   expect(res.body).toStrictEqual({
     id: categoryId,
     name: 'New Category',
+    categoryType: 'expense',
   })
 })
 
@@ -204,7 +215,7 @@ test('GET /categories/:id from another user returns 404', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'User 1 Category' })
+    .send({ name: 'User 1 Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user1}`)
     .expect(201)
 
@@ -221,7 +232,7 @@ test('PATCH /categories/:id returns 200 with updated category', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Old Name' })
+    .send({ name: 'Old Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -229,13 +240,14 @@ test('PATCH /categories/:id returns 200 with updated category', async () => {
 
   const res = await request(app)
     .patch(`/categories/${categoryId}`)
-    .send({ name: 'Updated Name' })
+    .send({ name: 'Updated Name', categoryType: 'income' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(200)
 
   expect(res.body).toStrictEqual({
     id: categoryId,
     name: 'Updated Name',
+    categoryType: 'income',
   })
 
   const getRes = await request(app)
@@ -246,6 +258,7 @@ test('PATCH /categories/:id returns 200 with updated category', async () => {
   expect(getRes.body).toStrictEqual({
     id: categoryId,
     name: 'Updated Name',
+    categoryType: 'income',
   })
 })
 
@@ -254,7 +267,7 @@ test('PATCH /categories/:id allows keeping the same name', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Old Name' })
+    .send({ name: 'Old Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -262,13 +275,14 @@ test('PATCH /categories/:id allows keeping the same name', async () => {
 
   const res = await request(app)
     .patch(`/categories/${categoryId}`)
-    .send({ name: 'Old Name' })
+    .send({ name: 'Old Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(200)
 
   expect(res.body).toStrictEqual({
     id: categoryId,
     name: 'Old Name',
+    categoryType: 'expense',
   })
 })
 
@@ -276,7 +290,7 @@ test('PATCH /categories/:id with invalid id returns 400', async () => {
   const access_token = await getAccessToken()
   await request(app)
     .patch('/categories/invalid-uuid')
-    .send({ name: 'Updated Name' })
+    .send({ name: 'Updated Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -286,7 +300,7 @@ test('PATCH /categories/:id with invalid name returns 400', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Old Name' })
+    .send({ name: 'Old Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -294,7 +308,7 @@ test('PATCH /categories/:id with invalid name returns 400', async () => {
 
   await request(app)
     .patch(`/categories/${categoryId}`)
-    .send({ name: '' })
+    .send({ name: '', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -304,7 +318,7 @@ test('PATCH /categories/:id with name longer than 50 characters returns 400', as
 
   await request(app)
     .patch('/categories/00000000-0000-0000-0000-000000000000')
-    .send({ name: 'a'.repeat(51) })
+    .send({ name: 'a'.repeat(51), categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
 })
@@ -314,7 +328,7 @@ test('PATCH /categories/:id with unknown category returns 404', async () => {
 
   await request(app)
     .patch('/categories/00000000-0000-0000-0000-000000000000')
-    .send({ name: 'Updated Name' })
+    .send({ name: 'Updated Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(404)
 })
@@ -328,7 +342,7 @@ test('PATCH /categories/:id from another user returns 404', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'User 1 Category' })
+    .send({ name: 'User 1 Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user1}`)
     .expect(201)
 
@@ -336,7 +350,7 @@ test('PATCH /categories/:id from another user returns 404', async () => {
 
   await request(app)
     .patch(`/categories/${user1CategoryId}`)
-    .send({ name: 'Updated Name' })
+    .send({ name: 'Updated Name', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user2}`)
     .expect(404)
 })
@@ -346,13 +360,13 @@ test('PATCH /categories/:id with existing name returns 409', async () => {
 
   await request(app)
     .post('/categories')
-    .send({ name: 'Category 1' })
+    .send({ name: 'Category 1', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Category 2' })
+    .send({ name: 'Category 2', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -360,7 +374,7 @@ test('PATCH /categories/:id with existing name returns 409', async () => {
 
   await request(app)
     .patch(`/categories/${category2Id}`)
-    .send({ name: 'Category 1' })
+    .send({ name: 'Category 1', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
 })
@@ -370,13 +384,13 @@ test('PATCH /categories/:id with existing name in different capitalization retur
 
   await request(app)
     .post('/categories')
-    .send({ name: 'Category 1' })
+    .send({ name: 'Category 1', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Category 2' })
+    .send({ name: 'Category 2', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -384,7 +398,7 @@ test('PATCH /categories/:id with existing name in different capitalization retur
 
   await request(app)
     .patch(`/categories/${category2Id}`)
-    .send({ name: 'category 1' })
+    .send({ name: 'category 1', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(409)
 })
@@ -394,7 +408,7 @@ test('DELETE /categories/:id returns 204', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Category to Delete' })
+    .send({ name: 'Category to Delete', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -438,7 +452,7 @@ test('DELETE /categories/:id from another user returns 404', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'User 1 Category' })
+    .send({ name: 'User 1 Category', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token_user1}`)
     .expect(201)
 
@@ -455,7 +469,7 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
 
   const categoryRes = await request(app)
     .post('/categories')
-    .send({ name: 'Category in Use' })
+    .send({ name: 'Category in Use', categoryType: 'expense' })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 
@@ -478,8 +492,142 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
     .expect(409)
 })
 
+test('POST /categories without categoryType returns 400', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'No Type' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(400)
+})
+
+test('POST /categories with invalid categoryType returns 400', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Bad Type', categoryType: 'foo' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(400)
+})
+
+test('POST /categories accepts income and expense categoryType', async () => {
+  const access_token = await getAccessToken()
+
+  const incomeRes = await request(app)
+    .post('/categories')
+    .send({ name: 'Salary', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const expenseRes = await request(app)
+    .post('/categories')
+    .send({ name: 'Groceries', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  expect(incomeRes.body).toStrictEqual({
+    id: expect.any(String),
+    name: 'Salary',
+    categoryType: 'income',
+  })
+  expect(expenseRes.body).toStrictEqual({
+    id: expect.any(String),
+    name: 'Groceries',
+    categoryType: 'expense',
+  })
+})
+
+test('GET /categories returns categoryType for both types', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Salary', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'Food', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const res = await request(app)
+    .get('/categories')
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(res.body).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: 'Salary', categoryType: 'income' }),
+      expect.objectContaining({ name: 'Food', categoryType: 'expense' }),
+    ]),
+  )
+})
+
+test('PATCH /categories updates categoryType', async () => {
+  const access_token = await getAccessToken()
+
+  const createRes = await request(app)
+    .post('/categories')
+    .send({ name: 'Flexible', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  const id = createRes.body.id
+
+  const patchRes = await request(app)
+    .patch(`/categories/${id}`)
+    .send({ name: 'Flexible', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(200)
+
+  expect(patchRes.body).toStrictEqual({
+    id,
+    name: 'Flexible',
+    categoryType: 'income',
+  })
+})
+
+test('PATCH /categories without categoryType returns 400', async () => {
+  const access_token = await getAccessToken()
+
+  const createRes = await request(app)
+    .post('/categories')
+    .send({ name: 'ToPatch', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  await request(app)
+    .patch(`/categories/${createRes.body.id}`)
+    .send({ name: 'ToPatch' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(400)
+})
+
+test('POST /categories rejects duplicate name for the same user even when categoryType differs (current uniqueness is only on name)', async () => {
+  const access_token = await getAccessToken()
+
+  await request(app)
+    .post('/categories')
+    .send({ name: 'UniqueName', categoryType: 'expense' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(201)
+
+  // Current unique constraint is on (user, lower(name)) only.
+  // Same name + different categoryType will be allowed after the upcoming migration
+  // that changes uniqueness to (name, categoryType).
+  await request(app)
+    .post('/categories')
+    .send({ name: 'UniqueName', categoryType: 'income' })
+    .set('Authorization', `Bearer ${access_token}`)
+    .expect(409)
+})
+
 test('POST /categories without authorization header returns 401', async () => {
-  await request(app).post('/categories').send({ name: 'Food' }).expect(401)
+  await request(app).post('/categories').send({ name: 'Food', categoryType: 'expense' }).expect(401)
 })
 
 test('GET /categories without authorization header returns 401', async () => {
@@ -493,7 +641,7 @@ test('GET /categories/:id without authorization header returns 401', async () =>
 test('PATCH /categories/:id without authorization header returns 401', async () => {
   await request(app)
     .patch('/categories/00000000-0000-0000-0000-000000000000')
-    .send({ name: 'Updated' })
+    .send({ name: 'Updated', categoryType: 'expense' })
     .expect(401)
 })
 
