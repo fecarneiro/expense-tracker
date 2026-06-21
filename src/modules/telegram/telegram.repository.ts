@@ -1,7 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import { type NewTelegram, telegramTable } from '../../database/schemas/telegram.schema.js'
+import {
+  type NewTelegram,
+  telegramAccountsTable,
+} from '../../database/schemas/telegram-accounts.schema.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
 import type {
   FindAccountByTelegramIdInput,
@@ -19,11 +22,14 @@ export class TelegramRepository {
     }
 
     try {
-      const [telegram] = await this.database.insert(telegramTable).values(values).returning()
+      const [telegram] = await this.database
+        .insert(telegramAccountsTable)
+        .values(values)
+        .returning()
 
       return telegram ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'telegram_telegramId_unique')) {
+      if (isUniqueViolation(err, 'telegram_accounts_telegramId_unique')) {
         throw new TelegramAccountAlreadyExistsError()
       }
       throw err
@@ -35,8 +41,8 @@ export class TelegramRepository {
   ): Promise<TelegramAccount | null> {
     const [user] = await this.database
       .select()
-      .from(telegramTable)
-      .where(eq(telegramTable.telegramId, data.telegramId))
+      .from(telegramAccountsTable)
+      .where(eq(telegramAccountsTable.telegramId, data.telegramId))
 
     return user ?? null
   }

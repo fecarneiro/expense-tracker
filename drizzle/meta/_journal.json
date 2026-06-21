@@ -43,6 +43,41 @@
       "when": 1781689568147,
       "tag": "0005_past_silhouette",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781972600215,
+      "tag": "0006_condemned_iron_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781977936738,
+      "tag": "0007_fast_the_call",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781978531106,
+      "tag": "0008_mushy_the_fallen",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781979468367,
+      "tag": "0009_free_nehzno",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781980013167,
+      "tag": "0010_red_morph",
+      "breakpoints": true
     }
   ]
 }

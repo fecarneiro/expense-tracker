@@ -5,7 +5,7 @@
   "engines": {
     "node": "24.x"
   },
-  "packageManager": "pnpm@11.1.1",
+  "packageManager": "pnpm@11.8.0",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -24,33 +24,33 @@
     "prepare": "husky || true"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.4.6",
+    "@electric-sql/pglite": "^0.5.3",
     "@grammyjs/conversations": "^2.1.1",
-    "@scalar/express-api-reference": "^0.10.3",
+    "@scalar/express-api-reference": "^0.10.4",
     "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
-    "grammy": "^1.43.0",
+    "grammy": "^1.44.0",
     "jose": "^6.2.3",
-    "pg": "^8.20.0",
+    "pg": "^8.22.0",
     "zod": "^4.4.3",
     "zod-openapi": "^6.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.14",
+    "@biomejs/biome": "2.5.0",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
-    "@types/node": "^24.12.2",
+    "@types/node": "^26.0.0",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^7.2.0",
     "drizzle-kit": "^0.31.10",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^17.0.7",
     "supertest": "^7.2.2",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.4",
     "typescript": "7.0.1-rc",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.9"
   },
   "lint-staged": {
     "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": "biome check --write --no-errors-on-unmatched"

@@ -7,6 +7,7 @@ import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
+import type { CategoryType } from '../../categories/category.types.js'
 
 let app: ReturnType<typeof createApp>
 let dbTest: Database
@@ -33,10 +34,16 @@ async function getAccessToken({ email = 'johndoe@email.com', password = '1234567
   return res.body.access_token
 }
 
-async function createCategory(access_token: string, { name = 'Eating out' } = {}) {
+async function createCategory(
+  access_token: string,
+  {
+    name = 'Eating out',
+    categoryType = 'expense',
+  }: { name?: string; categoryType?: CategoryType } = {},
+) {
   return request(app)
     .post('/categories')
-    .send({ name })
+    .send({ name, categoryType })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(201)
 }

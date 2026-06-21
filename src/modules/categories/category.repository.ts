@@ -11,6 +11,7 @@ import type {
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   FindCategoryByNameInput,
+  FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
 
@@ -21,6 +22,7 @@ export class CategoryRepository {
     const values: NewCategoryRow = {
       userId: data.userId,
       name: data.name,
+      categoryType: data.categoryType,
     }
 
     try {
@@ -28,7 +30,7 @@ export class CategoryRepository {
 
       return category ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_category_name')) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()
       }
 
@@ -37,16 +39,18 @@ export class CategoryRepository {
   }
 
   async update(data: UpdateCategoryInput): Promise<Category | null> {
+    const { id, userId, ...updateData } = data
+
     try {
       const [category] = await this.database
         .update(categoriesTable)
-        .set({ name: data.name })
+        .set(updateData)
         .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
         .returning()
 
       return category ?? null
     } catch (err) {
-      if (isUniqueViolation(err, 'unique_category_name')) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()
       }
 
@@ -61,6 +65,18 @@ export class CategoryRepository {
       .where(and(eq(categoriesTable.id, data.id), eq(categoriesTable.userId, data.userId)))
 
     return category ?? null
+  }
+
+  async findByType(data: FindCategoryByTypeInput): Promise<Category[]> {
+    return this.database
+      .select()
+      .from(categoriesTable)
+      .where(
+        and(
+          eq(categoriesTable.userId, data.userId),
+          eq(categoriesTable.categoryType, data.categoryType),
+        ),
+      )
   }
 
   async findByName(data: FindCategoryByNameInput): Promise<Category | null> {

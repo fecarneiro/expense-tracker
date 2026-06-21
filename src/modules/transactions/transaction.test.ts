@@ -41,6 +41,7 @@ async function seed(email = 'user@test.com') {
     .values({
       userId: user.id,
       name: 'Eating out',
+      categoryType: 'expense',
     })
     .returning()
 

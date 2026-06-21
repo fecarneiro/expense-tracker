@@ -22,7 +22,7 @@
 
   // TypeScript 7 (native): requires the "TypeScript (Native Preview)" extension
   // (typescriptteam.native-preview). Points to the workspace package root — not /lib.
-  "typescript.native-preview.tsdk": "./node_modules/typescript"
+  "typescript.experimental.useTsgo": true
 
   // Fallback for TypeScript 6 (built-in extension): if Native Preview causes issues,
   // comment the setting above and uncomment the line below after pinning typescript@6.
