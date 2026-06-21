@@ -21,16 +21,21 @@ export function handleNewTransactionConversation(
   ) {
     const userId = await conversation.external((ctx) => ctx.userId)
 
-    // ── Fail Fast (no categories) ─────────────────
-    const categories = await conversation.external(() => categoryService.findAll({ userId }))
+    const categories = await conversation.external(() =>
+      categoryService.findByType({
+        userId,
+        categoryType: transactionType,
+      }),
+    )
 
     if (categories.length === 0) {
-      await ctx.reply('Create at least one category before adding a transaction.')
-      return
+      return ctx.reply(
+        `Create at least one category of type '${transactionType}' before adding a transaction.`,
+      )
     }
 
     // ── Amount Input ─────────────────────────────
-    const transactionLabel = transactionType === 'expense' ? 'spend' : 'received'
+    const transactionLabel = transactionType === 'expense' ? 'spent' : 'received'
 
     await ctx.reply(`How much did you ${transactionLabel}?`)
     let amountInCents: TransactionAmountInCents | null = null
