@@ -5,6 +5,7 @@ import { registerBotCommands } from './commands.js'
 import type { TelegramRuntimeConfig } from './config/telegram.config.js'
 import { errorHandler } from './error-handler.js'
 import { handleMonthlyBalance } from './handlers/balance.handler.js'
+import { handleFastTransaction } from './handlers/fast-transaction.handler.js'
 import { handleLastTransactions } from './handlers/last-transactions.handler.js'
 import { handleLinkAccount } from './handlers/link-account.handler.js'
 import { handleNewTransactionConversation } from './handlers/new-transaction.handler.js'
@@ -54,6 +55,11 @@ export function createTelegramBot(
 
   bot.command('last', async (ctx) => {
     await handleLastTransactions(ctx, transactionService)
+  })
+
+  // Text Messages
+  bot.on('message:text', async (ctx) => {
+    await handleFastTransaction(ctx, categoryService, transactionService)
   })
 
   // ── Bot Commands Menu ─────────────────────────────────

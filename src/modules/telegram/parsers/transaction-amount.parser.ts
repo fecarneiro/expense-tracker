@@ -4,7 +4,7 @@ import type { TransactionAmountInCents } from '../../transactions/transaction.ty
 export function transactionAmountParser(message: string): TransactionAmountInCents | null {
   if (!message) return null
 
-  const normalized = message.trim().replace(',', '.')
+  const normalized = message.trim().replace(/^[+-]/, '').replace(',', '.')
   const numeric = Number(normalized)
   const cents = Math.round(numeric * 100)
 
