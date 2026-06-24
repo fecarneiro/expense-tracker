@@ -16,7 +16,7 @@ export type FindCategoryByIdInput = Pick<Category, 'id' | 'userId'>
 
 export type FindCategoryByTypeInput = Pick<Category, 'userId' | 'categoryType'>
 
-export type FindCategoryByNameInput = Pick<Category, 'userId' | 'name'>
+export type FindCategoryByNameAndTypeInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 
 export type FindAllCategoriesInput = Pick<Category, 'userId'>
 

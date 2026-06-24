@@ -6,7 +6,7 @@ import type {
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
-  FindCategoryByNameInput,
+  FindCategoryByNameAndTypeInput,
   FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
@@ -48,9 +48,9 @@ export class CategoryService {
     return this.categoryRepository.findByType(data)
   }
 
-  async findByName(data: FindCategoryByNameInput): Promise<Category | null> {
-    // Does not throw because it is used by Telegram bot flows.
-    return this.categoryRepository.findByName(data)
+  async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
+    // Does not throw because it is used only by Telegram bot flows.
+    return this.categoryRepository.findByNameAndType(data)
   }
 
   async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
