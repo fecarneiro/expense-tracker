@@ -6,11 +6,8 @@ export async function handleStart(ctx: BotContext) {
 Welcome to Expense Tracker! 📊
 
 Getting started:
-1. First, visit the <a href="https://expenses.fecarneiro.dev/docs">API Documentation</a>.
-2. Register a new user.
-3. Login to get a JWT token.
-4. Get your telegram linking code using your JWT token to get a 6-digit code.
-5. In Telegram, type the link command with your 6-digit code.
+1. Register your account and generate your linking code <a href="https://expenses.fecarneiro.dev/docs">here</a>.
+2. Type the <code>/link</code> command followed by your 6-digit code (e.g., <code>/link 123456</code>).
 `,
     { parse_mode: 'HTML' },
   )

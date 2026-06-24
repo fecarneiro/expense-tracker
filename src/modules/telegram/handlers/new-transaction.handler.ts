@@ -86,10 +86,10 @@ export function handleNewTransactionConversation(
       notes: null,
     })
 
+    // ── Reply ─────────────────────────────────────
     const label = transactionType === 'expense' ? 'Expense' : 'Income'
     const amount = centsToString(amountInCents)
 
-    // ── Reply ─────────────────────────────────────
     return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
   }
 }

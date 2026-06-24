@@ -10,7 +10,7 @@ import type {
   DeletedCategory,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
-  FindCategoryByNameInput,
+  FindCategoryByNameAndTypeInput,
   FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
@@ -79,13 +79,14 @@ export class CategoryRepository {
       )
   }
 
-  async findByName(data: FindCategoryByNameInput): Promise<Category | null> {
+  async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
     const [category] = await this.database
       .select()
       .from(categoriesTable)
       .where(
         and(
           eq(sql`lower(${categoriesTable.name})`, sql`lower(${data.name})`),
+          eq(categoriesTable.categoryType, data.categoryType),
           eq(categoriesTable.userId, data.userId),
         ),
       )

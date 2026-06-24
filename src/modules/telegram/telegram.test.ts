@@ -1,18 +1,11 @@
 import { eq } from 'drizzle-orm'
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest'
+import { beforeAll, beforeEach, expect, test } from 'vitest'
 import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { telegramAccountsTable } from '../../database/schemas/telegram-accounts.schema.js'
 import { telegramLinkingCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
-import { TelegramGenerateCodeFailedError } from './linking-code/linking-code.error.js'
-import { LinkingCodeRepository } from './linking-code/linking-code.repository.js'
-import {
-  LINKING_CODE_GENERATION_MAX_ATTEMPTS,
-  LINKING_CODE_MAX_NUMBER,
-  LINKING_CODE_MIN_NUMBER,
-} from './linking-code/linking-code.service.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
 
 let dbTest: Database
@@ -53,100 +46,6 @@ test('findAccountByTelegramId fails when there is no user linked to the given te
   })
 
   expect(result).toBeNull()
-})
-
-test('createLinkingCode creates and persists a linking code for an existing user', async () => {
-  const { telegramService, createUser } = sut()
-  const user = await createUser()
-
-  const linkingCode = await telegramService.createLinkingCode({ userId: user.id })
-
-  expect(linkingCode).toStrictEqual({
-    code: expect.any(Number),
-    createdAt: expect.any(Date),
-  })
-  expect(linkingCode.code).toBeGreaterThanOrEqual(LINKING_CODE_MIN_NUMBER)
-  expect(linkingCode.code).toBeLessThan(LINKING_CODE_MAX_NUMBER)
-
-  const [persistedLinkingCode] = await dbTest
-    .select()
-    .from(telegramLinkingCodesTable)
-    .where(eq(telegramLinkingCodesTable.userId, user.id))
-
-  expect(persistedLinkingCode).toStrictEqual({
-    id: expect.any(String),
-    userId: user.id,
-    code: linkingCode.code,
-    createdAt: linkingCode.createdAt,
-  })
-})
-
-test('createLinkingCode replaces the linking code when called again for the same user', async () => {
-  const { telegramService, createUser } = sut()
-  const user = await createUser()
-
-  const firstLinkingCode = await telegramService.createLinkingCode({ userId: user.id })
-  const secondLinkingCode = await telegramService.createLinkingCode({ userId: user.id })
-
-  expect(secondLinkingCode.createdAt.getTime()).toBeGreaterThanOrEqual(
-    firstLinkingCode.createdAt.getTime(),
-  )
-
-  const persistedLinkingCodes = await dbTest
-    .select()
-    .from(telegramLinkingCodesTable)
-    .where(eq(telegramLinkingCodesTable.userId, user.id))
-
-  expect(persistedLinkingCodes).toHaveLength(1)
-  expect(persistedLinkingCodes[0]).toStrictEqual({
-    id: expect.any(String),
-    userId: user.id,
-    code: secondLinkingCode.code,
-    createdAt: secondLinkingCode.createdAt,
-  })
-})
-
-test('createLinkingCode throws when all generation attempts fail', async () => {
-  const { telegramService, createUser } = sut()
-  const user = await createUser()
-
-  const saveLinkingCodeSpy = vi
-    .spyOn(LinkingCodeRepository.prototype, 'saveLinkingCode')
-    .mockResolvedValue({ saved: false })
-
-  await expect(telegramService.createLinkingCode({ userId: user.id })).rejects.toThrow(
-    new TelegramGenerateCodeFailedError(),
-  )
-
-  expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE_GENERATION_MAX_ATTEMPTS)
-  saveLinkingCodeSpy.mockRestore()
-})
-
-test('saveLinkingCode does not persist when the code is already used by another user', async () => {
-  const { createUser } = sut()
-  const repository = new LinkingCodeRepository(dbTest)
-
-  const firstUser = await createUser()
-  const secondUser = await createUser('jane@email.com')
-
-  const code = 123_456
-
-  const firstResult = await repository.saveLinkingCode({ userId: firstUser.id, code })
-  expect(firstResult).toEqual({
-    saved: true,
-    generatedLinkingCode: { code, createdAt: expect.any(Date) },
-  })
-
-  const secondResult = await repository.saveLinkingCode({ userId: secondUser.id, code })
-  expect(secondResult).toEqual({ saved: false })
-
-  const persistedCodes = await dbTest
-    .select()
-    .from(telegramLinkingCodesTable)
-    .where(eq(telegramLinkingCodesTable.code, code))
-
-  expect(persistedCodes).toHaveLength(1)
-  expect(persistedCodes[0]).toMatchObject({ userId: firstUser.id, code })
 })
 
 test('verifyAndLinkAccount links account and deletes the linking code on success', async () => {

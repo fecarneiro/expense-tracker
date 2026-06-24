@@ -353,9 +353,10 @@ test('findByName returns the category of the owner ignoring capitalization', asy
     categoryType: 'expense',
   })
 
-  const result = await categoryService.findByName({
+  const result = await categoryService.findByNameAndType({
     name: 'hobbies',
     userId: owner.user.id,
+    categoryType: 'expense',
   })
 
   expect(result).toStrictEqual({
@@ -371,9 +372,10 @@ test('findByName returns null when the category does not exist', async () => {
   const { categoryService } = sut()
   const owner = await seed()
 
-  const result = await categoryService.findByName({
+  const result = await categoryService.findByNameAndType({
     name: 'Nonexistent',
     userId: owner.user.id,
+    categoryType: 'expense',
   })
 
   expect(result).toBeNull()
@@ -390,8 +392,9 @@ test('findByName does not return categories from another user', async () => {
     categoryType: 'expense',
   })
 
-  const result = await categoryService.findByName({
+  const result = await categoryService.findByNameAndType({
     name: 'Hobbies',
+    categoryType: 'expense',
     userId: owner.user.id,
   })
 
