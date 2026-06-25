@@ -1,6 +1,8 @@
 import { eq } from 'drizzle-orm'
-import type { Database } from '../../database/db.js'
+import { isUniqueViolation } from '../../database/db.error.js'
+import type { Database, DatabaseClient } from '../../database/db.js'
 import { type NewUserRow, usersTable } from '../../database/schemas/user.schema.js'
+import { EmailAlreadyInUseError, UserCreationFailedError } from './user.error.js'
 import type {
   CreateUserRepositoryInput,
   DeletedUser,
@@ -14,14 +16,28 @@ import type {
 export class UserRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: CreateUserRepositoryInput): Promise<User | null> {
+  async create(
+    data: CreateUserRepositoryInput,
+    dbClient: DatabaseClient = this.database,
+  ): Promise<User> {
     const values: NewUserRow = {
       email: data.email,
       passwordHash: data.passwordHash,
     }
-    const [user] = await this.database.insert(usersTable).values(values).returning()
+    try {
+      const [user] = await dbClient.insert(usersTable).values(values).returning()
 
-    return user ?? null
+      if (!user) {
+        throw new UserCreationFailedError()
+      }
+
+      return user
+    } catch (err) {
+      if (isUniqueViolation(err, 'users_email_unique')) {
+        throw new EmailAlreadyInUseError()
+      }
+      throw err
+    }
   }
 
   async findById(data: FindUserByIdInput): Promise<User | null> {

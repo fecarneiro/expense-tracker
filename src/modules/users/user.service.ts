@@ -1,10 +1,7 @@
+import type { DatabaseClient } from '../../database/db.js'
 import type { PasswordHasher } from '../../shared/password-hasher.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
-import {
-  AuthenticatedUserNotFoundError,
-  EmailAlreadyInUseError,
-  UserCreationFailedError,
-} from './user.error.js'
+import { AuthenticatedUserNotFoundError } from './user.error.js'
 import { toPublicUser } from './user.mapper.js'
 
 import type { UserRepository } from './user.repository.js'
@@ -25,24 +22,16 @@ export class UserService {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async createWithPassword(data: CreateUserInput): Promise<PublicUser> {
-    const existingUser = await this.userRepository.findByEmail({ email: data.email })
-
-    if (existingUser) {
-      throw new EmailAlreadyInUseError()
-    }
-
+  async createWithPassword(data: CreateUserInput, dbClient?: DatabaseClient): Promise<PublicUser> {
     const passwordHash = await this.passwordHasher.hash(data.password)
 
-    const createdUser = await this.userRepository.create({
-      email: data.email,
-      passwordHash,
-    })
-
-    if (!createdUser) {
-      throw new UserCreationFailedError()
-    }
-
+    const createdUser = await this.userRepository.create(
+      {
+        email: data.email,
+        passwordHash,
+      },
+      dbClient,
+    )
     return toPublicUser(createdUser)
   }
 
