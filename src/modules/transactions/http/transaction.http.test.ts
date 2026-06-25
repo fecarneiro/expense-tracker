@@ -6,6 +6,7 @@ import type { Database } from '../../../database/db.js'
 import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
 import type { CategoryType } from '../../categories/category.types.js'
 
@@ -25,14 +26,6 @@ beforeEach(async () => {
   await dbTest.delete(categoriesTable)
   await dbTest.delete(usersTable)
 })
-
-async function getAccessToken({ email = 'johndoe@email.com', password = '12345678' } = {}) {
-  const credentials = { email, password }
-  await request(app).post('/auth/register').send(credentials).expect(201)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-
-  return res.body.access_token
-}
 
 async function createCategory(
   access_token: string,
@@ -78,7 +71,7 @@ async function createTransaction(
 }
 
 test('POST /transactions returns 201 with created transaction', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   const res = await request(app)
@@ -107,7 +100,7 @@ test('POST /transactions returns 201 with created transaction', async () => {
 })
 
 test('POST /transactions with invalid body returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/transactions')
@@ -119,7 +112,7 @@ test('POST /transactions with invalid body returns 400', async () => {
 })
 
 test('POST /transactions with unknown category returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   await request(app)
     .post('/transactions')
     .send({
@@ -133,8 +126,8 @@ test('POST /transactions with unknown category returns 404', async () => {
 })
 
 test('POST /transactions with category from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -153,7 +146,7 @@ test('POST /transactions with category from another user returns 404', async () 
 })
 
 test('POST /transactions with empty notes returns 201 with null notes', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   const res = await request(app)
@@ -183,7 +176,7 @@ test('POST /transactions with empty notes returns 201 with null notes', async ()
 })
 
 test('POST /transactions with omitted notes returns 201 with null notes', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   const res = await request(app)
@@ -212,7 +205,7 @@ test('POST /transactions with omitted notes returns 201 with null notes', async 
 })
 
 test('POST /transactions with notes longer than 70 characters returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   await request(app)
@@ -241,7 +234,7 @@ test('POST /transactions without authorization header returns 401', async () => 
 })
 
 test('GET /transactions returns 200 with an empty list', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const res = await request(app)
     .get('/transactions')
     .set('Authorization', `Bearer ${access_token}`)
@@ -250,7 +243,7 @@ test('GET /transactions returns 200 with an empty list', async () => {
   expect(res.body).toStrictEqual([])
 })
 test('GET /transactions returns 200 with authenticated user transactions', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const oldestTransaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -274,8 +267,8 @@ test('GET /transactions returns 200 with authenticated user transactions', async
 })
 
 test('GET /transactions does not return transactions from other users', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -295,7 +288,7 @@ test('GET /transactions does not return transactions from other users', async ()
 })
 
 test('GET /transactions respects limit and offset', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   await createTransaction(access_token, {
@@ -323,7 +316,7 @@ test('GET /transactions respects limit and offset', async () => {
 })
 
 test('GET /transactions with invalid query params returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/transactions?limit=0')
@@ -336,7 +329,7 @@ test('GET /transactions without authorization header returns 401', async () => {
 })
 
 test('GET /transactions/:id returns 200 with transaction', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -352,7 +345,7 @@ test('GET /transactions/:id returns 200 with transaction', async () => {
 })
 
 test('GET /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/transactions/invalid-uuid')
@@ -361,7 +354,7 @@ test('GET /transactions/:id with invalid id returns 400', async () => {
 })
 
 test('GET /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/transactions/00000000-0000-0000-0000-000000000000')
@@ -370,8 +363,8 @@ test('GET /transactions/:id with unknown transaction returns 404', async () => {
 })
 
 test('GET /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -391,7 +384,7 @@ test('GET /transactions/:id without authorization header returns 401', async () 
 })
 
 test('PATCH /transactions/:id returns 200 with updated transaction', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -419,7 +412,7 @@ test('PATCH /transactions/:id returns 200 with updated transaction', async () =>
 })
 
 test('PATCH /transactions/:id preserves omitted fields', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -442,7 +435,7 @@ test('PATCH /transactions/:id preserves omitted fields', async () => {
 })
 
 test('PATCH /transactions/:id with empty body returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -456,7 +449,7 @@ test('PATCH /transactions/:id with empty body returns 400', async () => {
 })
 
 test('PATCH /transactions/:id with invalid body returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -470,7 +463,7 @@ test('PATCH /transactions/:id with invalid body returns 400', async () => {
 })
 
 test('PATCH /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/transactions/invalid-uuid')
@@ -480,7 +473,7 @@ test('PATCH /transactions/:id with invalid id returns 400', async () => {
 })
 
 test('PATCH /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/transactions/00000000-0000-0000-0000-000000000000')
@@ -490,8 +483,8 @@ test('PATCH /transactions/:id with unknown transaction returns 404', async () =>
 })
 
 test('PATCH /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -516,8 +509,8 @@ test('PATCH /transactions/:id from another user returns 404', async () => {
 })
 
 test('PATCH /transactions/:id with category from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -535,7 +528,7 @@ test('PATCH /transactions/:id with category from another user returns 404', asyn
 })
 
 test('PATCH /transactions/:id with empty notes returns 200 with null notes', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -562,7 +555,7 @@ test('PATCH /transactions/:id without authorization header returns 401', async (
 })
 
 test('DELETE /transactions/:id returns 204', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
@@ -580,7 +573,7 @@ test('DELETE /transactions/:id returns 204', async () => {
 })
 
 test('DELETE /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/transactions/invalid-uuid')
@@ -589,7 +582,7 @@ test('DELETE /transactions/:id with invalid id returns 400', async () => {
 })
 
 test('DELETE /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/transactions/00000000-0000-0000-0000-000000000000')
@@ -598,8 +591,8 @@ test('DELETE /transactions/:id with unknown transaction returns 404', async () =
 })
 
 test('DELETE /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })

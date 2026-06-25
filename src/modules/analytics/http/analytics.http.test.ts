@@ -6,6 +6,7 @@ import type { Database } from '../../../database/db.js'
 import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
 import type { CategoryType } from '../../categories/category.types.js'
 
@@ -25,14 +26,6 @@ beforeEach(async () => {
   await dbTest.delete(categoriesTable)
   await dbTest.delete(usersTable)
 })
-
-async function getAccessToken({ email = 'johndoe@email.com', password = '12345678' } = {}) {
-  const credentials = { email, password }
-  await request(app).post('/auth/register').send(credentials).expect(201)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-
-  return res.body.access_token
-}
 
 async function createCategory(
   access_token: string,
@@ -75,7 +68,7 @@ async function createTransaction(
 }
 
 test('GET /analytics/balances returns 200 with an empty list', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .get('/analytics/balances?startMonth=2026-01&endMonth=2026-01')
@@ -86,7 +79,7 @@ test('GET /analytics/balances returns 200 with an empty list', async () => {
 })
 
 test('GET /analytics/balances returns 200 with monthly totals', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   await createTransaction(access_token, {
@@ -130,7 +123,7 @@ test('GET /analytics/balances returns 200 with monthly totals', async () => {
 })
 
 test('GET /analytics/balances respects startMonth and endMonth query params', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   const category = await createCategory(access_token)
 
   await createTransaction(access_token, {
@@ -155,8 +148,8 @@ test('GET /analytics/balances respects startMonth and endMonth query params', as
 })
 
 test('GET /analytics/balances does not include other users transactions', async () => {
-  const access_token_user1 = await getAccessToken()
-  const access_token_user2 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest)
+  const access_token_user2 = await getTestAccessToken(dbTest, {
     email: 'user2@domain.com',
     password: '123456789',
   })
@@ -178,7 +171,7 @@ test('GET /analytics/balances does not include other users transactions', async 
 })
 
 test('GET /analytics/balances with invalid query params returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/analytics/balances?startMonth=2026-13')
