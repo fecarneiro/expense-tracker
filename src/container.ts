@@ -30,8 +30,8 @@ export function createContainer(db: Database) {
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
-  const authService = new AuthService(userService)
   const categoryService = new CategoryService(categoryRepository)
+  const authService = new AuthService(userService, categoryService, db)
   const transactionService = new TransactionService(transactionRepository)
   const analyticsService = new AnalyticsService(analyticsQuery)
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
