@@ -6,6 +6,7 @@ import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error
 import type {
   Category,
   CreateCategoryInput,
+  CreateManyCategoriesInput,
   DeleteCategoryInput,
   DeletedCategory,
   FindAllCategoriesInput,
@@ -29,6 +30,24 @@ export class CategoryRepository {
       const [category] = await this.database.insert(categoriesTable).values(values).returning()
 
       return category ?? null
+    } catch (err) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
+        throw new CategoryAlreadyExistsError()
+      }
+
+      throw err
+    }
+  }
+
+  async createMany(data: CreateManyCategoriesInput): Promise<Category[]> {
+    const values: NewCategoryRow[] = data.categories.map((category) => ({
+      userId: data.userId,
+      name: category.name,
+      categoryType: category.categoryType,
+    }))
+
+    try {
+      return await this.database.insert(categoriesTable).values(values).returning()
     } catch (err) {
       if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()
