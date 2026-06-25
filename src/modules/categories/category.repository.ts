@@ -1,6 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
-import type { Database } from '../../database/db.js'
+import type { Database, DatabaseClient } from '../../database/db.js'
 import { categoriesTable, type NewCategoryRow } from '../../database/schemas/category.schema.js'
 import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
@@ -39,7 +39,10 @@ export class CategoryRepository {
     }
   }
 
-  async createMany(data: CreateManyCategoriesInput): Promise<Category[]> {
+  async createMany(
+    data: CreateManyCategoriesInput,
+    dbClient: DatabaseClient = this.database,
+  ): Promise<Category[]> {
     const values: NewCategoryRow[] = data.categories.map((category) => ({
       userId: data.userId,
       name: category.name,
@@ -47,7 +50,7 @@ export class CategoryRepository {
     }))
 
     try {
-      return await this.database.insert(categoriesTable).values(values).returning()
+      return await dbClient.insert(categoriesTable).values(values).returning()
     } catch (err) {
       if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()

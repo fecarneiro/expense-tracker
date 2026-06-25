@@ -1,3 +1,4 @@
+import type { DatabaseClient } from '../../database/db.js'
 import { defaultCategories } from './category.defaults.js'
 import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
 import type { CategoryRepository } from './category.repository.js'
@@ -26,11 +27,17 @@ export class CategoryService {
     return category
   }
 
-  async createDefaultsForUser(data: CreateDefaultCategoriesInput): Promise<Category[]> {
-    const categories = await this.categoryRepository.createMany({
-      userId: data.userId,
-      categories: defaultCategories,
-    })
+  async createDefaultsForUser(
+    data: CreateDefaultCategoriesInput,
+    dbClient?: DatabaseClient,
+  ): Promise<Category[]> {
+    const categories = await this.categoryRepository.createMany(
+      {
+        userId: data.userId,
+        categories: defaultCategories,
+      },
+      dbClient,
+    )
 
     if (categories.length !== defaultCategories.length) {
       throw new CategoryCreationFailedError()
