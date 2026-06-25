@@ -10,6 +10,13 @@ export interface Category {
 
 export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 
+export type CreateManyCategoriesInput = {
+  userId: string
+  categories: ReadonlyArray<Pick<Category, 'name' | 'categoryType'>>
+}
+
+export type CreateDefaultCategoriesInput = Pick<Category, 'userId'>
+
 export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name' | 'categoryType'>
 
 export type FindCategoryByIdInput = Pick<Category, 'id' | 'userId'>

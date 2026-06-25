@@ -1,11 +1,12 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
-import type { Database } from '../../database/db.js'
+import type { Database, DatabaseClient } from '../../database/db.js'
 import { categoriesTable, type NewCategoryRow } from '../../database/schemas/category.schema.js'
 import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
   Category,
   CreateCategoryInput,
+  CreateManyCategoriesInput,
   DeleteCategoryInput,
   DeletedCategory,
   FindAllCategoriesInput,
@@ -29,6 +30,27 @@ export class CategoryRepository {
       const [category] = await this.database.insert(categoriesTable).values(values).returning()
 
       return category ?? null
+    } catch (err) {
+      if (isUniqueViolation(err, 'unique_category_name_type')) {
+        throw new CategoryAlreadyExistsError()
+      }
+
+      throw err
+    }
+  }
+
+  async createMany(
+    data: CreateManyCategoriesInput,
+    dbClient: DatabaseClient = this.database,
+  ): Promise<Category[]> {
+    const values: NewCategoryRow[] = data.categories.map((category) => ({
+      userId: data.userId,
+      name: category.name,
+      categoryType: category.categoryType,
+    }))
+
+    try {
+      return await dbClient.insert(categoriesTable).values(values).returning()
     } catch (err) {
       if (isUniqueViolation(err, 'unique_category_name_type')) {
         throw new CategoryAlreadyExistsError()

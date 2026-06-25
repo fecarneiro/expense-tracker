@@ -5,6 +5,7 @@ import { categoriesTable } from '../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
 import { setupDbTest } from '../../tests/setup-db-test.js'
+import { defaultCategories } from './category.defaults.js'
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
@@ -102,6 +103,24 @@ test('create allows the same name for different users', async () => {
       categoryType: 'expense',
     }),
   ).resolves.toMatchObject({ name: 'Hobbies' })
+})
+
+test('createDefaultsForUser creates default categories for a user', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  const categories = await categoryService.createDefaultsForUser({ userId: owner.user.id })
+  expect(categories.length).toBe(defaultCategories.length)
+})
+
+test('createDefaultsForUser fails when the default categories already exist', async () => {
+  const { categoryService } = sut()
+  const owner = await seed()
+
+  await categoryService.createDefaultsForUser({ userId: owner.user.id })
+  await expect(categoryService.createDefaultsForUser({ userId: owner.user.id })).rejects.toThrow(
+    new CategoryAlreadyExistsError(),
+  )
 })
 
 test('update changes the fields of the owner category', async () => {

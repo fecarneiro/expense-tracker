@@ -6,6 +6,7 @@ import type { Database } from '../../../database/db.js'
 import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
 
 let app: ReturnType<typeof createApp>
@@ -26,16 +27,8 @@ beforeEach(async () => {
   await dbTest.delete(usersTable)
 })
 
-async function getAccessToken({ email = 'johndoe@email.com', password = '12345678' } = {}) {
-  const credentials = { email, password }
-  await request(app).post('/auth/register').send(credentials).expect(201)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-
-  return res.body.access_token
-}
-
 test('POST /categories returns 201 with created category', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .post('/categories')
@@ -51,7 +44,7 @@ test('POST /categories returns 201 with created category', async () => {
 })
 
 test('POST /categories with invalid name returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -61,7 +54,7 @@ test('POST /categories with invalid name returns 400', async () => {
 })
 
 test('POST /categories with name longer than 50 characters returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -71,7 +64,7 @@ test('POST /categories with name longer than 50 characters returns 400', async (
 })
 
 test('POST /categories with existing name returns 409', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -87,7 +80,7 @@ test('POST /categories with existing name returns 409', async () => {
 })
 
 test('GET /categories returns 200 with an empty list', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .get('/categories')
@@ -98,7 +91,7 @@ test('GET /categories returns 200 with an empty list', async () => {
 })
 
 test('GET /categories returns 200 with authenticated user categories', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryNames = ['Food', 'Transport', 'Entertainment']
   for (const name of categoryNames) {
@@ -133,7 +126,7 @@ test('GET /categories returns 200 with authenticated user categories', async () 
 })
 
 test('GET /categories with categoryType=expense returns only expense categories', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -162,7 +155,7 @@ test('GET /categories with categoryType=expense returns only expense categories'
 })
 
 test('GET /categories with categoryType=income returns only income categories', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -191,11 +184,11 @@ test('GET /categories with categoryType=income returns only income categories', 
 })
 
 test('GET /categories does not return categories from other users', async () => {
-  const access_token_user1 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest, {
     email: 'tester@domain.com',
     password: '12345678',
   })
-  const access_token_user2 = await getAccessToken()
+  const access_token_user2 = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -224,7 +217,7 @@ test('GET /categories does not return categories from other users', async () => 
 })
 
 test('GET /categories/:id returns 200 with category', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -247,7 +240,7 @@ test('GET /categories/:id returns 200 with category', async () => {
 })
 
 test('GET /categories/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/categories/invalid-uuid')
@@ -256,7 +249,7 @@ test('GET /categories/:id with invalid id returns 400', async () => {
 })
 
 test('GET /categories/:id with unknown category returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .get('/categories/00000000-0000-0000-0000-000000000000')
@@ -265,11 +258,11 @@ test('GET /categories/:id with unknown category returns 404', async () => {
 })
 
 test('GET /categories/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest, {
     email: 'tester@domain.com',
     password: '12345678',
   })
-  const access_token_user2 = await getAccessToken()
+  const access_token_user2 = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -286,7 +279,7 @@ test('GET /categories/:id from another user returns 404', async () => {
 })
 
 test('PATCH /categories/:id returns 200 with updated category', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -321,7 +314,7 @@ test('PATCH /categories/:id returns 200 with updated category', async () => {
 })
 
 test('PATCH /categories/:id allows keeping the same name', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -345,7 +338,7 @@ test('PATCH /categories/:id allows keeping the same name', async () => {
 })
 
 test('PATCH /categories/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
   await request(app)
     .patch('/categories/invalid-uuid')
     .send({ name: 'Updated Name', categoryType: 'expense' })
@@ -354,7 +347,7 @@ test('PATCH /categories/:id with invalid id returns 400', async () => {
 })
 
 test('PATCH /categories/:id with invalid name returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -372,7 +365,7 @@ test('PATCH /categories/:id with invalid name returns 400', async () => {
 })
 
 test('PATCH /categories/:id with name longer than 50 characters returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/categories/00000000-0000-0000-0000-000000000000')
@@ -382,7 +375,7 @@ test('PATCH /categories/:id with name longer than 50 characters returns 400', as
 })
 
 test('PATCH /categories/:id with unknown category returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/categories/00000000-0000-0000-0000-000000000000')
@@ -392,11 +385,11 @@ test('PATCH /categories/:id with unknown category returns 404', async () => {
 })
 
 test('PATCH /categories/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest, {
     email: 'tester@domain.com',
     password: '12345678',
   })
-  const access_token_user2 = await getAccessToken()
+  const access_token_user2 = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -414,7 +407,7 @@ test('PATCH /categories/:id from another user returns 404', async () => {
 })
 
 test('PATCH /categories/:id with existing name returns 409', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -438,7 +431,7 @@ test('PATCH /categories/:id with existing name returns 409', async () => {
 })
 
 test('PATCH /categories/:id with existing name in different capitalization returns 409', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -462,7 +455,7 @@ test('PATCH /categories/:id with existing name in different capitalization retur
 })
 
 test('DELETE /categories/:id returns 204', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -484,7 +477,7 @@ test('DELETE /categories/:id returns 204', async () => {
 })
 
 test('DELETE /categories/:id with invalid id returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/categories/invalid-uuid')
@@ -493,7 +486,7 @@ test('DELETE /categories/:id with invalid id returns 400', async () => {
 })
 
 test('DELETE /categories/:id with unknown category returns 404', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/categories/00000000-0000-0000-0000-000000000000')
@@ -502,11 +495,11 @@ test('DELETE /categories/:id with unknown category returns 404', async () => {
 })
 
 test('DELETE /categories/:id from another user returns 404', async () => {
-  const access_token_user1 = await getAccessToken({
+  const access_token_user1 = await getTestAccessToken(dbTest, {
     email: 'tester@domain.com',
     password: '12345678',
   })
-  const access_token_user2 = await getAccessToken()
+  const access_token_user2 = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -523,7 +516,7 @@ test('DELETE /categories/:id from another user returns 404', async () => {
 })
 
 test('DELETE /categories/:id with category in use returns 409', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -551,7 +544,7 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
 })
 
 test('POST /categories without categoryType returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -561,7 +554,7 @@ test('POST /categories without categoryType returns 400', async () => {
 })
 
 test('POST /categories with invalid categoryType returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -571,7 +564,7 @@ test('POST /categories with invalid categoryType returns 400', async () => {
 })
 
 test('POST /categories accepts income and expense categoryType', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const incomeRes = await request(app)
     .post('/categories')
@@ -598,7 +591,7 @@ test('POST /categories accepts income and expense categoryType', async () => {
 })
 
 test('GET /categories returns categoryType for both types', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')
@@ -626,7 +619,7 @@ test('GET /categories returns categoryType for both types', async () => {
 })
 
 test('PATCH /categories updates categoryType', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const createRes = await request(app)
     .post('/categories')
@@ -650,7 +643,7 @@ test('PATCH /categories updates categoryType', async () => {
 })
 
 test('PATCH /categories without categoryType returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const createRes = await request(app)
     .post('/categories')
@@ -666,7 +659,7 @@ test('PATCH /categories without categoryType returns 400', async () => {
 })
 
 test('POST /categories allows the same name for the same user when categoryType differs', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .post('/categories')

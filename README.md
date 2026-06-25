@@ -37,13 +37,14 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 ## Features
 
 * User registration and authentication
+* Default income and expense categories seeded automatically on registration
 * Authenticated user profile management
 * Category creation, listing, update and deletion
 * Income and expense registration
 * User transaction querying
 * Monthly reports with income, expense and balance summaries
 * Interactive API documentation with OpenAPI and Scalar
-* Optional Telegram Bot integration
+* Optional Telegram Bot integration with slash commands and fast text-based transaction registration
 
 ## Stack
 
@@ -205,7 +206,7 @@ curl http://localhost:3000/health
 | --------------- | ----------------------------------------------- |
 | `/auth`         | User registration, login and authentication     |
 | `/users`        | Authenticated user profile management           |
-| `/categories`   | Category creation, listing, update and deletion |
+| `/categories`   | Category creation, listing, update and deletion (defaults are seeded on registration) |
 | `/transactions` | Income and expense registration and querying    |
 | `/analytics`    | Financial reports and monthly summaries         |
 | `/telegram`     | Optional Telegram Bot integration               |
@@ -242,14 +243,22 @@ Store the `accessToken` returned by the login request:
 ACCESS_TOKEN="<access_token>"
 ```
 
-### Create a category
+### List categories
+
+```bash
+curl http://localhost:3000/categories \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+New accounts already include default categories such as Salary, Groceries, Transport and Bills. You can create additional custom categories when needed:
 
 ```bash
 curl -X POST http://localhost:3000/categories \
   -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Food"
+    "name": "Food",
+    "categoryType": "expense"
   }'
 ```
 
@@ -323,6 +332,32 @@ The integration is optional. If `TELEGRAM_BOT_TOKEN` is not defined, the applica
 | `/last`        | Lists the latest transactions                         |
 | `/report`      | Shows the monthly financial summary                   |
 
+### Fast transaction messages
+
+After linking your account, you can also register transactions by sending a plain text message in this format:
+
+```txt
+<amount> <category>
+```
+
+Examples:
+
+```txt
+200 eating out
+-40.10 groceries
++300.90 salary
+```
+
+Rules:
+
+* Amounts with `-`  or without operator are treated as expenses.
+* Amounts with `+` are treated as income.
+* Decimal separators `.` and `,` are both accepted.
+* The category name must match an existing category of the correct type (expense or income), ignoring capitalization.
+* If the message does not match this format, the bot replies with usage examples.
+
+For a guided flow with category selection, use `/expense` or `/income` instead.
+
 ### Linking with the API account
 
 To use the protected bot commands, the Telegram account must first be linked to an existing API user.
@@ -332,7 +367,7 @@ The flow works as follows:
 1. The user generates a linking code through the API.
 2. In Telegram, the user sends the `/link` command with the generated code.
 3. The bot validates the code and associates the `telegramId` with the API user.
-4. After linking, the user can use commands such as `/expense`, `/income`, `/last` and `/report`.
+4. After linking, the user can use commands such as `/expense`, `/income`, `/last` and `/report`, or register transactions by sending a text message in the `<amount> <category>` format.
 
 Example:
 

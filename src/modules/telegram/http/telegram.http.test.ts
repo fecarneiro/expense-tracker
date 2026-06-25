@@ -4,6 +4,7 @@ import { createApp } from '../../../app.js'
 import { createContainer } from '../../../container.js'
 import type { Database } from '../../../database/db.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
 import {
   LINKING_CODE_MAX_NUMBER,
@@ -26,16 +27,8 @@ beforeEach(async () => {
   await dbTest.delete(usersTable)
 })
 
-async function getAccessToken({ email = 'johndoe@email.com', password = '12345678' } = {}) {
-  const credentials = { email, password }
-  await request(app).post('/auth/register').send(credentials).expect(201)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-
-  return res.body.access_token as string
-}
-
 test('GET /telegram/generate-linking-code returns 201 with linking code', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .get('/telegram/generate-linking-code')
