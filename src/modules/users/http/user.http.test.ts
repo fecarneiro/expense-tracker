@@ -6,6 +6,7 @@ import type { Database } from '../../../database/db.js'
 import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
 import { setupDbTest } from '../../../tests/setup-db-test.js'
 
 let app: ReturnType<typeof createApp>
@@ -26,17 +27,8 @@ beforeEach(async () => {
   await dbTest.delete(usersTable)
 })
 
-async function getAccessToken() {
-  const credentials = { email: 'johndoe@email.com', password: '12345678' }
-
-  await request(app).post('/auth/register').send(credentials).expect(201)
-  const res = await request(app).post('/auth/login').send(credentials).expect(200)
-
-  return res.body.access_token
-}
-
 test('GET /users/me returns 200 with authenticated user', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .get('/users/me')
@@ -50,7 +42,7 @@ test('GET /users/me returns 200 with authenticated user', async () => {
 })
 
 test('GET /users/me does not return sensitive fields', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const res = await request(app)
     .get('/users/me')
@@ -65,7 +57,7 @@ test('GET /users/me without authorization header returns 401', async () => {
 })
 
 test('PATCH /users/me/password returns 204', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -78,7 +70,7 @@ test('PATCH /users/me/password returns 204', async () => {
 })
 
 test('PATCH /users/me/password invalidates the old password', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -96,7 +88,7 @@ test('PATCH /users/me/password invalidates the old password', async () => {
 })
 
 test('PATCH /users/me/password accepts the new password for login', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -114,7 +106,7 @@ test('PATCH /users/me/password accepts the new password for login', async () => 
 })
 
 test('PATCH /users/me/password with wrong current password returns 401', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -132,7 +124,7 @@ test('PATCH /users/me/password with wrong current password returns 401', async (
 })
 
 test('PATCH /users/me/password with empty current password returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -145,7 +137,7 @@ test('PATCH /users/me/password with empty current password returns 400', async (
 })
 
 test('PATCH /users/me/password with short new password returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .patch('/users/me/password')
@@ -168,7 +160,7 @@ test('PATCH /users/me/password without authorization header returns 401', async 
 })
 
 test('DELETE /users/me returns 204', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/users/me')
@@ -178,7 +170,7 @@ test('DELETE /users/me returns 204', async () => {
 })
 
 test('DELETE /users/me removes the user account', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/users/me')
@@ -195,7 +187,7 @@ test('DELETE /users/me removes the user account', async () => {
 })
 
 test('DELETE /users/me removes user-owned categories and transactions', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   const categoryRes = await request(app)
     .post('/categories')
@@ -228,7 +220,7 @@ test('DELETE /users/me removes user-owned categories and transactions', async ()
 })
 
 test('DELETE /users/me with wrong password returns 401', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/users/me')
@@ -240,7 +232,7 @@ test('DELETE /users/me with wrong password returns 401', async () => {
 })
 
 test('DELETE /users/me with empty password returns 400', async () => {
-  const access_token = await getAccessToken()
+  const access_token = await getTestAccessToken(dbTest)
 
   await request(app)
     .delete('/users/me')
