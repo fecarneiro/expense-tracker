@@ -8,5 +8,10 @@ export default defineConfig({
     restoreMocks: true,
     reporters: ['verbose'],
     setupFiles: ['./src/tests/setup-env.ts'],
+    env: {
+      NODE_ENV: 'test',
+    },
+    pool: 'forks',
+    maxWorkers: 2,
   },
 })

@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:18.4-alpine
+    container_name: expense-tracker-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: expense_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d expense_tracker" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: expense-tracker-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - api_node_modules:/app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://user:password@db:5432/expense_tracker
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  api_node_modules:

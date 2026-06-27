@@ -60,6 +60,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 * **Biome**
 * **Husky**, for Git hooks
 * **grammY**, for the optional Telegram integration
+* **Docker & Docker Compose**, for containerized development
 
 ## Getting Started
 
@@ -67,9 +68,13 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 
 Before starting, make sure you have installed:
 
+**Option A: Local Development**
 * Node.js 24.x
 * pnpm 11.x
 * PostgreSQL
+
+**Option B: Containerized Development**
+* Docker & Docker Compose
 
 ### Installation
 
@@ -144,6 +149,21 @@ Then, run the migrations:
 pnpm db:migrate
 ```
 
+### Database Workflow
+
+If you make any changes to the database schemas in `src/database/schemas/`, follow this workflow to apply them:
+
+1. **Generate a new migration:**
+   ```bash
+   pnpm db:generate
+   ```
+   This will compare your TypeScript schemas with the existing migrations and generate a new SQL file in the `drizzle/` folder.
+
+2. **Apply the migration:**
+   ```bash
+   pnpm db:migrate
+   ```
+
 ### Running the application
 
 Start the application in development mode:
@@ -164,6 +184,61 @@ The local documentation can be accessed at:
 http://localhost:3000/docs
 ```
 
+### Running with Docker
+
+If you prefer to run the application using Docker and Docker Compose, you do not need to install Node.js, pnpm, or PostgreSQL locally. The environment is pre-configured with hot-reloading and an integrated PostgreSQL database.
+
+1. **Prepare the environment variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   *(The `DATABASE_URL` is automatically overridden inside the container to point to the Docker database service, so you do not need to change it for Docker).*
+
+2. **Start the containers:**
+   ```bash
+   docker compose up --build
+   ```
+   This will start both the PostgreSQL database (`expense-tracker-db`) and the API server (`expense-tracker-api`) in development mode.
+
+3. **Run database migrations:**
+   Since the database container starts empty, you need to apply the migrations. With the containers running, execute the following command in another terminal:
+   ```bash
+   docker compose exec api pnpm db:migrate
+   ```
+
+The API will be available at:
+
+```txt
+http://localhost:3000
+```
+
+The local documentation can be accessed at:
+
+```txt
+http://localhost:3000/docs
+```
+
+#### Running commands inside Docker
+
+If you are using the Docker setup and do not have Node.js or pnpm installed on your host machine, you can run any project command inside the running API container using `docker compose exec`:
+
+* **Run tests:**
+  ```bash
+  docker compose exec api pnpm test
+  ```
+* **Run tests in watch mode:**
+  ```bash
+  docker compose exec api pnpm test:watch
+  ```
+* **Run linter and formatter checks:**
+  ```bash
+  docker compose exec api pnpm check
+  ```
+* **Apply automatic linter fixes:**
+  ```bash
+  docker compose exec api pnpm check:fix
+  ```
+
 ## Useful Commands
 
 | Command                  | Description                                          |
@@ -181,6 +256,9 @@ http://localhost:3000/docs
 | `pnpm db:migrate:deploy` | Runs migrations using the compiled production script |
 | `pnpm db:generate`       | Generates a new Drizzle migration                    |
 | `pnpm db:studio`         | Opens Drizzle Studio                                 |
+| `docker compose up`      | Starts the API and database in Docker containers     |
+| `docker compose down`    | Stops and removes Docker Compose containers          |
+| `docker compose exec api pnpm db:migrate` | Runs database migrations inside the API container |
 
 ## API Documentation
 
