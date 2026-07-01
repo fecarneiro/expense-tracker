@@ -10,6 +10,7 @@ import { handleLastTransactions } from './handlers/last-transactions.handler.js'
 import { handleLinkAccount } from './handlers/link-account.handler.js'
 import { handleNewTransactionConversation } from './handlers/new-transaction.handler.js'
 import { handleStart } from './handlers/start.handler.js'
+import { telegramLoggerMiddleware } from './middlewares/telegram-logger.middleware.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
 import type { BotContext } from './telegram.context.js'
 
@@ -22,6 +23,7 @@ export function createTelegramBot(
   const bot = new Bot<BotContext>(config.botToken)
 
   bot.catch(errorHandler)
+  bot.use(telegramLoggerMiddleware)
 
   // ── Public Commands ───────────────────────────────────
   bot.command('start', (ctx) => handleStart(ctx))

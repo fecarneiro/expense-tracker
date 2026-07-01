@@ -1,12 +1,13 @@
 import { type BotError, GrammyError, HttpError } from 'grammy'
 import { ZodError } from 'zod'
 import { AppError } from '../../shared/app-error.js'
+import { logger } from '../../shared/logger/logger.js'
+import type { BotContext } from './telegram.context.js'
 
-export async function errorHandler(err: BotError): Promise<void> {
+export async function errorHandler(err: BotError<BotContext>): Promise<void> {
   const { ctx, error } = err
-  console.error(`Error while handling update ${ctx.update.update_id}:`, error)
 
-  // Telegram channel is down/rejected the request — can't reply
+  // Telegram API/network errors are already logged by the middleware and may not be reported to the user.
   if (error instanceof GrammyError || error instanceof HttpError) return
 
   let replyMessage: string
@@ -22,6 +23,8 @@ export async function errorHandler(err: BotError): Promise<void> {
   try {
     await ctx.reply(replyMessage)
   } catch (replyError) {
-    console.log('Failed to send the error reply', replyError)
+    ctx.logger
+      ? ctx.logger.error({ err: replyError }, 'telegram.error.reply_failed')
+      : logger.error({ err: replyError }, 'telegram.error.reply_failed')
   }
 }

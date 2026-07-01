@@ -5,41 +5,89 @@ import { createContainer } from './container.js'
 import { db, pool } from './database/db.js'
 import { createTelegramBot } from './modules/telegram/bot.js'
 import { parseTelegramEnv } from './modules/telegram/config/telegram.config.js'
+import { logger } from './shared/logger/logger.js'
 
 const container = createContainer(db)
 const app = createApp(container)
 
 const telegramConfig = parseTelegramEnv(env.NODE_ENV)
 const bot = telegramConfig ? createTelegramBot(container, telegramConfig) : null
+const shutdownTimeoutMs = 10_000
 
 if (bot && telegramConfig?.mode === 'webhook') {
   app.use(`/${telegramConfig.webhookSecret}`, webhookCallback(bot, 'express'))
 }
 
 const server = app.listen(env.PORT, async () => {
-  console.log(`Server is running on port: ${env.PORT}`)
+  logger.info({ port: env.PORT }, 'server.started')
+
   if (!bot || !telegramConfig) {
-    console.log('Telegram bot disabled (TELEGRAM_BOT_TOKEN not set).')
+    logger.info('telegram.bot.disabled')
     return
   }
+
   if (telegramConfig.mode === 'webhook') {
-    await bot.api.setWebhook(`${telegramConfig.appUrl}/${telegramConfig.webhookSecret}`)
-    console.log(`Webhook set to: ${telegramConfig.appUrl}`)
+    try {
+      await bot.api.setWebhook(`${telegramConfig.appUrl}/${telegramConfig.webhookSecret}`)
+      logger.info({ mode: 'webhook' }, 'telegram.webhook.set')
+    } catch (err) {
+      logger.error({ err }, 'telegram.webhook.set_failed')
+    }
   } else {
-    bot.start().catch((error) => {
-      console.error('Telegram bot failed to start. API server will keep running.', error)
+    bot.start().catch((err) => {
+      logger.error({ err }, 'telegram.bot.start_failed')
     })
-    console.log('Bot started in long-polling mode.')
+
+    logger.info({ mode: 'polling' }, 'telegram.bot.polling.started')
   }
 })
 
+server.on('error', (err) => {
+  logger.error({ err }, 'server.start_failed')
+})
+
 async function shutdown(signal: string) {
-  console.log(`\n${signal} received, shutting down...`)
-  if (bot) await bot.stop()
-  server.close()
-  await pool.end()
-  process.exit(0)
+  logger.info({ signal }, 'server.shutdown.started')
+
+  const shutdownTimeout = setTimeout(() => {
+    logger.error({ signal, timeoutMs: shutdownTimeoutMs }, 'server.shutdown.timeout')
+    process.exit(1)
+  }, shutdownTimeoutMs)
+
+  try {
+    if (bot) await bot.stop()
+
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err)
+          return
+        }
+
+        resolve()
+      })
+    })
+
+    await pool.end()
+
+    clearTimeout(shutdownTimeout)
+    logger.info({ signal }, 'server.shutdown.completed')
+    process.exit(0)
+  } catch (err) {
+    clearTimeout(shutdownTimeout)
+    logger.error({ err, signal }, 'server.shutdown.failed')
+    process.exit(1)
+  }
 }
 
-process.once('SIGINT', () => shutdown('SIGINT'))
-process.once('SIGTERM', () => shutdown('SIGTERM'))
+process.once('SIGINT', () => void shutdown('SIGINT'))
+process.once('SIGTERM', () => void shutdown('SIGTERM'))
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ err: reason }, 'process.unhandled_rejection')
+})
+
+process.on('uncaughtException', (err) => {
+  logger.fatal({ err }, 'process.uncaught_exception')
+  process.exit(1)
+})

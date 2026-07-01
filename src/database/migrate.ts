@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { Pool } from 'pg'
+import { logger } from '../shared/logger/logger.js'
 
 const databaseUrl = process.env.DATABASE_URL
 
@@ -23,13 +24,11 @@ const db = drizzle({
 
 async function runMigrations() {
   try {
-    console.info('Running database migrations...')
-
+    logger.info('database.migration.started')
     await migrate(db, { migrationsFolder: './drizzle' })
-
-    console.info('Database migrations completed successfully.')
-  } catch (error) {
-    console.error('Database migration failed.', error)
+    logger.info('database.migration.completed')
+  } catch (err) {
+    logger.error({ err }, 'database.migration.failed')
     process.exitCode = 1
   } finally {
     await pool.end()

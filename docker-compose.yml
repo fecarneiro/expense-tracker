@@ -31,6 +31,7 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://user:password@db:5432/expense_tracker
+      - LOG_LEVEL=debug
     depends_on:
       db:
         condition: service_healthy
