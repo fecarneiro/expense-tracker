@@ -10,6 +10,10 @@ export const pool = new Pool({
         rejectUnauthorized: false,
       }
     : false,
+  max: 5,
+  min: 1,
+  idleTimeoutMillis: 60_000,
+  connectionTimeoutMillis: 5_000,
 })
 
 export const db = drizzle({

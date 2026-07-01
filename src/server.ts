@@ -24,8 +24,24 @@ if (bot && telegramConfig?.mode === 'webhook') {
     }),
   )
 }
+
+async function warmUpDatabase() {
+  const databaseWarmupStartedAt = Date.now()
+  try {
+    await pool.query('SELECT 1')
+    logger.info({ durationMs: Date.now() - databaseWarmupStartedAt }, 'database.connection.ready')
+  } catch (err) {
+    logger.error(
+      { err, durationMs: Date.now() - databaseWarmupStartedAt },
+      'database.connection.failed',
+    )
+  }
+}
+
 const server = app.listen(env.PORT, async () => {
   logger.info({ port: env.PORT }, 'server.started')
+
+  await warmUpDatabase()
 
   if (!bot || !telegramConfig) {
     logger.info('telegram.bot.disabled')
