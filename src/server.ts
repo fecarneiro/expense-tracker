@@ -5,6 +5,7 @@ import { createContainer } from './container.js'
 import { db, pool } from './database/db.js'
 import { createTelegramBot } from './modules/telegram/bot.js'
 import { parseTelegramEnv } from './modules/telegram/config/telegram.config.js'
+import { logger } from './shared/logger/logger.js'
 
 const container = createContainer(db)
 const app = createApp(container)
@@ -17,24 +18,31 @@ if (bot && telegramConfig?.mode === 'webhook') {
 }
 
 const server = app.listen(env.PORT, async () => {
-  console.log(`Server is running on port: ${env.PORT}`)
+  logger.info({ port: env.PORT }, 'server.started')
+
   if (!bot || !telegramConfig) {
-    console.log('Telegram bot disabled (TELEGRAM_BOT_TOKEN not set).')
+    logger.info('telegram.bot.disabled')
     return
   }
+
   if (telegramConfig.mode === 'webhook') {
-    await bot.api.setWebhook(`${telegramConfig.appUrl}/${telegramConfig.webhookSecret}`)
-    console.log(`Webhook set to: ${telegramConfig.appUrl}`)
+    try {
+      await bot.api.setWebhook(`${telegramConfig.appUrl}/${telegramConfig.webhookSecret}`)
+      logger.info({ mode: 'webhook' }, 'telegram.webhook.set')
+    } catch (err) {
+      logger.error({ err }, 'telegram.webhook.set_failed')
+    }
   } else {
-    bot.start().catch((error) => {
-      console.error('Telegram bot failed to start. API server will keep running.', error)
+    bot.start().catch((err) => {
+      logger.error({ err }, 'telegram.bot.start_failed')
     })
-    console.log('Bot started in long-polling mode.')
+
+    logger.info({ mode: 'polling' }, 'telegram.bot.polling.started')
   }
 })
 
 async function shutdown(signal: string) {
-  console.log(`\n${signal} received, shutting down...`)
+  logger.info({ signal }, 'server.shutdown.started')
   if (bot) await bot.stop()
   server.close()
   await pool.end()

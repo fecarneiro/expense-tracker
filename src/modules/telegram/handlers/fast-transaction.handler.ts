@@ -38,19 +38,29 @@ export async function handleFastTransaction(
   })
 
   if (!category) {
-    return await ctx.reply(
+    return ctx.reply(
       `No ${transactionType} category named "${categoryName}".\n\n` +
         `Create it in the app first, or use /${transactionType} to pick from existing categories.`,
     )
   }
 
-  await transactionService.create({
+  const transaction = await transactionService.create({
     userId,
     amountInCents: parsed.amountInCents,
     categoryId: category.id,
     occurredOn: unixToDateString(occurredAt),
     transactionType,
   })
+
+  ctx.logger.info(
+    {
+      handler: 'fast-transaction',
+      transactionId: transaction.id,
+      transactionType,
+      occurredOn: unixToDateString(occurredAt),
+    },
+    'telegram.handler.fast-transaction.created',
+  )
 
   // ── Reply ─────────────────────────────────────
   const label = transactionType === 'expense' ? 'Expense' : 'Income'
