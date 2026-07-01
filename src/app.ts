@@ -18,6 +18,7 @@ import { transactionHttpRouter } from './modules/transactions/http/transaction.h
 import { UserHttpController } from './modules/users/http/user.http.controller.js'
 import { userHttpRouter } from './modules/users/http/user.http.routes.js'
 import { openApiDocument } from './openapi/openapi.js'
+import { httpLogger } from './shared/logger/http-logger.js'
 
 export function createApp(container: Container) {
   const app = express()
@@ -35,6 +36,8 @@ export function createApp(container: Container) {
   }
 
   app.disable('x-powered-by')
+
+  app.use(httpLogger)
   app.use(express.json())
 
   app.get('/health', (_req, res) => {
