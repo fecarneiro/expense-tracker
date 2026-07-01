@@ -14,10 +14,16 @@ const telegramConfig = parseTelegramEnv(env.NODE_ENV)
 const bot = telegramConfig ? createTelegramBot(container, telegramConfig) : null
 const shutdownTimeoutMs = 10_000
 
-if (bot && telegramConfig?.mode === 'webhook') {
-  app.use(`/${telegramConfig.webhookSecret}`, webhookCallback(bot, 'express'))
-}
+const telegramWebhookPath = '/webhooks/telegram'
 
+if (bot && telegramConfig?.mode === 'webhook') {
+  app.post(
+    telegramWebhookPath,
+    webhookCallback(bot, 'express', {
+      secretToken: telegramConfig.webhookSecret,
+    }),
+  )
+}
 const server = app.listen(env.PORT, async () => {
   logger.info({ port: env.PORT }, 'server.started')
 
@@ -28,7 +34,10 @@ const server = app.listen(env.PORT, async () => {
 
   if (telegramConfig.mode === 'webhook') {
     try {
-      await bot.api.setWebhook(`${telegramConfig.appUrl}/${telegramConfig.webhookSecret}`)
+      await bot.api.setWebhook(`${telegramConfig.appUrl}${telegramWebhookPath}`, {
+        secret_token: telegramConfig.webhookSecret,
+      })
+
       logger.info({ mode: 'webhook' }, 'telegram.webhook.set')
     } catch (err) {
       logger.error({ err }, 'telegram.webhook.set_failed')
