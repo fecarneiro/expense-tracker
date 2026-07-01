@@ -8,6 +8,8 @@ export async function telegramLoggerMiddleware(ctx: BotContext, next: NextFuncti
   ctx.logger = logger.child({
     source: 'telegram',
     updateId: ctx.update.update_id,
+    chatType: ctx.chat?.type,
+    updateType: ctx.message ? 'message' : ctx.callbackQuery ? 'callback_query' : 'unknown',
   })
 
   try {
