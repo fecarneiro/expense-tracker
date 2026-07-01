@@ -1,6 +1,6 @@
 # Expense Tracker
 
-![Node.js](https://img.shields.io/badge/Node.js-24.x-informational)
+![Node.js](https://img.shields.io/badge/Node.js-26.x-informational)
 ![TypeScript](https://img.shields.io/badge/TypeScript-informational)
 ![Express](https://img.shields.io/badge/Express-5.x-informational)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-informational)
@@ -48,7 +48,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 
 ## Stack
 
-* **Node.js 24**
+* **Node.js 26**
 * **TypeScript**
 * **Express 5**
 * **PostgreSQL**
@@ -58,6 +58,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 * **OpenAPI + Scalar**
 * **Vitest + Supertest**
 * **Biome**
+* **Pino**, for structured logging
 * **Husky**, for Git hooks
 * **grammY**, for the optional Telegram integration
 * **Docker & Docker Compose**, for containerized development
@@ -69,7 +70,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 Before starting, make sure you have installed:
 
 **Option A: Local Development**
-* Node.js 24.x
+* Node.js 26.x
 * pnpm 11.x
 * PostgreSQL
 
@@ -102,6 +103,7 @@ PORT=3000
 NODE_ENV=development
 DATABASE_URL=postgresql://user:password@localhost:5432/expense_tracker
 JWT_SECRET=a-string-secret-at-least-256-bits-long
+LOG_LEVEL=info
 
 # Telegram Bot
 # Optional. If empty, the API runs without the Telegram bot.
@@ -475,8 +477,10 @@ In production, besides the bot token, also define `APP_URL` and `TELEGRAM_WEBHOO
 The webhook endpoint follows this format:
 
 ```txt
-{APP_URL}/{TELEGRAM_WEBHOOK_SECRET}
+{APP_URL}/webhooks/telegram
 ```
+
+The `TELEGRAM_WEBHOOK_SECRET` is sent securely as a secret token in the `X-Telegram-Bot-Api-Secret-Token` header rather than being part of the URL path.
 
 ### General flow
 
