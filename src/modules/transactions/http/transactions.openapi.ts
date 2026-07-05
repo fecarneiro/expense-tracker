@@ -10,12 +10,11 @@ import {
 } from '../../../openapi/openapi.responses.js'
 import {
   createTransactionBodySchema,
-  transactionHttpResponseSchema,
   transactionIdParamsSchema,
   transactionQueryParamsSchema,
-  transactionsHttpResponseSchema,
+  transactionResponseSchema,
   updateTransactionBodySchema,
-} from './transaction.http.dto.js'
+} from '../transaction.schemas.js'
 
 export const transactionOpenApiPaths = {
   '/transactions': {
@@ -27,7 +26,7 @@ export const transactionOpenApiPaths = {
         query: transactionQueryParamsSchema,
       },
       responses: {
-        '200': jsonResponse('Transaction list', transactionsHttpResponseSchema),
+        '200': jsonResponse('Transaction list', transactionResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,
@@ -40,7 +39,7 @@ export const transactionOpenApiPaths = {
       security: [{ bearerAuth: [] }],
       requestBody: jsonRequestBody(createTransactionBodySchema),
       responses: {
-        '201': jsonResponse('Transaction created', transactionHttpResponseSchema),
+        '201': jsonResponse('Transaction created', transactionResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
@@ -58,7 +57,7 @@ export const transactionOpenApiPaths = {
         path: transactionIdParamsSchema,
       },
       responses: {
-        '200': jsonResponse('Transaction found', transactionHttpResponseSchema),
+        '200': jsonResponse('Transaction found', transactionResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Transaction not found'),
@@ -75,7 +74,7 @@ export const transactionOpenApiPaths = {
       },
       requestBody: jsonRequestBody(updateTransactionBodySchema),
       responses: {
-        '200': jsonResponse('Transaction updated', transactionHttpResponseSchema),
+        '200': jsonResponse('Transaction updated', transactionResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Transaction not found'),

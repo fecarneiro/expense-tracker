@@ -1,12 +1,8 @@
+import type { CategoryRow } from '../../database/schemas/category.schema.js'
+
 export type CategoryType = 'income' | 'expense'
 
-export interface Category {
-  id: string
-  userId: string
-  name: string
-  categoryType: CategoryType
-  createdAt: Date
-}
+export type Category = CategoryRow
 
 export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 

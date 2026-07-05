@@ -1,11 +1,23 @@
-import { monthToReadable } from '../../../utils/date.utils.js'
+import {
+  currentUtcMonth,
+  monthToReadable,
+  monthToStartDate,
+  nextMonth,
+} from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
-import type { AnalyticsService } from '../../analytics/analytics.service.js'
+import type { TransactionService } from '../../transactions/transaction.service.js'
+
 import type { BotContext } from '../telegram.context.js'
 
-export async function handleMonthlyBalance(ctx: BotContext, analyticsService: AnalyticsService) {
+export async function handleMonthlyBalance(
+  ctx: BotContext,
+  transactionService: TransactionService,
+) {
   const { userId } = ctx
-  const [result] = await analyticsService.monthlyBalance({ userId })
+  const month = currentUtcMonth()
+  const from = new Date(`${monthToStartDate(month)}T00:00:00Z`)
+  const until = new Date(`${monthToStartDate(nextMonth(month))}T00:00:00Z`)
+  const [result] = await transactionService.monthlyBalance({ userId, from, until })
 
   if (!result) return ctx.reply('No transactions yet for this period 📭')
 

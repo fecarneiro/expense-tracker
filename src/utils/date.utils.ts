@@ -14,12 +14,9 @@ export function monthToStartDate(yearMonth: string) {
   return `${yearMonth}-01`
 }
 
-export function unixToDateString(unixTime: number) {
-  return new Date(unixTime * 1000).toISOString().slice(0, 10)
-}
-
-export function dateToReadable(dateString: string) {
-  const date = new Date(`${dateString}T00:00:00Z`)
+// TODO - Timezone issue
+export function isoDateTimeToReadable(isoDateTime: string) {
+  const date = new Date(isoDateTime)
 
   return new Intl.DateTimeFormat('en-US', {
     day: '2-digit',
@@ -29,6 +26,7 @@ export function dateToReadable(dateString: string) {
   }).format(date)
 }
 
+// TODO - Timezone issue
 export function monthToReadable(yearMonth: string) {
   const date = new Date(`${yearMonth}-01`)
 
@@ -37,6 +35,10 @@ export function monthToReadable(yearMonth: string) {
     year: 'numeric',
     timeZone: 'UTC',
   }).format(date)
+}
+
+export function utcStringToDate(utcString: string) {
+  return new Date(utcString) ?? false
 }
 
 // ── Month arithmetic ─────────────────────────────

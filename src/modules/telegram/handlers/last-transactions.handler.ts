@@ -1,5 +1,9 @@
-import { dateToReadable } from '../../../utils/date.utils.js'
+import { isoDateTimeToReadable } from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
+import {
+  LIST_DEFAULT_LIMIT,
+  LIST_DEFAULT_OFFSET,
+} from '../../transactions/transaction.constants.js'
 import type { TransactionService } from '../../transactions/transaction.service.js'
 import type { BotContext } from '../telegram.context.js'
 
@@ -8,15 +12,20 @@ export async function handleLastTransactions(
   transactionService: TransactionService,
 ) {
   const { userId } = ctx
-  const transactions = await transactionService.findAll({ userId })
+  const transactions = await transactionService.findManyWithCategory({
+    userId,
+    limit: LIST_DEFAULT_LIMIT,
+    offset: LIST_DEFAULT_OFFSET,
+  })
 
   if (transactions.length === 0) {
     return ctx.reply('No transactions yet 📭')
   }
 
+  // TODO - Timezone issue
   const message = transactions
     .map((t) => {
-      const date = dateToReadable(t.occurredOn)
+      const date = isoDateTimeToReadable(t.occurredAt)
       const sign = t.transactionType === 'income' ? '+' : '-'
       const amount = centsToString(t.amountInCents)
       const category = t.category.name

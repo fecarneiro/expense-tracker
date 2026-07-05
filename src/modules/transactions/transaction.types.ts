@@ -1,56 +1,56 @@
-export type TransactionType = 'income' | 'expense'
+import type { TransactionRow } from '../../database/schemas/transaction.schema.js'
+import type { Category } from '../categories/category.types.js'
 
-export interface Transaction {
-  id: string
-  userId: string
-  occurredOn: string
-  categoryId: string
-  transactionType: TransactionType
-  amountInCents: number
-  notes: string | null
-  createdAt: Date
-}
+export type Transaction = TransactionRow
 
+export type TransactionType = Transaction['transactionType']
 export type TransactionAmountInCents = Transaction['amountInCents']
 
-export interface TransactionCategory {
-  id: string
-  name: string
+export type CreateTransactionInput = Omit<
+  Transaction,
+  'id' | 'transactionType' | 'createdByUserId' | 'createdAt'
+> & {
+  notes?: Transaction['notes']
+  createdByUserId?: Transaction['createdByUserId']
 }
 
-export interface PublicTransactionWithCategory {
-  id: string
-  occurredOn: string
-  transactionType: TransactionType
-  amountInCents: number
-  notes: string | null
-  createdAt: Date
-  category: TransactionCategory
+export type UpdateTransactionInput = Pick<Transaction, 'id' | 'userId'> & {
+  amountInCents?: Transaction['amountInCents'] | undefined
+  notes?: Transaction['notes'] | undefined
+  categoryId?: Transaction['categoryId'] | undefined
+  transactionType?: Transaction['transactionType'] | undefined
+  occurredAt?: Transaction['occurredAt'] | undefined
 }
 
-export type CreateTransactionInput = {
-  userId: string
-  occurredOn: string
-  categoryId: string
-  transactionType: TransactionType
-  amountInCents: number
-  notes?: string | null
-}
+export type TransactionCategorySummary = Pick<Category, 'id' | 'name'>
 
-export type UpdateTransactionInput = {
-  id: string
-  userId: string
-  occurredOn?: string | undefined
-  categoryId?: string | undefined
-  transactionType?: TransactionType | undefined
-  amountInCents?: number | undefined
-  notes?: string | null | undefined
+export type TransactionWithCategory = TransactionRow & {
+  category: TransactionCategorySummary
 }
 
 export type FindTransactionByIdInput = Pick<Transaction, 'id' | 'userId'>
-export type FindAllTransactionsInput = Pick<Transaction, 'userId'> & {
-  limit?: number
-  offset?: number
+
+export type FindManyTransactionsInput = Pick<Transaction, 'userId'> & {
+  limit: number
+  offset: number
 }
+
 export type DeleteTransactionInput = Pick<Transaction, 'id' | 'userId'>
-export type DeletedTransaction = Pick<Transaction, 'id'>
+
+export type FindTransactionsByRangeInput = Pick<Transaction, 'userId'> & {
+  from: Date
+  until: Date
+}
+
+export type GetMonthlyBalanceInput = FindTransactionsByRangeInput
+export type TransactionByRangeRow = Pick<
+  Transaction,
+  'occurredAt' | 'transactionType' | 'amountInCents'
+>
+
+export type MonthlyBalanceRow = {
+  month: string
+  incomeTotal: number
+  expenseTotal: number
+  balance: number
+}

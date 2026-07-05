@@ -18,7 +18,7 @@ export function createTelegramBot(
   container: Container,
   config: Pick<TelegramRuntimeConfig, 'botToken'>,
 ) {
-  const { telegramService, categoryService, transactionService, analyticsService } = container
+  const { telegramService, categoryService, transactionService } = container
 
   const bot = new Bot<BotContext>(config.botToken)
 
@@ -52,7 +52,7 @@ export function createTelegramBot(
   })
 
   bot.command('report', async (ctx) => {
-    await handleMonthlyBalance(ctx, analyticsService)
+    await handleMonthlyBalance(ctx, transactionService)
   })
 
   bot.command('last', async (ctx) => {

@@ -13,3 +13,10 @@ export class TransactionCreationFailedError extends AppError {
     this.name = 'TransactionCreationFailedError'
   }
 }
+
+export class TransactionCreatedByUserNotFoundError extends AppError {
+  constructor() {
+    super('Transaction created by user not found', 404)
+    this.name = 'TransactionCreatedByUserNotFoundError'
+  }
+}

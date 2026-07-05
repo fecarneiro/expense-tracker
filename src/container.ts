@@ -1,6 +1,4 @@
 import type { Database } from './database/db.js'
-import { AnalyticsQuery } from './modules/analytics/analytics.query.js'
-import { AnalyticsService } from './modules/analytics/analytics.service.js'
 import { AuthService } from './modules/auth/auth.service.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
@@ -23,7 +21,6 @@ export function createContainer(db: Database) {
   const userRepository = new UserRepository(db)
   const categoryRepository = new CategoryRepository(db)
   const transactionRepository = new TransactionRepository(db)
-  const analyticsQuery = new AnalyticsQuery(db)
   const telegramRepository = new TelegramRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
   const linkingCodeRateLimiter = new LinkingCodeRateLimiter()
@@ -32,8 +29,11 @@ export function createContainer(db: Database) {
   const userService = new UserService(userRepository, passwordHasher)
   const categoryService = new CategoryService(categoryRepository)
   const authService = new AuthService(userService, categoryService, db)
-  const transactionService = new TransactionService(transactionRepository)
-  const analyticsService = new AnalyticsService(analyticsQuery)
+  const transactionService = new TransactionService(
+    transactionRepository,
+    categoryRepository,
+    userRepository,
+  )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
   const telegramService = new TelegramService(telegramRepository, linkingCodeService)
 
@@ -42,7 +42,6 @@ export function createContainer(db: Database) {
     userService,
     categoryService,
     transactionService,
-    analyticsService,
     telegramService,
   }
 }

@@ -1,41 +1,33 @@
 import type { Request, Response } from 'express'
-import type { TransactionService } from '../transaction.service.js'
 import {
   createTransactionBodySchema,
-  transactionHttpResponseSchema,
   transactionIdParamsSchema,
   transactionQueryParamsSchema,
-  transactionsHttpResponseSchema,
   updateTransactionBodySchema,
-} from './transaction.http.dto.js'
+} from '../transaction.schemas.js'
+import type { TransactionService } from '../transaction.service.js'
 
 export class TransactionHttpController {
   constructor(private readonly transactionService: TransactionService) {}
 
   async create(req: Request, res: Response) {
     const input = createTransactionBodySchema.parse(req.body)
-    const userId = req.auth.userId
-
     const transaction = await this.transactionService.create({
-      userId,
+      userId: req.auth.userId,
       ...input,
     })
-
-    res.status(201).json(transactionHttpResponseSchema.parse(transaction))
+    res.status(201).json(transaction)
   }
 
   async update(req: Request, res: Response) {
     const { id } = transactionIdParamsSchema.parse(req.params)
     const input = updateTransactionBodySchema.parse(req.body)
-    const userId = req.auth.userId
-
     const transaction = await this.transactionService.update({
       id,
-      userId,
+      userId: req.auth.userId,
       ...input,
     })
-
-    res.status(200).json(transactionHttpResponseSchema.parse(transaction))
+    res.status(200).json(transaction)
   }
 
   async findById(req: Request, res: Response) {
@@ -47,20 +39,20 @@ export class TransactionHttpController {
       userId,
     })
 
-    res.status(200).json(transactionHttpResponseSchema.parse(transaction))
+    res.status(200).json(transaction)
   }
 
   async findAll(req: Request, res: Response) {
     const { limit, offset } = transactionQueryParamsSchema.parse(req.query)
     const userId = req.auth.userId
 
-    const transactions = await this.transactionService.findAll({
+    const transactions = await this.transactionService.findManyWithCategory({
       userId,
       limit,
       offset,
     })
 
-    res.status(200).json(transactionsHttpResponseSchema.parse(transactions))
+    res.status(200).json(transactions)
   }
 
   async delete(req: Request, res: Response) {
