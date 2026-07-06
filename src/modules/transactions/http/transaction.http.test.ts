@@ -45,13 +45,13 @@ async function createTransaction(
   access_token: string,
   {
     categoryId,
-    occurredOn = '2026-01-01',
+    occurredAt = '2026-01-01',
     amountInCents = 10050,
     transactionType = 'expense',
     notes,
   }: {
     categoryId: string
-    occurredOn?: string
+    occurredAt?: string
     amountInCents?: number
     transactionType?: 'income' | 'expense'
     notes?: string
@@ -60,7 +60,7 @@ async function createTransaction(
   return request(app)
     .post('/transactions')
     .send({
-      occurredOn,
+      occurredAt,
       amountInCents,
       transactionType,
       categoryId,
@@ -77,7 +77,7 @@ test('POST /transactions returns 201 with created transaction', async () => {
   const res = await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: category.body.id,
@@ -87,7 +87,7 @@ test('POST /transactions returns 201 with created transaction', async () => {
 
   expect(res.body).toStrictEqual({
     id: expect.any(String),
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
     amountInCents: 10050,
     transactionType: 'expense',
     category: {
@@ -105,7 +105,7 @@ test('POST /transactions with invalid body returns 400', async () => {
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
     })
     .set('Authorization', `Bearer ${access_token}`)
     .expect(400)
@@ -116,7 +116,7 @@ test('POST /transactions with unknown category returns 404', async () => {
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: '00000000-0000-0000-0000-000000000000',
@@ -136,7 +136,7 @@ test('POST /transactions with category from another user returns 404', async () 
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: category_user2.body.id,
@@ -152,7 +152,7 @@ test('POST /transactions with empty notes returns 201 with null notes', async ()
   const res = await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: category.body.id,
@@ -163,7 +163,7 @@ test('POST /transactions with empty notes returns 201 with null notes', async ()
 
   expect(res.body).toStrictEqual({
     id: expect.any(String),
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
     amountInCents: 10050,
     transactionType: 'expense',
     category: {
@@ -182,7 +182,7 @@ test('POST /transactions with omitted notes returns 201 with null notes', async 
   const res = await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: category.body.id,
@@ -192,7 +192,7 @@ test('POST /transactions with omitted notes returns 201 with null notes', async 
 
   expect(res.body).toStrictEqual({
     id: expect.any(String),
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
     amountInCents: 10050,
     transactionType: 'expense',
     category: {
@@ -211,7 +211,7 @@ test('POST /transactions with notes longer than 70 characters returns 400', asyn
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: category.body.id,
@@ -225,7 +225,7 @@ test('POST /transactions without authorization header returns 401', async () => 
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: '00000000-0000-0000-0000-000000000000',
@@ -247,13 +247,13 @@ test('GET /transactions returns 200 with authenticated user transactions', async
   const category = await createCategory(access_token)
   const oldestTransaction = await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
     amountInCents: 10050,
     notes: 'breakfast',
   })
   const newestTransaction = await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-02',
+    occurredAt: '2026-01-02',
     amountInCents: 20075,
     notes: 'lunch',
   })
@@ -293,17 +293,17 @@ test('GET /transactions respects limit and offset', async () => {
 
   await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
     notes: 'oldest',
   })
   const middleTransaction = await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-02',
+    occurredAt: '2026-01-02',
     notes: 'middle',
   })
   await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-03',
+    occurredAt: '2026-01-03',
     notes: 'newest',
   })
 
@@ -394,7 +394,7 @@ test('PATCH /transactions/:id returns 200 with updated transaction', async () =>
   const res = await request(app)
     .patch(`/transactions/${transaction.body.id}`)
     .send({
-      occurredOn: '2026-02-03',
+      occurredAt: '2026-02-03',
       amountInCents: 30025,
       transactionType: 'income',
       notes: 'updated note',
@@ -404,7 +404,7 @@ test('PATCH /transactions/:id returns 200 with updated transaction', async () =>
 
   expect(res.body).toStrictEqual({
     ...transaction.body,
-    occurredOn: '2026-02-03',
+    occurredAt: '2026-02-03',
     amountInCents: 30025,
     transactionType: 'income',
     notes: 'updated note',
@@ -416,7 +416,7 @@ test('PATCH /transactions/:id preserves omitted fields', async () => {
   const category = await createCategory(access_token)
   const transaction = await createTransaction(access_token, {
     categoryId: category.body.id,
-    occurredOn: '2026-01-10',
+    occurredAt: '2026-01-10',
     amountInCents: 10050,
     transactionType: 'expense',
     notes: 'keep me',

@@ -226,7 +226,7 @@ test('delete removes user-owned categories and transactions', async () => {
     categoryId: category.id,
     amountInCents: 10050,
     transactionType: 'expense',
-    occurredOn: '2026-01-01',
+    occurredAt: '2026-01-01',
   })
 
   await userService.delete({

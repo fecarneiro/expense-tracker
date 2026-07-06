@@ -529,7 +529,7 @@ test('DELETE /categories/:id with category in use returns 409', async () => {
   await request(app)
     .post('/transactions')
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId,

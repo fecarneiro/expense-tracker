@@ -199,7 +199,7 @@ test('DELETE /users/me removes user-owned categories and transactions', async ()
     .post('/transactions')
     .set('Authorization', `Bearer ${access_token}`)
     .send({
-      occurredOn: '2026-01-01',
+      occurredAt: '2026-01-01',
       amountInCents: 10050,
       transactionType: 'expense',
       categoryId: categoryRes.body.id,
