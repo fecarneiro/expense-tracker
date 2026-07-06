@@ -15,6 +15,7 @@ import {
   transactionQueryParamsSchema,
   transactionResponseSchema,
   transactionsByRangeQueryOpenApiSchema,
+  transactionsResponseSchema,
   updateTransactionBodySchema,
 } from '../transaction.schemas.js'
 
@@ -28,7 +29,7 @@ export const transactionOpenApiPaths = {
         query: transactionQueryParamsSchema,
       },
       responses: {
-        '200': jsonResponse('Transaction list', transactionResponseSchema),
+        '200': jsonResponse('Transaction list', transactionsResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,
