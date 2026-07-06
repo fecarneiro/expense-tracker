@@ -5,9 +5,9 @@ type Password = string
 
 export type CreateUserInput = Pick<User, 'email'> & {
   password: Password
-  currency?: User['currency']
-  locale?: User['locale']
-  timeZone?: User['timeZone']
+  currency?: User['currency'] | undefined
+  locale?: User['locale'] | undefined
+  timeZone?: User['timeZone'] | undefined
 }
 
 export type FindUserByIdInput = Pick<User, 'id'>
