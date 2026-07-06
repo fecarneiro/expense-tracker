@@ -5,7 +5,7 @@ import type { User } from './user.types.js'
 export type UserResponse = z.infer<typeof userResponseSchema>
 
 export function toUserResponse(user: User): UserResponse {
-  const { id, passwordHash, createdAt, ...fields } = user
+  const { passwordHash, createdAt, ...fields } = user
   return userResponseSchema.parse({
     ...fields,
     lastSeenAt: fields.lastSeenAt?.toISOString() ?? null,
