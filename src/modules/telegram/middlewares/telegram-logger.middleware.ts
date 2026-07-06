@@ -1,5 +1,5 @@
 import type { NextFunction } from 'grammy'
-import { logger } from '../../../shared/logger/logger.js'
+import { logger, verbose } from '../../../shared/logger/logger.js'
 import type { BotContext } from '../telegram.context.js'
 
 export async function telegramLoggerMiddleware(ctx: BotContext, next: NextFunction) {
@@ -11,6 +11,15 @@ export async function telegramLoggerMiddleware(ctx: BotContext, next: NextFuncti
     chatType: ctx.chat?.type,
     updateType: ctx.message ? 'message' : ctx.callbackQuery ? 'callback_query' : 'unknown',
   })
+
+  if (verbose) {
+    ctx.logger.debug(
+      {
+        update: ctx.update,
+      },
+      'telegram.update.received',
+    )
+  }
 
   try {
     await next()

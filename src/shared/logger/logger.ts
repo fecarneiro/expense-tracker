@@ -2,6 +2,8 @@
 import pino from 'pino'
 import { env, isDevelopment, isTest } from '../../config/app.config.js'
 
+export const verbose = env.LOG_LEVEL === 'debug' || env.LOG_LEVEL === 'trace'
+
 export const logger = pino({
   name: 'expense-tracker',
 
