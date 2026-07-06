@@ -3,6 +3,7 @@ import {
   createTransactionBodySchema,
   transactionIdParamsSchema,
   transactionQueryParamsSchema,
+  transactionsByRangeQuerySchema,
   updateTransactionBodySchema,
 } from '../transaction.schemas.js'
 import type { TransactionService } from '../transaction.service.js'
@@ -53,6 +54,19 @@ export class TransactionHttpController {
     })
 
     res.status(200).json(transactions)
+  }
+
+  async monthlyBalance(req: Request, res: Response) {
+    const { from, until } = transactionsByRangeQuerySchema.parse(req.query)
+    const userId = req.auth.userId
+
+    const monthlyBalance = await this.transactionService.findMonthlyTotalsInRange({
+      userId,
+      from,
+      until,
+    })
+
+    res.status(200).json(monthlyBalance)
   }
 
   async delete(req: Request, res: Response) {

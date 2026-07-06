@@ -6,6 +6,7 @@ export function transactionHttpRouter(controller: TransactionHttpController) {
 
   router.post('/', (req, res) => controller.create(req, res))
   router.get('/', (req, res) => controller.findAll(req, res))
+  router.get('/monthly-balance', (req, res) => controller.monthlyBalance(req, res))
   router.get('/:id', (req, res) => controller.findById(req, res))
   router.patch('/:id', (req, res) => controller.update(req, res))
   router.delete('/:id', (req, res) => controller.delete(req, res))
