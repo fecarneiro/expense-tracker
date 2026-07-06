@@ -1,6 +1,6 @@
 import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/category.schema.js'
-import { insertTestUser } from './user.factory.js'
+import type { CategoryType } from '../../modules/categories/category.types.js'
 
 export const DEFAULT_CATEGORY_NAME = 'Eating Out'
 export const DEFAULT_CATEGORY_TYPE = 'expense' as const
@@ -8,7 +8,7 @@ export const DEFAULT_CATEGORY_TYPE = 'expense' as const
 type InsertTestCategoryParams = {
   userId: string
   name?: string
-  categoryType?: 'income' | 'expense'
+  categoryType?: CategoryType
 }
 
 export async function insertTestCategory(db: Database, params: InsertTestCategoryParams) {
@@ -23,10 +23,4 @@ export async function insertTestCategory(db: Database, params: InsertTestCategor
 
   if (!category) throw new Error('insertTestCategory: failed')
   return category
-}
-
-export async function insertUserWithCategory(db: Database) {
-  const user = await insertTestUser(db)
-  const category = await insertTestCategory(db, { userId: user.id })
-  return { user, category }
 }
