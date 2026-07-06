@@ -37,3 +37,6 @@ yarn-debug.log*
 AGENTS.md
 tempCodeRunner*
 .pnpm-store/
+
+# personal dev scripts (local only)
+.dev/local/
