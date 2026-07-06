@@ -1,8 +1,9 @@
 import type { z } from 'zod'
-import { userResponseSchema } from './user.schemas.js'
+import { userPreferencesSchema, userResponseSchema } from './user.schemas.js'
 import type { User } from './user.types.js'
 
 export type UserResponse = z.infer<typeof userResponseSchema>
+export type UserPreferences = z.infer<typeof userPreferencesSchema>
 
 export function toUserResponse(user: User): UserResponse {
   const { passwordHash, createdAt, ...fields } = user
@@ -10,4 +11,8 @@ export function toUserResponse(user: User): UserResponse {
     ...fields,
     lastSeenAt: fields.lastSeenAt?.toISOString() ?? null,
   })
+}
+
+export function toUserPreferences(source: UserPreferences): UserPreferences {
+  return userPreferencesSchema.parse(source)
 }

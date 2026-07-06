@@ -1,4 +1,14 @@
 import * as z from 'zod'
+import { isValidIanaTimeZone } from '../../utils/date.utils.js'
+
+const ianaTimeZoneSchema = z
+  .string()
+  .trim()
+  .max(100)
+  .refine(isValidIanaTimeZone, { message: 'Invalid IANA time zone' })
+
+const localeSchema = z.string().trim().max(10)
+const currencySchema = z.string().length(3)
 
 export const userIdField = z.uuid().meta({
   example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
@@ -13,20 +23,16 @@ export const passwordField = z.string().min(8).max(72).meta({
   example: 'password123',
 })
 
-export const timeZoneField = z.string().trim().max(100).optional().meta({
-  example: 'America/New_York',
-})
+export const localeField = localeSchema.optional().meta({ example: 'en-US' })
 
-export const currencyField = z.string().trim().toUpperCase().length(3).optional().meta({
-  example: 'USD',
-})
-
-export const localeField = z.string().trim().max(10).optional().meta({
-  example: 'en-US',
-})
+export const currencyField = currencySchema.toUpperCase().optional().meta({ example: 'USD' })
 
 export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable().meta({
   example: null,
+})
+
+export const timeZoneField = ianaTimeZoneSchema.optional().meta({
+  example: 'America/New_York',
 })
 
 // -- Body schemas --
@@ -76,3 +82,9 @@ export const userResponseSchema = z
   .meta({
     id: 'User',
   })
+
+export const userPreferencesSchema = z.object({
+  timeZone: ianaTimeZoneSchema,
+  locale: localeSchema,
+  currency: currencySchema,
+})

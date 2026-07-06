@@ -7,7 +7,12 @@ import {
   DEFAULT_USER_TIME_ZONE,
 } from './user.constants.js'
 import { AuthenticatedUserNotFoundError } from './user.error.js'
-import { toUserResponse, type UserResponse } from './user.mapper.js'
+import {
+  toUserPreferences,
+  toUserResponse,
+  type UserPreferences,
+  type UserResponse,
+} from './user.mapper.js'
 
 import type { UserRepository } from './user.repository.js'
 import type {
@@ -55,6 +60,14 @@ export class UserService {
       throw new AuthenticatedUserNotFoundError()
     }
     return toUserResponse(user)
+  }
+
+  async getUserPreferences(data: FindUserByIdInput): Promise<UserPreferences> {
+    const user = await this.userRepository.findById({ id: data.id })
+    if (!user) {
+      throw new AuthenticatedUserNotFoundError()
+    }
+    return toUserPreferences(user)
   }
 
   async changePassword(data: ChangePasswordInput): Promise<void> {
