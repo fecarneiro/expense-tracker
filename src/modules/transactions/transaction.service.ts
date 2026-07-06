@@ -1,7 +1,13 @@
+import {
+  currentUtcMonth,
+  monthToStartDate,
+  nextMonth,
+  subtractMonths,
+} from '../../utils/date.utils.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type { CategoryRepository } from '../categories/category.repository.js'
 import type { UserRepository } from '../users/user.repository.js'
-import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
+import { MONTHLY_BALANCE_DEFAULT_RANGE_SIZE } from './transaction.constants.js'
 import {
   TransactionCreatedByUserNotFoundError,
   TransactionCreationFailedError,
@@ -13,10 +19,9 @@ import type {
   CreateTransactionInput,
   DeleteTransactionInput,
   FindManyTransactionsInput,
+  FindMonthlyTotalsInRangeQuery,
   FindTransactionByIdInput,
-  GetMonthlyBalanceInput,
-  MonthlyBalanceRow,
-  TransactionByRangeRow,
+  MonthlyTotalsInRangeRow,
   UpdateTransactionInput,
 } from './transaction.types.js'
 
@@ -105,28 +110,24 @@ export class TransactionService {
     return transactions.map(toTransactionResponse)
   }
 
-  async monthlyBalance(data: GetMonthlyBalanceInput): Promise<MonthlyBalanceRow[]> {
-    const transactions = await this.transactionRepository.findManyByRange(data)
+  async findMonthlyTotalsInRange(
+    data: FindMonthlyTotalsInRangeQuery,
+  ): Promise<MonthlyTotalsInRangeRow[]> {
+    const endMonth = currentUtcMonth()
+    const startMonth = subtractMonths(endMonth, MONTHLY_BALANCE_DEFAULT_RANGE_SIZE - 1)
+    const from = data.from ?? new Date(`${monthToStartDate(startMonth)}T00:00:00Z`)
+    const until = data.until ?? new Date(`${monthToStartDate(nextMonth(endMonth))}T00:00:00Z`)
 
-    return this.aggregateMonthlyBalance(transactions)
-  }
+    const rows = await this.transactionRepository.findMonthlyTotalsInRange({
+      userId: data.userId,
+      from,
+      until,
+    })
 
-  private aggregateMonthlyBalance(transactions: TransactionByRangeRow[]): MonthlyBalanceRow[] {
-    const byMonth = new Map<string, { incomeTotal: number; expenseTotal: number }>()
-    for (const t of transactions) {
-      const month = t.occurredAt.toISOString().slice(0, 7)
-      const row = byMonth.get(month) ?? { incomeTotal: 0, expenseTotal: 0 }
-      if (t.transactionType === 'income') row.incomeTotal += t.amountInCents
-      else row.expenseTotal += t.amountInCents
-      byMonth.set(month, row)
-    }
-    return [...byMonth.entries()]
-      .map(([month, totals]) => ({
-        month,
-        ...totals,
-        balance: totals.incomeTotal - totals.expenseTotal,
-      }))
-      .sort((a, b) => b.month.localeCompare(a.month))
+    return rows.map((row) => ({
+      ...row,
+      balance: row.incomeTotal - row.expenseTotal,
+    }))
   }
 
   async delete(data: DeleteTransactionInput): Promise<void> {

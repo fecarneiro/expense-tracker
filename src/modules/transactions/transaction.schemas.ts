@@ -51,6 +51,7 @@ const transactionBodyFields = {
 
 export const transactionIdParamsSchema = z.strictObject({
   id: transactionIdField,
+  from: occurredAtRequestField,
 })
 
 export const createTransactionBodySchema = z
@@ -68,6 +69,8 @@ export const updateTransactionBodySchema = z
 // RESPONSE
 export const occurredAtResponseField = z.iso.datetime({ offset: true })
 
+export const transactionNotesResponseField = z.string().max(70).nullable()
+
 export const transactionCategoryResponseSchema = z
   .object({
     id: categoryIdField,
@@ -81,7 +84,7 @@ export const transactionResponseSchema = z
     occurredAt: occurredAtResponseField,
     transactionType: transactionTypeField,
     amountInCents: transactionAmountInCentsField,
-    notes: z.string().nullable(),
+    notes: transactionNotesResponseField,
     category: transactionCategoryResponseSchema,
   })
   .meta({ id: 'Transaction' })

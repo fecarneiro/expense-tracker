@@ -1,4 +1,4 @@
-import { and, desc, eq, getTableColumns, gte, lt } from 'drizzle-orm'
+import { and, desc, eq, getTableColumns, gte, lt, sql } from 'drizzle-orm'
 
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
@@ -12,12 +12,26 @@ import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
   FindManyTransactionsInput,
+  FindMonthlyTotalsInRangeInput,
   FindTransactionByIdInput,
-  FindTransactionsByRangeInput,
-  TransactionByRangeRow,
+  MonthlyTotalsRow,
   TransactionWithCategory,
   UpdateTransactionInput,
 } from './transaction.types.js'
+
+const monthSql = sql<string>`
+  to_char(date_trunc('month', ${transactionsTable.occurredAt}), 'YYYY-MM')
+`
+
+const incomeTotalSql = sql<number>`
+  coalesce(sum(case when ${transactionsTable.transactionType} = 'income'
+    then ${transactionsTable.amountInCents} else 0 end), 0)
+`
+
+const expenseTotalSql = sql<number>`
+  coalesce(sum(case when ${transactionsTable.transactionType} = 'expense'
+    then ${transactionsTable.amountInCents} else 0 end), 0)
+`
 
 export class TransactionRepository {
   constructor(private readonly database: Database) {}
@@ -101,21 +115,25 @@ export class TransactionRepository {
       .offset(data.offset)
   }
 
-  async findManyByRange(data: FindTransactionsByRangeInput): Promise<TransactionByRangeRow[]> {
+  async findMonthlyTotalsInRange(data: FindMonthlyTotalsInRangeInput): Promise<MonthlyTotalsRow[]> {
+    const { userId, from, until } = data
+
     return this.database
       .select({
-        occurredAt: transactionsTable.occurredAt,
-        transactionType: transactionsTable.transactionType,
-        amountInCents: transactionsTable.amountInCents,
+        month: monthSql,
+        incomeTotal: incomeTotalSql.mapWith(Number),
+        expenseTotal: expenseTotalSql.mapWith(Number),
       })
       .from(transactionsTable)
       .where(
         and(
-          eq(transactionsTable.userId, data.userId),
-          gte(transactionsTable.occurredAt, data.from),
-          lt(transactionsTable.occurredAt, data.until),
+          eq(transactionsTable.userId, userId),
+          gte(transactionsTable.occurredAt, from),
+          lt(transactionsTable.occurredAt, until),
         ),
       )
+      .groupBy(monthSql)
+      .orderBy(desc(monthSql))
   }
 
   async delete(data: DeleteTransactionInput): Promise<Pick<TransactionRow, 'id'> | null> {
