@@ -26,8 +26,8 @@ export const transactionNotesField = z
   .transform((val) => (val == null || val === '' ? null : val))
 
 export const transactionQueryParamsSchema = z.strictObject({
-  limit: z.coerce.number().int().min(1).max(100).default(LIST_DEFAULT_LIMIT),
-  offset: z.coerce.number().int().min(0).default(LIST_DEFAULT_OFFSET),
+  limit: z.coerce.number().int().min(1).max(100).optional().meta({ default: LIST_DEFAULT_LIMIT }),
+  offset: z.coerce.number().int().min(0).optional().meta({ default: LIST_DEFAULT_OFFSET }),
 })
 
 // REQUEST

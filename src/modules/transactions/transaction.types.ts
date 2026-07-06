@@ -31,6 +31,11 @@ export type TransactionWithCategory = TransactionRow & {
 export type FindTransactionByIdInput = Pick<Transaction, 'id' | 'userId'>
 
 export type FindManyTransactionsInput = Pick<Transaction, 'userId'> & {
+  limit?: number | undefined
+  offset?: number | undefined
+}
+
+export type FindManyTransactionsRepositoryInput = Pick<Transaction, 'userId'> & {
   limit: number
   offset: number
 }

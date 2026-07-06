@@ -11,7 +11,7 @@ import {
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
-  FindManyTransactionsInput,
+  FindManyTransactionsRepositoryInput,
   FindMonthlyTotalsInRangeRepositoryInput,
   FindTransactionByIdInput,
   TransactionWithCategory,
@@ -96,7 +96,9 @@ export class TransactionRepository {
     return transaction ?? null
   }
 
-  async findManyWithCategory(data: FindManyTransactionsInput): Promise<TransactionWithCategory[]> {
+  async findManyWithCategory(
+    data: FindManyTransactionsRepositoryInput,
+  ): Promise<TransactionWithCategory[]> {
     return this.database
       .select({
         ...getTableColumns(transactionsTable),

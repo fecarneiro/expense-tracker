@@ -2,6 +2,7 @@ import { CategoryNotFoundError } from '../categories/category.error.js'
 import type { CategoryRepository } from '../categories/category.repository.js'
 import type { UserRepository } from '../users/user.repository.js'
 import type { UserService } from '../users/user.service.js'
+import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
 import {
   TransactionCreatedByUserNotFoundError,
   TransactionCreationFailedError,
@@ -100,7 +101,14 @@ export class TransactionService {
   }
 
   async findManyWithCategory(data: FindManyTransactionsInput): Promise<TransactionResponse[]> {
-    const transactions = await this.transactionRepository.findManyWithCategory(data)
+    const limit = data.limit ?? LIST_DEFAULT_LIMIT
+    const offset = data.offset ?? LIST_DEFAULT_OFFSET
+
+    const transactions = await this.transactionRepository.findManyWithCategory({
+      userId: data.userId,
+      limit,
+      offset,
+    })
 
     return transactions.map(toTransactionResponse)
   }
