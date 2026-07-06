@@ -13,9 +13,29 @@ export const passwordField = z.string().min(8).max(72).meta({
   example: 'password123',
 })
 
+export const timeZoneField = z.string().trim().max(100).optional().meta({
+  example: 'America/New_York',
+})
+
+export const currencyField = z.string().trim().toUpperCase().length(3).optional().meta({
+  example: 'USD',
+})
+
+export const localeField = z.string().trim().max(10).optional().meta({
+  example: 'en-US',
+})
+
+export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable().meta({
+  example: null,
+})
+
+// -- Body schemas --
 export const userCredentialsBodySchema = z.strictObject({
   email: emailField,
   password: passwordField,
+  timeZone: timeZoneField,
+  currency: currencyField,
+  locale: localeField,
 })
 
 export const createUserBodySchema = userCredentialsBodySchema.meta({
@@ -25,7 +45,7 @@ export const createUserBodySchema = userCredentialsBodySchema.meta({
 export const changePasswordBodySchema = z
   .strictObject({
     currentPassword: z.string().min(1).meta({
-      example: 'oldpassword123',
+      example: 'OldPassword123!',
     }),
     newPassword: passwordField,
   })
@@ -36,17 +56,22 @@ export const changePasswordBodySchema = z
 export const deleteUserBodySchema = z
   .strictObject({
     password: z.string().min(1).meta({
-      example: 'password123',
+      example: 'OldPassword123!',
     }),
   })
   .meta({
     id: 'DeleteUserBody',
   })
 
-export const userHttpResponseSchema = z
+// -- Response schemas --
+export const userResponseSchema = z
   .object({
     id: userIdField,
     email: emailField,
+    timeZone: timeZoneField,
+    currency: currencyField,
+    locale: localeField,
+    lastSeenAt: lastSeenAtField,
   })
   .meta({
     id: 'User',

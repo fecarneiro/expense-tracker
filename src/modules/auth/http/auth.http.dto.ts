@@ -2,8 +2,8 @@ import * as z from 'zod'
 import {
   emailField,
   userCredentialsBodySchema,
-  userHttpResponseSchema,
-} from '../../users/http/user.http.dto.js'
+  userResponseSchema,
+} from '../../users/user.schemas.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
@@ -20,13 +20,13 @@ export const loginBodySchema = z
     id: 'LoginBody',
   })
 
-export const registerHttpResponseSchema = userHttpResponseSchema
+export const registerHttpResponseSchema = userResponseSchema
 
 export const loginHttpResponseSchema = z
   .object({
-    user: userHttpResponseSchema,
+    user: userResponseSchema,
     access_token: z.string().meta({
-      example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+      example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp3AbJ9',
     }),
     token_type: z.string().meta({
       example: 'Bearer',

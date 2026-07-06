@@ -1,44 +1,34 @@
-export interface User {
-  id: string
-  email: string
-  passwordHash: string
-  createdAt: Date
-}
+import type { UserRow } from '../../database/schemas/user.schema.js'
 
-export type PublicUser = Pick<User, 'id' | 'email'>
+export type User = UserRow
+type Password = string
 
-export type CreateUserInput = {
-  email: string
-  password: string
-}
-
-export type CreateUserRepositoryInput = {
-  email: string
-  passwordHash: string
+export type CreateUserInput = Pick<User, 'email'> & {
+  password: Password
+  currency?: User['currency']
+  locale?: User['locale']
+  timeZone?: User['timeZone']
 }
 
 export type FindUserByIdInput = Pick<User, 'id'>
 
-export type ChangePasswordInput = {
-  id: string
-  currentPassword: string
-  newPassword: string
+export type ChangePasswordInput = Pick<User, 'id'> & {
+  currentPassword: Password
+  newPassword: Password
 }
 
-export type UpdatePasswordRepositoryInput = Pick<User, 'id' | 'passwordHash'>
+export type UpdatePasswordInput = Pick<User, 'id'> & {
+  passwordHash: Password // Repository input
+}
 
 export type FindUserByEmailInput = Pick<User, 'email'>
 
-export type VerifyPasswordInput = {
-  email: string
-  password: string
+export type VerifyPasswordInput = Pick<User, 'email'> & {
+  password: Password
 }
 
-export type DeleteUserInput = {
-  id: string
-  password: string
+export type DeleteUserInput = Pick<User, 'id'> & {
+  password: Password
 }
-
-export type DeleteUserRepositoryInput = Pick<User, 'id'>
 
 export type DeletedUser = Pick<User, 'id'>

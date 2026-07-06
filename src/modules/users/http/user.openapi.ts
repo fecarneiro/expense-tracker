@@ -10,8 +10,8 @@ import {
 import {
   changePasswordBodySchema,
   deleteUserBodySchema,
-  userHttpResponseSchema,
-} from './user.http.dto.js'
+  userResponseSchema,
+} from '../user.schemas.js'
 
 export const userOpenApiPaths = {
   '/users/me': {
@@ -20,7 +20,7 @@ export const userOpenApiPaths = {
       summary: 'Get current user',
       security: [{ bearerAuth: [] }],
       responses: {
-        '200': jsonResponse('Current user', userHttpResponseSchema),
+        '200': jsonResponse('Current user', userResponseSchema),
         '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,
       },
