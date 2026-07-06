@@ -5,7 +5,7 @@ import type { Database } from '../../database/db.js'
 import { telegramAccountsTable } from '../../database/schemas/telegram-accounts.schema.js'
 import { telegramLinkingCodesTable } from '../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../tests/setup-db-test.js'
+import { setupDbTest } from '../../tests/db/setup-db-test.js'
 import { TelegramAccountAlreadyExistsError } from './telegram.error.js'
 
 let dbTest: Database

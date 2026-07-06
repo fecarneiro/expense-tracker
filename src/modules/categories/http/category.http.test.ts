@@ -6,8 +6,8 @@ import type { Database } from '../../../database/db.js'
 import { categoriesTable } from '../../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
+import { setupDbTest } from '../../../tests/db/setup-db-test.js'
 import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
-import { setupDbTest } from '../../../tests/setup-db-test.js'
 
 let app: ReturnType<typeof createApp>
 let dbTest: Database

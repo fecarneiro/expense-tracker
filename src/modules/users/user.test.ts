@@ -4,7 +4,7 @@ import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/category.schema.js'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
 import { usersTable } from '../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../tests/setup-db-test.js'
+import { setupDbTest } from '../../tests/db/setup-db-test.js'
 import { InvalidCredentialsError } from '../auth/auth.error.js'
 import { AuthenticatedUserNotFoundError, EmailAlreadyInUseError } from './user.error.js'
 

@@ -4,7 +4,7 @@ import { createContainer } from '../../../container.js'
 import type { Database } from '../../../database/db.js'
 import { telegramLinkingCodesTable } from '../../../database/schemas/telegram-codes.schema.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../../tests/setup-db-test.js'
+import { setupDbTest } from '../../../tests/db/setup-db-test.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
 
 let dbTest: Database

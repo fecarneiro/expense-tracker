@@ -4,7 +4,7 @@ import { createApp } from '../../../app.js'
 import { createContainer } from '../../../container.js'
 import type { Database } from '../../../database/db.js'
 import { usersTable } from '../../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../../tests/setup-db-test.js'
+import { setupDbTest } from '../../../tests/db/setup-db-test.js'
 
 let app: ReturnType<typeof createApp>
 let dbTest: Database
