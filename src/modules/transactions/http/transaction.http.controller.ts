@@ -62,8 +62,10 @@ export class TransactionHttpController {
 
     const monthlyBalance = await this.transactionService.findMonthlyTotalsInRange({
       userId,
-      from,
-      until,
+      range: {
+        from,
+        until,
+      },
     })
 
     res.status(200).json(monthlyBalance)

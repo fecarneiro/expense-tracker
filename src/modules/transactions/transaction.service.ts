@@ -1,13 +1,7 @@
-import {
-  currentUtcMonth,
-  monthToStartDate,
-  nextMonth,
-  subtractMonths,
-} from '../../utils/date.utils.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type { CategoryRepository } from '../categories/category.repository.js'
 import type { UserRepository } from '../users/user.repository.js'
-import { MONTHLY_BALANCE_DEFAULT_RANGE_SIZE } from './transaction.constants.js'
+import type { UserService } from '../users/user.service.js'
 import {
   TransactionCreatedByUserNotFoundError,
   TransactionCreationFailedError,
@@ -19,7 +13,7 @@ import type {
   CreateTransactionInput,
   DeleteTransactionInput,
   FindManyTransactionsInput,
-  FindMonthlyTotalsInRangeQuery,
+  FindMonthlyTotalsInRangeInput,
   FindTransactionByIdInput,
   MonthlyTotalsInRangeRow,
   UpdateTransactionInput,
@@ -30,6 +24,7 @@ export class TransactionService {
     private readonly transactionRepository: TransactionRepository,
     private readonly categoryRepository: CategoryRepository,
     private readonly userRepository: UserRepository,
+    private readonly userService: UserService,
   ) {}
 
   async create(data: CreateTransactionInput): Promise<TransactionResponse> {
@@ -111,15 +106,14 @@ export class TransactionService {
   }
 
   async findMonthlyTotalsInRange(
-    data: FindMonthlyTotalsInRangeQuery,
+    data: FindMonthlyTotalsInRangeInput,
   ): Promise<MonthlyTotalsInRangeRow[]> {
-    const endMonth = currentUtcMonth()
-    const startMonth = subtractMonths(endMonth, MONTHLY_BALANCE_DEFAULT_RANGE_SIZE - 1)
-    const from = data.from ?? new Date(`${monthToStartDate(startMonth)}T00:00:00Z`)
-    const until = data.until ?? new Date(`${monthToStartDate(nextMonth(endMonth))}T00:00:00Z`)
+    const { timeZone } = await this.userService.getUserPreferences({ id: data.userId })
+    const { from, until } = data.range ?? {}
 
     const rows = await this.transactionRepository.findMonthlyTotalsInRange({
       userId: data.userId,
+      timeZone,
       from,
       until,
     })

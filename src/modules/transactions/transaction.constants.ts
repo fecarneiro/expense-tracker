@@ -1,3 +1,2 @@
 export const LIST_DEFAULT_LIMIT = 10
 export const LIST_DEFAULT_OFFSET = 0
-export const MONTHLY_BALANCE_DEFAULT_RANGE_SIZE = 3

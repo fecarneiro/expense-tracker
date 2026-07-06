@@ -37,16 +37,20 @@ export type FindManyTransactionsInput = Pick<Transaction, 'userId'> & {
 
 export type DeleteTransactionInput = Pick<Transaction, 'id' | 'userId'>
 
-export type FindMonthlyTotalsInRangeInput = Pick<Transaction, 'userId'> & {
-  from: Date
-  until: Date
-}
-
-export type FindMonthlyTotalsInRangeQuery = Pick<Transaction, 'userId'> & {
+export type MonthlyBalanceRange = {
   from?: Date | undefined
   until?: Date | undefined
 }
-
+export type FindMonthlyTotalsInRangeInput = {
+  userId: string
+  range?: MonthlyBalanceRange | undefined
+}
+export type FindMonthlyTotalsInRangeRepositoryInput = {
+  userId: string
+  timeZone: string
+  from?: Date | undefined
+  until?: Date | undefined
+}
 export type MonthlyTotalsRow = {
   month: string
   incomeTotal: number

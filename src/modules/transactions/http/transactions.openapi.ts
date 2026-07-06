@@ -10,9 +10,11 @@ import {
 } from '../../../openapi/openapi.responses.js'
 import {
   createTransactionBodySchema,
+  monthlyBalanceResponseSchema,
   transactionIdParamsSchema,
   transactionQueryParamsSchema,
   transactionResponseSchema,
+  transactionsByRangeQueryOpenApiSchema,
   updateTransactionBodySchema,
 } from '../transaction.schemas.js'
 
@@ -43,6 +45,25 @@ export const transactionOpenApiPaths = {
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
+        '429': tooManyRequestsResponse,
+      },
+    },
+  },
+
+  '/transactions/monthly-balance': {
+    get: {
+      tags: ['Transactions'],
+      summary: 'Monthly balance',
+      description:
+        'Returns income, expense and balance totals grouped by month in the authenticated user time zone. Optional from and until filter occurredAt as ISO datetimes with offset. Omit both to include all transactions. until is exclusive.',
+      security: [{ bearerAuth: [] }],
+      requestParams: {
+        query: transactionsByRangeQueryOpenApiSchema,
+      },
+      responses: {
+        '200': jsonResponse('Monthly balance', monthlyBalanceResponseSchema),
+        '400': validationErrorResponse,
+        '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,
       },
     },

@@ -10,6 +10,10 @@ export const transactionAmountInCentsField = z.number().int().positive().meta({
   example: 10000,
 })
 
+export const transactionAmountInCentsNonNegativeField = z.number().int().nonnegative().meta({
+  example: 10000,
+})
+
 export const transactionTypeField = z.enum(['income', 'expense']).meta({
   example: 'expense',
 })
@@ -27,20 +31,36 @@ export const transactionQueryParamsSchema = z.strictObject({
 })
 
 // REQUEST
-export const occurredAtRequestField = z.iso
-  .datetime({ offset: true })
-  .transform((value) => new Date(value))
-  .meta({ example: '2026-01-01T00:00:00+00:00' })
+export const occurredAtQueryField = z.iso.datetime({ offset: true }).meta({
+  example: '2026-01-01T00:00:00+00:00',
+})
 
-export const transactionsByRangeQuerySchema = z
+export const occurredAtRequestField = occurredAtQueryField.transform((value) => new Date(value))
+
+const transactionsByRangeQueryBaseSchema = z
   .strictObject({
-    from: occurredAtRequestField,
-    until: occurredAtRequestField,
+    from: occurredAtQueryField.optional().meta({
+      description: 'Lower bound (inclusive). Omit for no start limit.',
+    }),
+    until: occurredAtQueryField.optional().meta({
+      description: 'Upper bound (exclusive). Omit for no end limit.',
+    }),
   })
-  .refine((data) => data.from < data.until, {
+  .refine((data) => data.from == null || data.until == null || data.from < data.until, {
     message: 'from must be before until',
   })
-  .meta({ id: 'TransactionsByRangeQuery' })
+
+export const transactionsByRangeQueryOpenApiSchema = transactionsByRangeQueryBaseSchema.meta({
+  id: 'TransactionsByRangeQuery',
+  description: 'Optional date range filter. Omit both to aggregate all transactions.',
+})
+
+export const transactionsByRangeQuerySchema = transactionsByRangeQueryBaseSchema.transform(
+  ({ from, until }) => ({
+    from: from ? new Date(from) : undefined,
+    until: until ? new Date(until) : undefined,
+  }),
+)
 
 const transactionBodyFields = {
   occurredAt: occurredAtRequestField,
@@ -51,7 +71,6 @@ const transactionBodyFields = {
 
 export const transactionIdParamsSchema = z.strictObject({
   id: transactionIdField,
-  from: occurredAtRequestField,
 })
 
 export const createTransactionBodySchema = z
@@ -92,3 +111,21 @@ export const transactionResponseSchema = z
 export const transactionsResponseSchema = z
   .array(transactionResponseSchema)
   .meta({ id: 'TransactionList' })
+
+export const monthlyBalanceMonthField = z
+  .string()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+  .meta({ example: '2026-03' })
+
+export const monthlyBalanceRowSchema = z
+  .object({
+    month: monthlyBalanceMonthField,
+    incomeTotal: transactionAmountInCentsNonNegativeField,
+    expenseTotal: transactionAmountInCentsNonNegativeField,
+    balance: z.number().int().meta({ example: 180000 }),
+  })
+  .meta({ id: 'MonthlyBalanceRow' })
+
+export const monthlyBalanceResponseSchema = z
+  .array(monthlyBalanceRowSchema)
+  .meta({ id: 'MonthlyBalanceList' })

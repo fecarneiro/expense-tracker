@@ -12,16 +12,20 @@ import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
   FindManyTransactionsInput,
-  FindMonthlyTotalsInRangeInput,
+  FindMonthlyTotalsInRangeRepositoryInput,
   FindTransactionByIdInput,
-  MonthlyTotalsRow,
   TransactionWithCategory,
   UpdateTransactionInput,
 } from './transaction.types.js'
 
-const monthSql = sql<string>`
-  to_char(date_trunc('month', ${transactionsTable.occurredAt}), 'YYYY-MM')
-`
+function monthInTimeZoneSql(timeZone: string) {
+  return sql<string>`
+    to_char(
+      date_trunc('month', ${transactionsTable.occurredAt} AT TIME ZONE ${timeZone}),
+      'YYYY-MM'
+    )
+  `
+}
 
 const incomeTotalSql = sql<number>`
   coalesce(sum(case when ${transactionsTable.transactionType} = 'income'
@@ -115,12 +119,13 @@ export class TransactionRepository {
       .offset(data.offset)
   }
 
-  async findMonthlyTotalsInRange(data: FindMonthlyTotalsInRangeInput): Promise<MonthlyTotalsRow[]> {
-    const { userId, from, until } = data
+  async findMonthlyTotalsInRange(data: FindMonthlyTotalsInRangeRepositoryInput) {
+    const { userId, timeZone, from, until } = data
+    const month = monthInTimeZoneSql(timeZone)
 
     return this.database
       .select({
-        month: monthSql,
+        month,
         incomeTotal: incomeTotalSql.mapWith(Number),
         expenseTotal: expenseTotalSql.mapWith(Number),
       })
@@ -128,14 +133,13 @@ export class TransactionRepository {
       .where(
         and(
           eq(transactionsTable.userId, userId),
-          gte(transactionsTable.occurredAt, from),
-          lt(transactionsTable.occurredAt, until),
+          from ? gte(transactionsTable.occurredAt, from) : undefined,
+          until ? lt(transactionsTable.occurredAt, until) : undefined,
         ),
       )
-      .groupBy(monthSql)
-      .orderBy(desc(monthSql))
+      .groupBy(sql`1`) // 1 = month
+      .orderBy(sql`1 desc`)
   }
-
   async delete(data: DeleteTransactionInput): Promise<Pick<TransactionRow, 'id'> | null> {
     const { id, userId } = data
 

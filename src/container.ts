@@ -33,6 +33,7 @@ export function createContainer(db: Database) {
     transactionRepository,
     categoryRepository,
     userRepository,
+    userService,
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
   const telegramService = new TelegramService(telegramRepository, linkingCodeService)
