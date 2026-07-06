@@ -1,52 +1,24 @@
-/**
- * HTTP tests prove: auth (401), Zod validation (400), status/smoke, JSON wiring.
- * Business rules (404 ownership, pagination, update rules) → transactions.test.ts
- * Response shape → transaction.mapper.test.ts
- *
- * Types to export from transaction.schemas.ts (uncomment when implementing):
- *   import type { z } from 'zod'
- *   export type CreateTransactionBodyInput = z.input<typeof createTransactionBodySchema>
- *   export type UpdateTransactionBodyInput = z.input<typeof updateTransactionBodySchema>
- *   export type TransactionQueryInput = z.input<typeof transactionQueryParamsSchema>
- *   export type MonthlyBalanceQueryInput = z.input<typeof transactionsByRangeQueryOpenApiSchema>
- *
- * Types for asserts (uncomment when implementing):
- *   import type { TransactionResponse } from '../transaction.mapper.js'
- *
- * Constants (already in tests/constants.ts):
- *   TEST_OCCURRED_AT         → request body .send() (string ISO + offset)
- *   TEST_OCCURRED_AT_RESPONSE → response assert (string from toISOString)
- *   UNKNOWN_UUID             → invalid ids in validation-only cases if needed
- *
- * Helpers to add in this file when implementing:
- *   const DEFAULT_HTTP_CREATE = {
- *     occurredAt: TEST_OCCURRED_AT,
- *     amountInCents: 1000,
- *     notes: 'my notes',
- *   } as const satisfies Omit<CreateTransactionBodyInput, 'categoryId'>
- *
- *   function validCreateBody(categoryId: string): CreateTransactionBodyInput {
- *     return { ...DEFAULT_HTTP_CREATE, categoryId }
- *   }
- */
-
-// import request from 'supertest'
+import request from 'supertest'
 import { describe } from 'vitest'
+import { TEST_OCCURRED_AT } from '../../../tests/constants.js'
+import { insertTestCategory } from '../../../tests/factories/category.factory.js'
+import { insertTestUser } from '../../../tests/factories/user.factory.js'
 import { httpTest as test } from '../../../tests/fixtures/http.fixture.js'
+import type { CreateTransactionBodyInput } from '../transaction.schemas.js'
 
-// import type { CreateTransactionBodyInput } from '../transaction.schemas.js'
-// import type { TransactionResponse } from '../transaction.mapper.js'
-// import { TEST_OCCURRED_AT, TEST_OCCURRED_AT_RESPONSE } from '../../../tests/constants.js'
-// import { DEFAULT_CATEGORY_NAME, insertTestCategory } from '../../../tests/factories/category.factory.js'
+const DEFAULT_HTTP_CREATE = {
+  occurredAt: TEST_OCCURRED_AT,
+  amountInCents: 1000,
+  notes: 'my notes',
+} as const satisfies Omit<CreateTransactionBodyInput, 'categoryId'>
 
 describe('POST /transactions', () => {
   test('returns 201 with created transaction', async ({ app, db, createAccessToken }) => {
-    void app
-    void db
-    void createAccessToken
     // Arrange: insertTestCategory(db, { userId from insertTestUser or token user }), createAccessToken()
     // Act: request(app).post('/transactions').send(validCreateBody(category.id)).set('Authorization', `Bearer ${token}`).expect(201)
     // Assert: res.body toMatchObject({ amountInCents, notes, occurredAt: TEST_OCCURRED_AT_RESPONSE, category: { id, name: DEFAULT_CATEGORY_NAME } })
+    const user = await insertTestUser(db)
+    const category = await insertTestCategory(db, { userId: user.id })
   })
 
   test('returns 401 without authorization header', async ({ app, db, createAccessToken }) => {
@@ -200,6 +172,7 @@ describe('GET /transactions/monthly-balance', () => {
   //   ['invalid from date', '?from=not-a-date'],
   // ])('returns 400 when %s', async (_label, query, { app, createAccessToken }) => {
   //   const token = await createAccessToken()
+  //   // invalid date → Zod 400; from after until → service InvalidTransactionRangeError (400)
   //   await request(app).get(`/transactions/monthly-balance${query}`).set('Authorization', `Bearer ${token}`).expect(400)
   // })
 })

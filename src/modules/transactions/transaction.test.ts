@@ -2,7 +2,12 @@ import { describe } from 'vitest'
 import type { createContainer } from '../../container.js'
 import type { CategoryRow } from '../../database/schemas/category.schema.js'
 import type { UserRow } from '../../database/schemas/user.schema.js'
-import { TEST_OCCURRED_AT_DATE, UNKNOWN_UUID } from '../../tests/constants.js'
+import {
+  TEST_OCCURRED_AT_DATE,
+  TEST_OCCURRED_AT_FAR_LATER_DATE,
+  TEST_OCCURRED_AT_LATER_DATE,
+  UNKNOWN_UUID,
+} from '../../tests/constants.js'
 import {
   DEFAULT_CATEGORY_NAME,
   insertTestCategory,
@@ -10,7 +15,8 @@ import {
 import { insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
-import { TransactionNotFoundError } from './transaction.error.js'
+import { LIST_DEFAULT_LIMIT } from './transaction.constants.js'
+import { InvalidTransactionRangeError, TransactionNotFoundError } from './transaction.error.js'
 import type { CreateTransactionInput } from './transaction.types.js'
 
 const DEFAULT_CREATE = {
@@ -18,7 +24,9 @@ const DEFAULT_CREATE = {
   notes: 'my notes',
 } as const satisfies Pick<CreateTransactionInput, 'amountInCents' | 'notes'>
 
-type CreateOverrides = Partial<Pick<CreateTransactionInput, 'amountInCents' | 'notes'>>
+type CreateOverrides = Partial<
+  Pick<CreateTransactionInput, 'amountInCents' | 'notes' | 'occurredAt'>
+>
 
 async function createTransaction(
   container: ReturnType<typeof createContainer>,
@@ -138,18 +146,18 @@ describe('TransactionService', () => {
       const userCategory = await insertTestCategory(db, { userId: user.id })
       const other = await insertTestUser(db, { email: 'other@test.com' })
 
-      const userTransaction = await createTransaction(container, user, userCategory)
+      const created = await createTransaction(container, user, userCategory)
 
       await expect(
         container.transactionService.update({
-          id: userTransaction.id,
+          id: created.id,
           userId: other.id,
           amountInCents: 99999,
         }),
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(
-        await container.transactionService.findById({ id: userTransaction.id, userId: user.id }),
+        await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
         amountInCents: DEFAULT_CREATE.amountInCents,
         notes: DEFAULT_CREATE.notes,
@@ -166,18 +174,18 @@ describe('TransactionService', () => {
       const other = await insertTestUser(db, { email: 'other@test.com' })
       const otherCategory = await insertTestCategory(db, { userId: other.id })
 
-      const userTransaction = await createTransaction(container, user, userCategory)
+      const created = await createTransaction(container, user, userCategory)
 
       await expect(
         container.transactionService.update({
-          id: userTransaction.id,
+          id: created.id,
           userId: user.id,
           categoryId: otherCategory.id,
         }),
       ).rejects.toThrow(CategoryNotFoundError)
 
       expect(
-        await container.transactionService.findById({ id: userTransaction.id, userId: user.id }),
+        await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
         amountInCents: DEFAULT_CREATE.amountInCents,
         notes: DEFAULT_CREATE.notes,
@@ -220,65 +228,195 @@ describe('TransactionService', () => {
 
       const found = await container.transactionService.findManyWithCategory({
         userId: user.id,
-        limit: 10,
-        offset: 0,
       })
 
       expect(found).toEqual([])
     })
 
     test('returns only transactions of the given user', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: two users with categories; createTransaction for each (distinct notes via overrides)
-      // Act: findManyWithCategory({ userId: ownerUser.id, limit: 10, offset: 0 })
-      // Assert: length 1 + toMatchObject({ notes: ownerNotes })
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const otherCategory = await insertTestCategory(db, { userId: other.id })
+
+      const OWNER_NOTES = 'owner only'
+
+      await createTransaction(container, user, category, { notes: OWNER_NOTES })
+      await createTransaction(container, other, otherCategory)
+      await createTransaction(container, other, otherCategory)
+
+      const found = await container.transactionService.findManyWithCategory({
+        userId: user.id,
+      })
+
+      expect(found).toHaveLength(1)
+      expect(found[0]).toMatchObject({ notes: OWNER_NOTES })
     })
 
     test('applies default limit and offset when omitted', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: user + category, three createTransaction calls (distinct notes; vary occurredAt if needed)
-      // Act: findManyWithCategory({ userId: user.id, limit: 1, offset: 1 })
-      // Assert: length 1 + toMatchObject({ notes: middleTransactionNotes })
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+
+      for (let i = 0; i < LIST_DEFAULT_LIMIT + 1; i++) {
+        await createTransaction(container, user, category)
+      }
+      const found = await container.transactionService.findManyWithCategory({ userId: user.id })
+
+      expect(found).toHaveLength(LIST_DEFAULT_LIMIT)
     })
 
     test('respects limit and offset when provided', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: user + category, three createTransaction calls (distinct notes; vary occurredAt if needed)
-      // Act: findManyWithCategory({ userId: user.id, limit: 1, offset: 1 })
-      // Assert: length 1 + toMatchObject({ notes: middleTransactionNotes })
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+
+      await createTransaction(container, user, category, {
+        notes: 'oldest',
+        occurredAt: TEST_OCCURRED_AT_DATE,
+      })
+
+      const middle = await createTransaction(container, user, category, {
+        notes: 'middle',
+        occurredAt: TEST_OCCURRED_AT_LATER_DATE,
+      })
+
+      await createTransaction(container, user, category, {
+        notes: 'newest',
+        occurredAt: TEST_OCCURRED_AT_FAR_LATER_DATE,
+      })
+
+      const found = await container.transactionService.findManyWithCategory({
+        userId: user.id,
+        limit: 1,
+        offset: 1,
+      })
+
+      expect(found).toHaveLength(1)
+      expect(found[0]).toMatchObject({
+        id: middle.id,
+        notes: 'middle',
+      })
     })
   })
 
   describe('delete', () => {
     test('removes transaction for owner', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: insertTestUser + insertTestCategory, createTransaction(container, user, category)
-      // Act: service.delete({ id: created.id, userId: user.id })
-      // Assert: resolves + findById rejects TransactionNotFoundError
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+      const created = await createTransaction(container, user, category)
+
+      await container.transactionService.delete({ id: created.id, userId: user.id })
+
+      await expect(
+        container.transactionService.findById({ id: created.id, userId: user.id }),
+      ).rejects.toThrow(TransactionNotFoundError)
     })
 
     test('throws for non-owner without mutating the transaction', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: owner user+category, createTransaction; insertTestUser for other user
-      // Act: service.delete({ id: created.id, userId: otherUser.id })
-      // Assert: rejects.toThrow(TransactionNotFoundError)
-      // Assert: findById as ownerUser still toMatchObject original values
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+      const other = await insertTestUser(db, { email: 'other@test.com' })
+
+      const created = await createTransaction(container, user, category)
+
+      await expect(
+        container.transactionService.delete({ id: created.id, userId: other.id }),
+      ).rejects.toThrow(TransactionNotFoundError)
+
+      expect(
+        await container.transactionService.findById({ id: created.id, userId: user.id }),
+      ).toMatchObject({
+        amountInCents: DEFAULT_CREATE.amountInCents,
+        notes: DEFAULT_CREATE.notes,
+        transactionType: category.categoryType,
+        category: {
+          id: category.id,
+        },
+      })
     })
   })
 
   describe('findMonthlyTotalsInRange', () => {
     test('returns monthly rows with calculated balance', async ({ container, db }) => {
-      void container
-      void db
-      // Arrange: user + income category + expense category (two insertTestCategory)
-      // Arrange: createTransaction for transactions in known months/amounts
-      // Act: service.findMonthlyTotalsInRange({ userId: user.id, range? })
-      // Assert: toMatchObject on row(s) — incomeTotal, expenseTotal, balance
+      const user = await insertTestUser(db)
+
+      const JAN_MONTH = '2026-01'
+      const JAN_DATE = new Date('2026-01-01T00:00:00+00:00')
+      const FEB_MONTH = '2026-02'
+      const FEB_DATE = new Date('2026-02-01T00:00:00+00:00')
+      const RANGE_UNTIL = new Date('2026-03-01T00:00:00+00:00')
+
+      const JAN_INCOME = 100_000
+      const JAN_EXPENSE = 40_000
+      const FEB_INCOME = 50_000
+      const FEB_EXPENSE = 10_000
+
+      const incomeCategory = await insertTestCategory(db, {
+        userId: user.id,
+        categoryType: 'income',
+      })
+
+      const expenseCategory = await insertTestCategory(db, {
+        userId: user.id,
+        categoryType: 'expense',
+      })
+
+      await createTransaction(container, user, incomeCategory, {
+        amountInCents: JAN_INCOME,
+        occurredAt: JAN_DATE,
+      })
+
+      await createTransaction(container, user, expenseCategory, {
+        amountInCents: JAN_EXPENSE,
+        occurredAt: JAN_DATE,
+      })
+
+      await createTransaction(container, user, incomeCategory, {
+        amountInCents: FEB_INCOME,
+        occurredAt: FEB_DATE,
+      })
+
+      await createTransaction(container, user, expenseCategory, {
+        amountInCents: FEB_EXPENSE,
+        occurredAt: FEB_DATE,
+      })
+
+      const monthlyTotals = await container.transactionService.findMonthlyTotalsInRange({
+        userId: user.id,
+        range: {
+          from: JAN_DATE,
+          until: RANGE_UNTIL,
+        },
+      })
+
+      expect(monthlyTotals).toHaveLength(2)
+
+      expect(monthlyTotals[0]).toMatchObject({
+        month: FEB_MONTH,
+        incomeTotal: FEB_INCOME,
+        expenseTotal: FEB_EXPENSE,
+        balance: FEB_INCOME - FEB_EXPENSE,
+      })
+
+      expect(monthlyTotals[1]).toMatchObject({
+        month: JAN_MONTH,
+        incomeTotal: JAN_INCOME,
+        expenseTotal: JAN_EXPENSE,
+        balance: JAN_INCOME - JAN_EXPENSE,
+      })
+    })
+
+    test('throws when from is not before until', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+
+      await expect(
+        container.transactionService.findMonthlyTotalsInRange({
+          userId: user.id,
+          range: {
+            from: TEST_OCCURRED_AT_FAR_LATER_DATE,
+            until: TEST_OCCURRED_AT_DATE,
+          },
+        }),
+      ).rejects.toThrow(InvalidTransactionRangeError)
     })
   })
 })
