@@ -4,6 +4,7 @@ import type { UserRepository } from '../users/user.repository.js'
 import type { UserService } from '../users/user.service.js'
 import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
 import {
+  InvalidTransactionRangeError,
   TransactionCreatedByUserNotFoundError,
   TransactionCreationFailedError,
   TransactionNotFoundError,
@@ -118,6 +119,10 @@ export class TransactionService {
   ): Promise<MonthlyTotalsInRangeRow[]> {
     const { timeZone } = await this.userService.getUserPreferences({ id: data.userId })
     const { from, until } = data.range ?? {}
+
+    if (from != null && until != null && from >= until) {
+      throw new InvalidTransactionRangeError()
+    }
 
     const rows = await this.transactionRepository.findMonthlyTotalsInRange({
       userId: data.userId,

@@ -37,25 +37,22 @@ export const occurredAtQueryField = z.iso.datetime({ offset: true }).meta({
 
 export const occurredAtRequestField = occurredAtQueryField.transform((value) => new Date(value))
 
-const transactionsByRangeQueryBaseSchema = z
-  .strictObject({
-    from: occurredAtQueryField.optional().meta({
-      description: 'Lower bound (inclusive). Omit for no start limit.',
-    }),
-    until: occurredAtQueryField.optional().meta({
-      description: 'Upper bound (exclusive). Omit for no end limit.',
-    }),
-  })
-  .refine((data) => data.from == null || data.until == null || data.from < data.until, {
-    message: 'from must be before until',
-  })
-
-export const transactionsByRangeQueryOpenApiSchema = transactionsByRangeQueryBaseSchema.meta({
-  id: 'TransactionsByRangeQuery',
-  description: 'Optional date range filter. Omit both to aggregate all transactions.',
+const transactionsByRangeQueryFieldsSchema = z.strictObject({
+  from: occurredAtQueryField.optional().meta({
+    description: 'Lower bound (inclusive). Omit for no start limit.',
+  }),
+  until: occurredAtQueryField.optional().meta({
+    description: 'Upper bound (exclusive). Omit for no end limit.',
+  }),
 })
 
-export const transactionsByRangeQuerySchema = transactionsByRangeQueryBaseSchema.transform(
+export const transactionsByRangeQueryOpenApiSchema = transactionsByRangeQueryFieldsSchema.meta({
+  id: 'TransactionsByRangeQuery',
+  description:
+    'Optional date range filter. Omit both to aggregate all transactions. When both are set, from must be before until.',
+})
+
+export const transactionsByRangeQuerySchema = transactionsByRangeQueryFieldsSchema.transform(
   ({ from, until }) => ({
     from: from ? new Date(from) : undefined,
     until: until ? new Date(until) : undefined,
@@ -129,3 +126,8 @@ export const monthlyBalanceRowSchema = z
 export const monthlyBalanceResponseSchema = z
   .array(monthlyBalanceRowSchema)
   .meta({ id: 'MonthlyBalanceList' })
+
+export type CreateTransactionBodyInput = z.input<typeof createTransactionBodySchema>
+export type UpdateTransactionBodyInput = z.input<typeof updateTransactionBodySchema>
+export type TransactionQueryInput = z.input<typeof transactionQueryParamsSchema>
+export type MonthlyBalanceQueryInput = z.input<typeof transactionsByRangeQueryOpenApiSchema>

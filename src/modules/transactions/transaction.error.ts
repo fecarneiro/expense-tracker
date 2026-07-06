@@ -20,3 +20,10 @@ export class TransactionCreatedByUserNotFoundError extends AppError {
     this.name = 'TransactionCreatedByUserNotFoundError'
   }
 }
+
+export class InvalidTransactionRangeError extends AppError {
+  constructor() {
+    super('from must be before until', 400)
+    this.name = 'InvalidTransactionRangeError'
+  }
+}
