@@ -1,9 +1,5 @@
-import * as z from 'zod'
-import {
-  emailField,
-  userCredentialsBodySchema,
-  userResponseSchema,
-} from '../../users/user.schemas.js'
+import { z } from 'zod'
+import { emailField, userCredentialsBodySchema, userResponseSchema } from '../users/user.schemas.js'
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
@@ -20,9 +16,9 @@ export const loginBodySchema = z
     id: 'LoginBody',
   })
 
-export const registerHttpResponseSchema = userResponseSchema
+export const registerResponseSchema = userResponseSchema
 
-export const loginHttpResponseSchema = z
+export const loginResponseSchema = z
   .object({
     user: userResponseSchema,
     access_token: z.string().meta({
@@ -36,5 +32,8 @@ export const loginHttpResponseSchema = z
     }),
   })
   .meta({
-    id: 'LoginHttpResponse',
+    id: 'LoginResponse',
   })
+
+export type RegisterBodyInput = z.input<typeof registerBodySchema>
+export type LoginBodyInput = z.input<typeof loginBodySchema>
