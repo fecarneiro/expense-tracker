@@ -12,7 +12,7 @@ import {
   DEFAULT_CATEGORY_NAME,
   insertTestCategory,
 } from '../../tests/factories/category.factory.js'
-import { insertTestUser } from '../../tests/factories/user.factory.js'
+import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import { LIST_DEFAULT_LIMIT } from './transaction.constants.js'
@@ -144,7 +144,7 @@ describe('TransactionService', () => {
     test('throws for non-owner without mutating the transaction', async ({ container, db }) => {
       const user = await insertTestUser(db)
       const userCategory = await insertTestCategory(db, { userId: user.id })
-      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const other = await insertOtherTestUser(db)
 
       const created = await createTransaction(container, user, userCategory)
 
@@ -171,7 +171,7 @@ describe('TransactionService', () => {
     test('throws when category belongs to another user', async ({ container, db }) => {
       const user = await insertTestUser(db)
       const userCategory = await insertTestCategory(db, { userId: user.id })
-      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const other = await insertOtherTestUser(db)
       const otherCategory = await insertTestCategory(db, { userId: other.id })
 
       const created = await createTransaction(container, user, userCategory)
@@ -212,7 +212,7 @@ describe('TransactionService', () => {
     test('throws when user is not the owner', async ({ container, db }) => {
       const user = await insertTestUser(db)
       const userCategory = await insertTestCategory(db, { userId: user.id })
-      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const other = await insertOtherTestUser(db)
 
       const created = await createTransaction(container, user, userCategory)
 
@@ -236,7 +236,7 @@ describe('TransactionService', () => {
     test('returns only transactions of the given user', async ({ container, db }) => {
       const user = await insertTestUser(db)
       const category = await insertTestCategory(db, { userId: user.id })
-      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const other = await insertOtherTestUser(db)
       const otherCategory = await insertTestCategory(db, { userId: other.id })
 
       const OWNER_NOTES = 'owner only'
@@ -314,7 +314,7 @@ describe('TransactionService', () => {
     test('throws for non-owner without mutating the transaction', async ({ container, db }) => {
       const user = await insertTestUser(db)
       const category = await insertTestCategory(db, { userId: user.id })
-      const other = await insertTestUser(db, { email: 'other@test.com' })
+      const other = await insertOtherTestUser(db)
 
       const created = await createTransaction(container, user, category)
 
