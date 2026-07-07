@@ -6,11 +6,11 @@ export const transactionIdField = z.uuid().meta({
   example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
 })
 
-export const transactionAmountInCentsField = z.number().int().positive().meta({
+export const transactionAmountCentsField = z.number().int().positive().meta({
   example: 10000,
 })
 
-export const transactionAmountInCentsNonNegativeField = z.number().int().nonnegative().meta({
+export const transactionAmountCentsNonNegativeField = z.number().int().nonnegative().meta({
   example: 10000,
 })
 
@@ -62,7 +62,7 @@ export const transactionsByRangeQuerySchema = transactionsByRangeQueryFieldsSche
 const transactionBodyFields = {
   occurredAt: occurredAtRequestField,
   categoryId: categoryIdField,
-  amountInCents: transactionAmountInCentsField,
+  amountCents: transactionAmountCentsField,
   notes: transactionNotesField,
 }
 
@@ -99,7 +99,7 @@ export const transactionResponseSchema = z
     id: transactionIdField,
     occurredAt: occurredAtResponseField,
     transactionType: transactionTypeField,
-    amountInCents: transactionAmountInCentsField,
+    amountCents: transactionAmountCentsField,
     notes: transactionNotesResponseField,
     category: transactionCategoryResponseSchema,
   })
@@ -117,8 +117,8 @@ export const monthlyBalanceMonthField = z
 export const monthlyBalanceRowSchema = z
   .object({
     month: monthlyBalanceMonthField,
-    incomeTotal: transactionAmountInCentsNonNegativeField,
-    expenseTotal: transactionAmountInCentsNonNegativeField,
+    incomeTotal: transactionAmountCentsNonNegativeField,
+    expenseTotal: transactionAmountCentsNonNegativeField,
     balance: z.number().int().meta({ example: 180000 }),
   })
   .meta({ id: 'MonthlyBalanceRow' })

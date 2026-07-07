@@ -11,7 +11,7 @@ describe('toTransactionResponse', () => {
       categoryId: '019e8885-153c-7c82-af4a-28a31559e03e',
       occurredAt: TEST_OCCURRED_AT_DATE,
       transactionType: 'expense',
-      amountInCents: 1000,
+      amountCents: 1000,
       notes: 'Test transaction',
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       category: {
@@ -24,7 +24,7 @@ describe('toTransactionResponse', () => {
       id: '019e8885-153c-7c82-af4a-28a31559e01e',
       occurredAt: TEST_OCCURRED_AT_RESPONSE,
       transactionType: 'expense',
-      amountInCents: 1000,
+      amountCents: 1000,
       notes: 'Test transaction',
       category: {
         id: '019e8885-153c-7c82-af4a-28a31559e03e',

@@ -3,7 +3,7 @@ import { centsToString } from '../../../utils/money.utils.js'
 import type { CategoryService } from '../../categories/category.service.js'
 import type { TransactionService } from '../../transactions/transaction.service.js'
 import type {
-  TransactionAmountInCents,
+  TransactionAmountCents,
   TransactionType,
 } from '../../transactions/transaction.types.js'
 import { transactionAmountParser } from '../parsers/transaction-amount.parser.js'
@@ -37,15 +37,14 @@ export function handleNewTransactionConversation(
     const transactionLabel = transactionType === 'expense' ? 'spent' : 'received'
 
     await ctx.reply(`How much did you ${transactionLabel}?`)
-    let amountInCents: TransactionAmountInCents | null = null
+    let amountCents: TransactionAmountCents | null = null
 
     do {
       const { message } = await conversation.waitFor('message:text')
-      amountInCents = transactionAmountParser(message.text)
+      amountCents = transactionAmountParser(message.text)
 
-      if (amountInCents == null)
-        await ctx.reply('Invalid amount. Send a positive number, e.g. 12.50')
-    } while (amountInCents == null)
+      if (amountCents == null) await ctx.reply('Invalid amount. Send a positive number, e.g. 12.50')
+    } while (amountCents == null)
 
     // ── Category Keyboard ─────────────────────────────
 
@@ -74,7 +73,7 @@ export function handleNewTransactionConversation(
     // ── Date Resolution ─────────────────────────────
     await transactionService.create({
       userId,
-      amountInCents,
+      amountCents,
       categoryId,
       occurredAt: new Date(),
       notes: null,
@@ -82,7 +81,7 @@ export function handleNewTransactionConversation(
 
     // ── Reply ─────────────────────────────────────
     const label = transactionType === 'expense' ? 'Expense' : 'Income'
-    const amount = centsToString(amountInCents)
+    const amount = centsToString(amountCents)
 
     return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
   }

@@ -27,7 +27,7 @@ export async function handleFastTransaction(
     return
   }
 
-  const { transactionType, amountInCents, categoryName } = parsed
+  const { transactionType, amountCents, categoryName } = parsed
 
   const category = await categoryService.findByNameAndType({
     userId,
@@ -44,7 +44,7 @@ export async function handleFastTransaction(
 
   const transaction = await transactionService.create({
     userId,
-    amountInCents: parsed.amountInCents,
+    amountCents: parsed.amountCents,
     categoryId: category.id,
     occurredAt: new Date(),
     notes: null,
@@ -62,7 +62,7 @@ export async function handleFastTransaction(
 
   // ── Reply ─────────────────────────────────────
   const label = transactionType === 'expense' ? 'Expense' : 'Income'
-  const amount = centsToString(amountInCents)
+  const amount = centsToString(amountCents)
 
   return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
 }

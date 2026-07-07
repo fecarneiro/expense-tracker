@@ -28,14 +28,14 @@ export const transactionsTable = pgTable(
       .references(() => usersTable.id),
     categoryId: uuid().notNull(),
     transactionType: transactionTypeEnum().notNull(),
-    amountInCents: integer().notNull(),
+    amountCents: integer().notNull(),
     notes: varchar({ length: 70 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
 
   (table) => [
     index('transactions_user_occurred_at_id_idx').on(table.userId, table.occurredAt, table.id),
-    check('amount_check', sql`${table.amountInCents} > 0`),
+    check('amount_check', sql`${table.amountCents} > 0`),
     foreignKey({
       name: 'transactions_category_user_fk',
       columns: [table.categoryId, table.userId],

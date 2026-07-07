@@ -1,13 +1,13 @@
 import { categoryNameField } from '../../categories/category.schemas.js'
 import type {
-  TransactionAmountInCents,
+  TransactionAmountCents,
   TransactionType,
 } from '../../transactions/transaction.types.js'
 import { transactionAmountParser } from './transaction-amount.parser.js'
 
 export type FastTransaction = {
   transactionType: TransactionType
-  amountInCents: TransactionAmountInCents
+  amountCents: TransactionAmountCents
   categoryName: string
 }
 
@@ -28,8 +28,8 @@ export function fastTransactionParser(message: string): FastTransaction | null {
 
   const transactionType = amountPart.startsWith('+') ? 'income' : 'expense'
 
-  const amountInCents = transactionAmountParser(amountPart)
-  if (amountInCents == null) return null
+  const amountCents = transactionAmountParser(amountPart)
+  if (amountCents == null) return null
 
   const categoryResult = categoryNameField.safeParse(rawCategoryName)
 
@@ -37,7 +37,7 @@ export function fastTransactionParser(message: string): FastTransaction | null {
 
   return {
     transactionType,
-    amountInCents,
+    amountCents,
     categoryName: categoryResult.data,
   }
 }

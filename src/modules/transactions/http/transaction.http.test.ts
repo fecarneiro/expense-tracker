@@ -16,7 +16,7 @@ import type { CreateTransactionBodyInput } from '../transaction.schemas.js'
 
 const DEFAULT_HTTP_CREATE = {
   occurredAt: TEST_OCCURRED_AT,
-  amountInCents: 1000,
+  amountCents: 1000,
   notes: 'my notes',
 } as const satisfies Omit<CreateTransactionBodyInput, 'categoryId'>
 
@@ -39,7 +39,7 @@ describe('authorization', () => {
     ['POST /transactions', 'post', '/transactions', validCreateBody(UNKNOWN_UUID)],
     ['GET /transactions', 'get', '/transactions'],
     ['GET /transactions/:id', 'get', `/transactions/${UNKNOWN_UUID}`],
-    ['PATCH /transactions/:id', 'patch', `/transactions/${UNKNOWN_UUID}`, { amountInCents: 100 }],
+    ['PATCH /transactions/:id', 'patch', `/transactions/${UNKNOWN_UUID}`, { amountCents: 100 }],
     ['DELETE /transactions/:id', 'delete', `/transactions/${UNKNOWN_UUID}`],
     ['GET /transactions/monthly-balance', 'get', '/transactions/monthly-balance'],
   ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
@@ -61,7 +61,7 @@ describe('POST /transactions', () => {
 
     expect(res.body).toMatchObject({
       id: expect.any(String),
-      amountInCents: DEFAULT_HTTP_CREATE.amountInCents,
+      amountCents: DEFAULT_HTTP_CREATE.amountCents,
       notes: DEFAULT_HTTP_CREATE.notes,
       occurredAt: TEST_OCCURRED_AT_RESPONSE,
       transactionType: 'expense',
@@ -70,14 +70,14 @@ describe('POST /transactions', () => {
   })
 
   test.for([
-    ['missing amountInCents', { occurredAt: TEST_OCCURRED_AT, categoryId: UNKNOWN_UUID }],
+    ['missing amountCents', { occurredAt: TEST_OCCURRED_AT, categoryId: UNKNOWN_UUID }],
     [
       'invalid occurredAt',
-      { occurredAt: 'not-a-date', amountInCents: 1000, categoryId: UNKNOWN_UUID },
+      { occurredAt: 'not-a-date', amountCents: 1000, categoryId: UNKNOWN_UUID },
     ],
     [
       'negative amount',
-      { occurredAt: TEST_OCCURRED_AT, amountInCents: -1, categoryId: UNKNOWN_UUID },
+      { occurredAt: TEST_OCCURRED_AT, amountCents: -1, categoryId: UNKNOWN_UUID },
     ],
     ['extra field (strictObject)', { ...validCreateBody(UNKNOWN_UUID), hacker: true }],
     ['notes longer than 70', { ...validCreateBody(UNKNOWN_UUID), notes: 'a'.repeat(71) }],
@@ -143,7 +143,7 @@ describe('PATCH /transactions/:id', () => {
     await request(app)
       .patch('/transactions/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
-      .send({ amountInCents: 100 })
+      .send({ amountCents: 100 })
       .expect(400)
   })
 
@@ -155,7 +155,7 @@ describe('PATCH /transactions/:id', () => {
     await request(app)
       .patch(`/transactions/${id}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ amountInCents: -1 })
+      .send({ amountCents: -1 })
       .expect(400)
   })
 })

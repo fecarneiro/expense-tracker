@@ -19,7 +19,7 @@ export async function handleLastTransactions(
     .map((t) => {
       const date = isoDateTimeToReadable(t.occurredAt)
       const sign = t.transactionType === 'income' ? '+' : '-'
-      const amount = centsToString(t.amountInCents)
+      const amount = centsToString(t.amountCents)
       const category = t.category.name
 
       return `🗓️ ${date}\n${sign} $${amount} | ${category}`

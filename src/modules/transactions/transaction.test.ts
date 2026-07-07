@@ -20,13 +20,11 @@ import { InvalidTransactionRangeError, TransactionNotFoundError } from './transa
 import type { CreateTransactionInput } from './transaction.types.js'
 
 const DEFAULT_CREATE = {
-  amountInCents: 1000,
+  amountCents: 1000,
   notes: 'my notes',
-} as const satisfies Pick<CreateTransactionInput, 'amountInCents' | 'notes'>
+} as const satisfies Pick<CreateTransactionInput, 'amountCents' | 'notes'>
 
-type CreateOverrides = Partial<
-  Pick<CreateTransactionInput, 'amountInCents' | 'notes' | 'occurredAt'>
->
+type CreateOverrides = Partial<Pick<CreateTransactionInput, 'amountCents' | 'notes' | 'occurredAt'>>
 
 async function createTransaction(
   container: ReturnType<typeof createContainer>,
@@ -54,7 +52,7 @@ describe('TransactionService', () => {
       const created = await createTransaction(container, user, category)
 
       expect(created).toMatchObject({
-        amountInCents: DEFAULT_CREATE.amountInCents,
+        amountCents: DEFAULT_CREATE.amountCents,
         notes: DEFAULT_CREATE.notes,
         transactionType: 'expense',
         category: {
@@ -99,11 +97,11 @@ describe('TransactionService', () => {
       const updated = await container.transactionService.update({
         id: created.id,
         userId: user.id,
-        amountInCents: 99999,
+        amountCents: 99999,
       })
 
       expect(updated).toMatchObject({
-        amountInCents: 99999,
+        amountCents: 99999,
         notes: DEFAULT_CREATE.notes,
         transactionType: category.categoryType,
         category: {
@@ -152,14 +150,14 @@ describe('TransactionService', () => {
         container.transactionService.update({
           id: created.id,
           userId: other.id,
-          amountInCents: 99999,
+          amountCents: 99999,
         }),
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
-        amountInCents: DEFAULT_CREATE.amountInCents,
+        amountCents: DEFAULT_CREATE.amountCents,
         notes: DEFAULT_CREATE.notes,
         transactionType: userCategory.categoryType,
         category: {
@@ -187,7 +185,7 @@ describe('TransactionService', () => {
       expect(
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
-        amountInCents: DEFAULT_CREATE.amountInCents,
+        amountCents: DEFAULT_CREATE.amountCents,
         notes: DEFAULT_CREATE.notes,
         transactionType: userCategory.categoryType,
         category: {
@@ -325,7 +323,7 @@ describe('TransactionService', () => {
       expect(
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
-        amountInCents: DEFAULT_CREATE.amountInCents,
+        amountCents: DEFAULT_CREATE.amountCents,
         notes: DEFAULT_CREATE.notes,
         transactionType: category.categoryType,
         category: {
@@ -361,22 +359,22 @@ describe('TransactionService', () => {
       })
 
       await createTransaction(container, user, incomeCategory, {
-        amountInCents: JAN_INCOME,
+        amountCents: JAN_INCOME,
         occurredAt: JAN_DATE,
       })
 
       await createTransaction(container, user, expenseCategory, {
-        amountInCents: JAN_EXPENSE,
+        amountCents: JAN_EXPENSE,
         occurredAt: JAN_DATE,
       })
 
       await createTransaction(container, user, incomeCategory, {
-        amountInCents: FEB_INCOME,
+        amountCents: FEB_INCOME,
         occurredAt: FEB_DATE,
       })
 
       await createTransaction(container, user, expenseCategory, {
-        amountInCents: FEB_EXPENSE,
+        amountCents: FEB_EXPENSE,
         occurredAt: FEB_DATE,
       })
 

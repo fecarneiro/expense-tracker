@@ -224,7 +224,7 @@ describe('UserService', () => {
         userId: created.id,
         createdByUserId: created.id,
         categoryId: category.id,
-        amountInCents: 10050,
+        amountCents: 10050,
         transactionType: 'expense',
         occurredAt: TEST_OCCURRED_AT_DATE,
       })

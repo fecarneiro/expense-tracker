@@ -484,7 +484,7 @@ describe('CategoryService', () => {
       categoryId: created.id,
       transactionType: 'expense',
       occurredAt: TEST_OCCURRED_AT_DATE,
-      amountInCents: 99999,
+      amountCents: 99999,
       notes: 'mine',
     })
 

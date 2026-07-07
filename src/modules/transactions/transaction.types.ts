@@ -4,7 +4,7 @@ import type { Category } from '../categories/category.types.js'
 export type Transaction = TransactionRow
 
 export type TransactionType = Transaction['transactionType']
-export type TransactionAmountInCents = Transaction['amountInCents']
+export type TransactionAmountCents = Transaction['amountCents']
 
 export type CreateTransactionInput = Omit<
   Transaction,
@@ -15,7 +15,7 @@ export type CreateTransactionInput = Omit<
 }
 
 export type UpdateTransactionInput = Pick<Transaction, 'id' | 'userId'> & {
-  amountInCents?: Transaction['amountInCents'] | undefined
+  amountCents?: Transaction['amountCents'] | undefined
   notes?: Transaction['notes'] | undefined
   categoryId?: Transaction['categoryId'] | undefined
   transactionType?: Transaction['transactionType'] | undefined

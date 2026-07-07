@@ -29,12 +29,12 @@ function monthInTimeZoneSql(timeZone: string) {
 
 const incomeTotalSql = sql<number>`
   coalesce(sum(case when ${transactionsTable.transactionType} = 'income'
-    then ${transactionsTable.amountInCents} else 0 end), 0)
+    then ${transactionsTable.amountCents} else 0 end), 0)
 `
 
 const expenseTotalSql = sql<number>`
   coalesce(sum(case when ${transactionsTable.transactionType} = 'expense'
-    then ${transactionsTable.amountInCents} else 0 end), 0)
+    then ${transactionsTable.amountCents} else 0 end), 0)
 `
 
 export class TransactionRepository {
