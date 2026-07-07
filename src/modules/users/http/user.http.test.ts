@@ -104,16 +104,13 @@ describe('DELETE /users/me', () => {
       .expect(401)
   })
 
-  test.for([['empty password', { password: '' }]])('returns 400 when %s', async ([_label, body], {
-    app,
-    authenticateWithPassword,
-  }) => {
+  test('returns 400 when password is empty', async ({ app, authenticateWithPassword }) => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
       .delete('/users/me')
       .set('Authorization', `Bearer ${token}`)
-      .send(body)
+      .send({ password: '' })
       .expect(400)
   })
 })

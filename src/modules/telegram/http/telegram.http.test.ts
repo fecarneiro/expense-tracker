@@ -8,12 +8,10 @@ import {
 } from '../linking-code/linking-code.service.js'
 
 describe('authorization', () => {
-  test.for([
-    ['GET /telegram/generate-linking-code', 'get', '/telegram/generate-linking-code'],
-  ] as const)('%s returns 401 without authorization header', async ([_route, method, path], {
+  test('GET /telegram/generate-linking-code returns 401 without authorization header', async ({
     app,
   }) => {
-    await sendUnauthorized(app, method, path).expect(401)
+    await sendUnauthorized(app, 'get', '/telegram/generate-linking-code').expect(401)
   })
 })
 

@@ -147,10 +147,7 @@ describe('PATCH /transactions/:id', () => {
       .expect(400)
   })
 
-  test.for([['negative amount', { amountInCents: -1 }]])('returns 400 when %s', async ([
-    _label,
-    body,
-  ], { app, db, authenticate }) => {
+  test('returns 400 when amount is negative', async ({ app, db, authenticate }) => {
     const { user, token } = await authenticate()
     const category = await insertTestCategory(db, { userId: user.id })
     const { id } = await postTransaction(app, token, category.id)
@@ -158,7 +155,7 @@ describe('PATCH /transactions/:id', () => {
     await request(app)
       .patch(`/transactions/${id}`)
       .set('Authorization', `Bearer ${token}`)
-      .send(body)
+      .send({ amountInCents: -1 })
       .expect(400)
   })
 })
