@@ -2,6 +2,7 @@ export const UNKNOWN_UUID = '00000000-0000-0000-0000-000000000000'
 
 export const TEST_PASSWORD = '12345678'
 export const TEST_EMAIL = 'user@test.com'
+export const OTHER_TEST_EMAIL = 'other@test.com'
 
 /** ISO datetime for HTTP request bodies (Zod accepts offset form) */
 export const TEST_OCCURRED_AT = '2026-01-01T00:00:00+00:00'

@@ -7,7 +7,7 @@ import {
   DEFAULT_USER_LOCALE,
   DEFAULT_USER_TIME_ZONE,
 } from '../../modules/users/user.constants.js'
-import { TEST_EMAIL } from '../constants.js'
+import { OTHER_TEST_EMAIL, TEST_EMAIL } from '../constants.js'
 
 export const TEST_PASSWORD_HASH = '$2b$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
@@ -31,4 +31,8 @@ export async function insertTestUser(db: Database, params: InsertTestUserParams 
   if (!user) throw new Error('insertTestUser: failed')
 
   return user
+}
+
+export async function insertOtherTestUser(db: Database) {
+  return insertTestUser(db, { email: OTHER_TEST_EMAIL })
 }
