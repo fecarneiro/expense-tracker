@@ -1,9 +1,5 @@
 import type { Request, Response } from 'express'
-import {
-  changePasswordBodySchema,
-  deleteUserBodySchema,
-  userResponseSchema,
-} from '../user.schemas.js'
+import { changePasswordBodySchema, deleteUserBodySchema } from '../user.schemas.js'
 import type { UserService } from '../user.service.js'
 
 export class UserHttpController {
@@ -12,7 +8,7 @@ export class UserHttpController {
   async getCurrentUser(req: Request, res: Response) {
     const userId = req.auth.userId
     const user = await this.userService.getCurrentUser({ id: userId })
-    res.status(200).json(userResponseSchema.parse(user))
+    res.status(200).json(user)
   }
 
   async changePassword(req: Request, res: Response) {

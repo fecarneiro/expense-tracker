@@ -13,6 +13,8 @@ export function toUserResponse(user: User): UserResponse {
   })
 }
 
-export function toUserPreferences(source: UserPreferences): UserPreferences {
-  return userPreferencesSchema.parse(source)
+export function toUserPreferences(
+  user: Pick<User, 'timeZone' | 'locale' | 'currency'>,
+): UserPreferences {
+  return userPreferencesSchema.parse(user)
 }

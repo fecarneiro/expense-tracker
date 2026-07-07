@@ -88,3 +88,7 @@ export const userPreferencesSchema = z.object({
   locale: localeSchema,
   currency: currencySchema,
 })
+
+export type CreateUserBodyInput = z.input<typeof createUserBodySchema>
+export type ChangePasswordBodyInput = z.input<typeof changePasswordBodySchema>
+export type DeleteUserBodyInput = z.input<typeof deleteUserBodySchema>

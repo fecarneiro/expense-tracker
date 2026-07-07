@@ -18,7 +18,7 @@ export type ChangePasswordInput = Pick<User, 'id'> & {
 }
 
 export type UpdatePasswordInput = Pick<User, 'id'> & {
-  passwordHash: Password // Repository input
+  passwordHash: string
 }
 
 export type FindUserByEmailInput = Pick<User, 'email'>
