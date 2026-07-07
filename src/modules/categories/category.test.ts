@@ -485,7 +485,7 @@ describe('CategoryService', () => {
       transactionType: 'expense',
       occurredAt: TEST_OCCURRED_AT_DATE,
       amountCents: 99999,
-      notes: 'mine',
+      description: 'mine',
     })
 
     await expect(

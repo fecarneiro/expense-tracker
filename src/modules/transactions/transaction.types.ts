@@ -10,13 +10,13 @@ export type CreateTransactionInput = Omit<
   Transaction,
   'id' | 'transactionType' | 'createdByUserId' | 'createdAt'
 > & {
-  notes?: Transaction['notes']
+  description?: Transaction['description']
   createdByUserId?: Transaction['createdByUserId']
 }
 
 export type UpdateTransactionInput = Pick<Transaction, 'id' | 'userId'> & {
   amountCents?: Transaction['amountCents'] | undefined
-  notes?: Transaction['notes'] | undefined
+  description?: Transaction['description'] | undefined
   categoryId?: Transaction['categoryId'] | undefined
   transactionType?: Transaction['transactionType'] | undefined
   occurredAt?: Transaction['occurredAt'] | undefined

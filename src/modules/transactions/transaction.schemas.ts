@@ -18,7 +18,7 @@ export const transactionTypeField = z.enum(['income', 'expense']).meta({
   example: 'expense',
 })
 
-export const transactionNotesField = z
+export const transactionDescriptionField = z
   .string()
   .trim()
   .max(70)
@@ -63,7 +63,7 @@ const transactionBodyFields = {
   occurredAt: occurredAtRequestField,
   categoryId: categoryIdField,
   amountCents: transactionAmountCentsField,
-  notes: transactionNotesField,
+  description: transactionDescriptionField,
 }
 
 export const transactionIdParamsSchema = z.strictObject({
@@ -85,7 +85,7 @@ export const updateTransactionBodySchema = z
 // RESPONSE
 export const occurredAtResponseField = z.iso.datetime({ offset: true })
 
-export const transactionNotesResponseField = z.string().max(70).nullable()
+export const transactionDescriptionResponseField = z.string().max(70).nullable()
 
 export const transactionCategoryResponseSchema = z
   .object({
@@ -100,7 +100,7 @@ export const transactionResponseSchema = z
     occurredAt: occurredAtResponseField,
     transactionType: transactionTypeField,
     amountCents: transactionAmountCentsField,
-    notes: transactionNotesResponseField,
+    description: transactionDescriptionResponseField,
     category: transactionCategoryResponseSchema,
   })
   .meta({ id: 'Transaction' })

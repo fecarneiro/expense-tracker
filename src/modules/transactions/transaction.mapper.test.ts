@@ -12,7 +12,7 @@ describe('toTransactionResponse', () => {
       occurredAt: TEST_OCCURRED_AT_DATE,
       transactionType: 'expense',
       amountCents: 1000,
-      notes: 'Test transaction',
+      description: 'Test transaction',
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       category: {
         id: '019e8885-153c-7c82-af4a-28a31559e03e',
@@ -25,7 +25,7 @@ describe('toTransactionResponse', () => {
       occurredAt: TEST_OCCURRED_AT_RESPONSE,
       transactionType: 'expense',
       amountCents: 1000,
-      notes: 'Test transaction',
+      description: 'Test transaction',
       category: {
         id: '019e8885-153c-7c82-af4a-28a31559e03e',
         name: 'Eating Out',

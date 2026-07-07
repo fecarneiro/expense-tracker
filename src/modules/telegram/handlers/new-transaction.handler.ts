@@ -76,7 +76,7 @@ export function handleNewTransactionConversation(
       amountCents,
       categoryId,
       occurredAt: new Date(),
-      notes: null,
+      description: null,
     })
 
     // ── Reply ─────────────────────────────────────

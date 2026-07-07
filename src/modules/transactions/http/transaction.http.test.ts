@@ -17,7 +17,7 @@ import type { CreateTransactionBodyInput } from '../transaction.schemas.js'
 const DEFAULT_HTTP_CREATE = {
   occurredAt: TEST_OCCURRED_AT,
   amountCents: 1000,
-  notes: 'my notes',
+  description: 'my description',
 } as const satisfies Omit<CreateTransactionBodyInput, 'categoryId'>
 
 function validCreateBody(categoryId: string): CreateTransactionBodyInput {
@@ -62,7 +62,7 @@ describe('POST /transactions', () => {
     expect(res.body).toMatchObject({
       id: expect.any(String),
       amountCents: DEFAULT_HTTP_CREATE.amountCents,
-      notes: DEFAULT_HTTP_CREATE.notes,
+      description: DEFAULT_HTTP_CREATE.description,
       occurredAt: TEST_OCCURRED_AT_RESPONSE,
       transactionType: 'expense',
       category: { id: category.id, name: DEFAULT_CATEGORY_NAME },
@@ -80,7 +80,10 @@ describe('POST /transactions', () => {
       { occurredAt: TEST_OCCURRED_AT, amountCents: -1, categoryId: UNKNOWN_UUID },
     ],
     ['extra field (strictObject)', { ...validCreateBody(UNKNOWN_UUID), hacker: true }],
-    ['notes longer than 70', { ...validCreateBody(UNKNOWN_UUID), notes: 'a'.repeat(71) }],
+    [
+      'description longer than 70',
+      { ...validCreateBody(UNKNOWN_UUID), description: 'a'.repeat(71) },
+    ],
   ])('returns 400 when %s', async ([_label, body], { app, authenticate }) => {
     const { token } = await authenticate()
     await request(app)

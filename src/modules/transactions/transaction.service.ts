@@ -49,7 +49,7 @@ export class TransactionService {
       ...data,
       transactionType: category.categoryType,
       createdByUserId,
-      notes: data.notes ?? null,
+      description: data.description ?? null,
     })
 
     if (!created) throw new TransactionCreationFailedError()

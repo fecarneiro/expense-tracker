@@ -21,10 +21,12 @@ import type { CreateTransactionInput } from './transaction.types.js'
 
 const DEFAULT_CREATE = {
   amountCents: 1000,
-  notes: 'my notes',
-} as const satisfies Pick<CreateTransactionInput, 'amountCents' | 'notes'>
+  description: 'my description',
+} as const satisfies Pick<CreateTransactionInput, 'amountCents' | 'description'>
 
-type CreateOverrides = Partial<Pick<CreateTransactionInput, 'amountCents' | 'notes' | 'occurredAt'>>
+type CreateOverrides = Partial<
+  Pick<CreateTransactionInput, 'amountCents' | 'description' | 'occurredAt'>
+>
 
 async function createTransaction(
   container: ReturnType<typeof createContainer>,
@@ -53,7 +55,7 @@ describe('TransactionService', () => {
 
       expect(created).toMatchObject({
         amountCents: DEFAULT_CREATE.amountCents,
-        notes: DEFAULT_CREATE.notes,
+        description: DEFAULT_CREATE.description,
         transactionType: 'expense',
         category: {
           id: category.id,
@@ -102,7 +104,7 @@ describe('TransactionService', () => {
 
       expect(updated).toMatchObject({
         amountCents: 99999,
-        notes: DEFAULT_CREATE.notes,
+        description: DEFAULT_CREATE.description,
         transactionType: category.categoryType,
         category: {
           id: category.id,
@@ -158,7 +160,7 @@ describe('TransactionService', () => {
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
         amountCents: DEFAULT_CREATE.amountCents,
-        notes: DEFAULT_CREATE.notes,
+        description: DEFAULT_CREATE.description,
         transactionType: userCategory.categoryType,
         category: {
           id: userCategory.id,
@@ -186,7 +188,7 @@ describe('TransactionService', () => {
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
         amountCents: DEFAULT_CREATE.amountCents,
-        notes: DEFAULT_CREATE.notes,
+        description: DEFAULT_CREATE.description,
         transactionType: userCategory.categoryType,
         category: {
           id: userCategory.id,
@@ -237,9 +239,9 @@ describe('TransactionService', () => {
       const other = await insertOtherTestUser(db)
       const otherCategory = await insertTestCategory(db, { userId: other.id })
 
-      const OWNER_NOTES = 'owner only'
+      const OWNER_DESCRIPTION = 'owner only'
 
-      await createTransaction(container, user, category, { notes: OWNER_NOTES })
+      await createTransaction(container, user, category, { description: OWNER_DESCRIPTION })
       await createTransaction(container, other, otherCategory)
       await createTransaction(container, other, otherCategory)
 
@@ -248,7 +250,7 @@ describe('TransactionService', () => {
       })
 
       expect(found).toHaveLength(1)
-      expect(found[0]).toMatchObject({ notes: OWNER_NOTES })
+      expect(found[0]).toMatchObject({ description: OWNER_DESCRIPTION })
     })
 
     test('applies default limit and offset when omitted', async ({ container, db }) => {
@@ -268,17 +270,17 @@ describe('TransactionService', () => {
       const category = await insertTestCategory(db, { userId: user.id })
 
       await createTransaction(container, user, category, {
-        notes: 'oldest',
+        description: 'oldest',
         occurredAt: TEST_OCCURRED_AT_DATE,
       })
 
       const middle = await createTransaction(container, user, category, {
-        notes: 'middle',
+        description: 'middle',
         occurredAt: TEST_OCCURRED_AT_LATER_DATE,
       })
 
       await createTransaction(container, user, category, {
-        notes: 'newest',
+        description: 'newest',
         occurredAt: TEST_OCCURRED_AT_FAR_LATER_DATE,
       })
 
@@ -291,7 +293,7 @@ describe('TransactionService', () => {
       expect(found).toHaveLength(1)
       expect(found[0]).toMatchObject({
         id: middle.id,
-        notes: 'middle',
+        description: 'middle',
       })
     })
   })
@@ -324,7 +326,7 @@ describe('TransactionService', () => {
         await container.transactionService.findById({ id: created.id, userId: user.id }),
       ).toMatchObject({
         amountCents: DEFAULT_CREATE.amountCents,
-        notes: DEFAULT_CREATE.notes,
+        description: DEFAULT_CREATE.description,
         transactionType: category.categoryType,
         category: {
           id: category.id,

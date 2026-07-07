@@ -47,7 +47,7 @@ export async function handleFastTransaction(
     amountCents: parsed.amountCents,
     categoryId: category.id,
     occurredAt: new Date(),
-    notes: null,
+    description: null,
   })
 
   ctx.logger.info(

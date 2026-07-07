@@ -29,7 +29,7 @@ export const transactionsTable = pgTable(
     categoryId: uuid().notNull(),
     transactionType: transactionTypeEnum().notNull(),
     amountCents: integer().notNull(),
-    notes: varchar({ length: 70 }),
+    description: varchar({ length: 70 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
 
