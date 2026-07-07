@@ -1,89 +1,66 @@
-import { beforeAll, beforeEach, expect, test } from 'vitest'
-import { createContainer } from '../../container.js'
-import type { Database } from '../../database/db.js'
-import { usersTable } from '../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../tests/setup-db-test.js'
+import { describe } from 'vitest'
+import { TEST_EMAIL, TEST_PASSWORD } from '../../tests/constants.js'
+import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { defaultCategories } from '../categories/category.defaults.js'
 import { CategoryAlreadyExistsError } from '../categories/category.error.js'
 import { InvalidCredentialsError } from './auth.error.js'
 
-let dbTest: Database
+const registerInput = {
+  email: TEST_EMAIL,
+  password: TEST_PASSWORD,
+} as const
 
-beforeAll(async () => {
-  const setup = await setupDbTest()
-  dbTest = setup.dbTest as unknown as Database
+describe('AuthService', () => {
+  describe('register', () => {
+    test('creates a user with default categories', async ({ container }) => {
+      const user = await container.authService.register(registerInput)
 
-  return async () => {
-    setup.client.close()
-  }
-})
+      const userCategories = await container.categoryService.findAll({ userId: user.id })
+      expect(userCategories).toHaveLength(defaultCategories.length)
+    })
 
-beforeEach(async () => {
-  await dbTest.delete(usersTable)
-})
+    test('fails when the default categories already exist', async ({ container, db }) => {
+      const user = await container.authService.register(registerInput)
 
-function sut() {
-  return createContainer(dbTest)
-}
-
-test('register creates a user with default categories', async () => {
-  const container = sut()
-  const user = await container.authService.register({
-    email: 'johndoe@email.com',
-    password: '12345678',
+      await expect(
+        container.categoryService.createDefaultsForUser({ userId: user.id }, db),
+      ).rejects.toThrow(CategoryAlreadyExistsError)
+    })
   })
 
-  const userCategories = await container.categoryService.findAll({ userId: user.id })
-  expect(userCategories.length).toBe(defaultCategories.length)
-})
+  describe('verifyCredentials', () => {
+    test('returns the public user with valid credentials', async ({ container }) => {
+      const user = await container.authService.register(registerInput)
 
-test('register fails when the default categories already exist', async () => {
-  const container = sut()
-  const user = await container.authService.register({
-    email: 'johndoe@email.com',
-    password: '12345678',
+      const result = await container.authService.verifyCredentials({
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+      })
+
+      expect(result).toMatchObject({
+        id: user.id,
+        email: user.email,
+      })
+    })
+
+    test('throws when the provided email is not registered', async ({ container }) => {
+      await expect(
+        container.authService.verifyCredentials({
+          email: 'nonexistent@email.com',
+          password: TEST_PASSWORD,
+        }),
+      ).rejects.toThrow(InvalidCredentialsError)
+    })
+
+    test('throws when the password is wrong', async ({ container }) => {
+      await container.authService.register(registerInput)
+
+      await expect(
+        container.authService.verifyCredentials({
+          email: TEST_EMAIL,
+          password: 'wrong-password',
+        }),
+      ).rejects.toThrow(InvalidCredentialsError)
+    })
   })
-
-  await expect(
-    container.categoryService.createDefaultsForUser({ userId: user.id }, dbTest),
-  ).rejects.toThrow(new CategoryAlreadyExistsError())
-})
-
-test('login returns the public user with valid credentials', async () => {
-  const container = sut()
-  const user = await container.authService.register({
-    email: 'johndoe@email.com',
-    password: '12345678',
-  })
-
-  const result = await container.authService.verifyCredentials({
-    email: 'johndoe@email.com',
-    password: '12345678',
-  })
-  expect(result).toStrictEqual(user)
-})
-
-test('login fails when the provided email is not registered', async () => {
-  const container = sut()
-  await expect(
-    container.authService.verifyCredentials({
-      email: 'johndoe_wrong@email.com',
-      password: '12345678',
-    }),
-  ).rejects.toThrow(new InvalidCredentialsError())
-})
-
-test('login fails when the password is wrong', async () => {
-  const container = sut()
-  const user = await container.authService.register({
-    email: 'johndoe@email.com',
-    password: '12345678',
-  })
-
-  await expect(
-    container.authService.verifyCredentials({
-      email: user.email,
-      password: '123456789',
-    }),
-  ).rejects.toThrow(new InvalidCredentialsError())
 })

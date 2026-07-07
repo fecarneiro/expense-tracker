@@ -1,5 +1,4 @@
 import type { Filter } from 'grammy'
-import { unixToDateString } from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
 import type { CategoryService } from '../../categories/category.service.js'
 import type { TransactionService } from '../../transactions/transaction.service.js'
@@ -13,7 +12,6 @@ export async function handleFastTransaction(
 ) {
   const { userId } = ctx
   const message = ctx.msg.text
-  const occurredAt = ctx.msg.date
 
   const parsed = fastTransactionParser(message)
 
@@ -48,8 +46,8 @@ export async function handleFastTransaction(
     userId,
     amountInCents: parsed.amountInCents,
     categoryId: category.id,
-    occurredOn: unixToDateString(occurredAt),
-    transactionType,
+    occurredAt: new Date(),
+    notes: null,
   })
 
   ctx.logger.info(
@@ -57,7 +55,7 @@ export async function handleFastTransaction(
       handler: 'fast-transaction',
       transactionId: transaction.id,
       transactionType,
-      occurredOn: unixToDateString(occurredAt),
+      occurredAt: new Date().toISOString(),
     },
     'telegram.handler.fast-transaction.created',
   )

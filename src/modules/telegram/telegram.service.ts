@@ -1,9 +1,10 @@
 import type { LinkingCodeService } from './linking-code/linking-code.service.js'
-import type {
-  CreateLinkingCodeBodyInput,
-  GeneratedLinkingCode,
-} from './linking-code/linking-code.types.js'
+import type { CreateLinkingCodeBodyInput } from './linking-code/linking-code.types.js'
 import { TelegramLinkAccountFailedError } from './telegram.error.js'
+import {
+  type GeneratedLinkingCodeResponse,
+  toGeneratedLinkingCodeResponse,
+} from './telegram.mapper.js'
 import type { TelegramRepository } from './telegram.repository.js'
 import type {
   FindAccountByTelegramIdInput,
@@ -23,8 +24,9 @@ export class TelegramService {
     return await this.telegramRepository.findAccountByTelegramId(data)
   }
 
-  async createLinkingCode(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCode> {
-    return this.linkingCodeService.create(data)
+  async createLinkingCode(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCodeResponse> {
+    const generatedLinkingCode = await this.linkingCodeService.create(data)
+    return toGeneratedLinkingCodeResponse(generatedLinkingCode)
   }
 
   async verifyAndLinkAccount(data: VerifyAndLinkAccountInput): Promise<void> {

@@ -1,4 +1,4 @@
-import { transactionAmountInCentsField } from '../../transactions/transaction.dto.js'
+import { transactionAmountInCentsField } from '../../transactions/transaction.schemas.js'
 import type { TransactionAmountInCents } from '../../transactions/transaction.types.js'
 
 export function transactionAmountParser(message: string): TransactionAmountInCents | null {

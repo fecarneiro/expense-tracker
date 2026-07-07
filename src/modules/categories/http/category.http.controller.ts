@@ -1,13 +1,11 @@
 import type { Request, Response } from 'express'
-import type { CategoryService } from '../category.service.js'
 import {
-  categoriesHttpResponseSchema,
-  categoryHttpResponseSchema,
   categoryIdParamsSchema,
   categoryTypeQuerySchema,
   createCategoryBodySchema,
   updateCategoryBodySchema,
-} from './category.http.dto.js'
+} from '../category.schemas.js'
+import type { CategoryService } from '../category.service.js'
 
 export class CategoryHttpController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -22,7 +20,7 @@ export class CategoryHttpController {
       categoryType: input.categoryType,
     })
 
-    res.status(201).json(categoryHttpResponseSchema.parse(category))
+    res.status(201).json(category)
   }
 
   async update(req: Request, res: Response) {
@@ -37,7 +35,7 @@ export class CategoryHttpController {
       categoryType: input.categoryType,
     })
 
-    res.status(200).json(categoryHttpResponseSchema.parse(category))
+    res.status(200).json(category)
   }
 
   async findById(req: Request, res: Response) {
@@ -49,7 +47,7 @@ export class CategoryHttpController {
       userId,
     })
 
-    res.status(200).json(categoryHttpResponseSchema.parse(category))
+    res.status(200).json(category)
   }
 
   async findAll(req: Request, res: Response) {
@@ -65,7 +63,7 @@ export class CategoryHttpController {
           userId,
         })
 
-    res.status(200).json(categoriesHttpResponseSchema.parse(categories))
+    res.status(200).json(categories)
   }
 
   async delete(req: Request, res: Response) {

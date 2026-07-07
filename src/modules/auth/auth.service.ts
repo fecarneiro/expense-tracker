@@ -1,7 +1,7 @@
 import type { Database } from '../../database/db.js'
 import type { CategoryService } from '../categories/category.service.js'
+import type { UserResponse } from '../users/user.mapper.js'
 import type { UserService } from '../users/user.service.js'
-import type { PublicUser } from '../users/user.types.js'
 import { InvalidCredentialsError } from './auth.error.js'
 import type { LoginInput, RegisterInput } from './auth.types.js'
 
@@ -12,7 +12,7 @@ export class AuthService {
     private readonly database: Database,
   ) {}
 
-  async register(data: RegisterInput): Promise<PublicUser> {
+  async register(data: RegisterInput): Promise<UserResponse> {
     return await this.database.transaction(async (tx) => {
       const user = await this.userService.createWithPassword(data, tx)
       await this.categoryService.createDefaultsForUser({ userId: user.id }, tx)
@@ -20,7 +20,7 @@ export class AuthService {
     })
   }
 
-  async verifyCredentials(data: LoginInput): Promise<PublicUser> {
+  async verifyCredentials(data: LoginInput): Promise<UserResponse> {
     const user = await this.userService.verifyPassword(data)
 
     if (!user) {

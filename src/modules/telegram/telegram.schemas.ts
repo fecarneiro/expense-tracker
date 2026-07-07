@@ -4,10 +4,10 @@ export const linkingCodeField = z.number().int().min(100_000).max(999_999).meta(
   example: 123456,
 })
 
-export const generatedLinkingCodeHttpResponseSchema = z
+export const generatedLinkingCodeResponseSchema = z
   .object({
     code: linkingCodeField,
-    createdAt: z.date(),
+    createdAt: z.iso.datetime(),
   })
   .meta({
     id: 'GeneratedTelegramLinkingCode',

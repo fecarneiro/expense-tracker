@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
 import { Unauthorized } from '../modules/auth/auth.error.js'
-import { accessTokenPayloadSchema } from '../modules/auth/http/auth.http.dto.js'
+import { accessTokenPayloadSchema } from '../modules/auth/auth.schemas.js'
 import { verifyToken } from '../shared/access-token.js'
 
 export async function authMiddleware(req: Request, _res: Response, next: NextFunction) {

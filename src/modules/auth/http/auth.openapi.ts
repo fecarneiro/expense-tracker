@@ -9,10 +9,10 @@ import {
 } from '../../../openapi/openapi.responses.js'
 import {
   loginBodySchema,
-  loginHttpResponseSchema,
+  loginResponseSchema,
   registerBodySchema,
-  registerHttpResponseSchema,
-} from './auth.http.dto.js'
+  registerResponseSchema,
+} from '../auth.schemas.js'
 
 export const authOpenApiPaths = {
   '/auth/register': {
@@ -21,7 +21,7 @@ export const authOpenApiPaths = {
       summary: 'Register a user',
       requestBody: jsonRequestBody(registerBodySchema),
       responses: {
-        '201': jsonResponse('User registered', registerHttpResponseSchema),
+        '201': jsonResponse('User registered', registerResponseSchema),
         '400': validationErrorResponse,
         '409': conflictResponse('Email already exists'),
         '429': tooManyRequestsResponse,
@@ -35,7 +35,7 @@ export const authOpenApiPaths = {
       summary: 'Login',
       requestBody: jsonRequestBody(loginBodySchema),
       responses: {
-        '200': jsonResponse('Authenticated user', loginHttpResponseSchema),
+        '200': jsonResponse('Authenticated user', loginResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,

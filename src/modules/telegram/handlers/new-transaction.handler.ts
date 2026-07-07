@@ -1,5 +1,4 @@
 import { InlineKeyboard } from 'grammy'
-import { unixToDateString } from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
 import type { CategoryService } from '../../categories/category.service.js'
 import type { TransactionService } from '../../transactions/transaction.service.js'
@@ -39,12 +38,10 @@ export function handleNewTransactionConversation(
 
     await ctx.reply(`How much did you ${transactionLabel}?`)
     let amountInCents: TransactionAmountInCents | null = null
-    let occurredAt = null
 
     do {
       const { message } = await conversation.waitFor('message:text')
       amountInCents = transactionAmountParser(message.text)
-      occurredAt = message.date
 
       if (amountInCents == null)
         await ctx.reply('Invalid amount. Send a positive number, e.g. 12.50')
@@ -75,14 +72,11 @@ export function handleNewTransactionConversation(
     } while (categoryId === null)
 
     // ── Date Resolution ─────────────────────────────
-    const occurredOn = unixToDateString(occurredAt)
-
     await transactionService.create({
       userId,
       amountInCents,
       categoryId,
-      occurredOn,
-      transactionType,
+      occurredAt: new Date(),
       notes: null,
     })
 

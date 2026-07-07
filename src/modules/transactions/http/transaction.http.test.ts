@@ -1,617 +1,211 @@
 import request from 'supertest'
-import { beforeAll, beforeEach, expect, test } from 'vitest'
-import { createApp } from '../../../app.js'
-import { createContainer } from '../../../container.js'
-import type { Database } from '../../../database/db.js'
-import { categoriesTable } from '../../../database/schemas/category.schema.js'
-import { transactionsTable } from '../../../database/schemas/transaction.schema.js'
-import { usersTable } from '../../../database/schemas/user.schema.js'
-import { getTestAccessToken } from '../../../tests/helpers/test.http.helpers.js'
-import { setupDbTest } from '../../../tests/setup-db-test.js'
-import type { CategoryType } from '../../categories/category.types.js'
+import { describe, expect } from 'vitest'
+import {
+  TEST_OCCURRED_AT,
+  TEST_OCCURRED_AT_LATER,
+  TEST_OCCURRED_AT_RESPONSE,
+  UNKNOWN_UUID,
+} from '../../../tests/constants.js'
+import {
+  DEFAULT_CATEGORY_NAME,
+  insertTestCategory,
+} from '../../../tests/factories/category.factory.js'
+import { httpTest as test } from '../../../tests/fixtures/http.fixture.js'
+import { type HttpTestApp, sendUnauthorized } from '../../../tests/helpers/http-request.helpers.js'
+import type { CreateTransactionBodyInput } from '../transaction.schemas.js'
 
-let app: ReturnType<typeof createApp>
-let dbTest: Database
+const DEFAULT_HTTP_CREATE = {
+  occurredAt: TEST_OCCURRED_AT,
+  amountInCents: 1000,
+  notes: 'my notes',
+} as const satisfies Omit<CreateTransactionBodyInput, 'categoryId'>
 
-beforeAll(async () => {
-  const setup = await setupDbTest()
-  dbTest = setup.dbTest as unknown as Database
-  app = createApp(createContainer(dbTest))
-
-  return async () => setup.client.close()
-})
-
-beforeEach(async () => {
-  await dbTest.delete(transactionsTable)
-  await dbTest.delete(categoriesTable)
-  await dbTest.delete(usersTable)
-})
-
-async function createCategory(
-  access_token: string,
-  {
-    name = 'Eating out',
-    categoryType = 'expense',
-  }: { name?: string; categoryType?: CategoryType } = {},
-) {
-  return request(app)
-    .post('/categories')
-    .send({ name, categoryType })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(201)
+function validCreateBody(categoryId: string): CreateTransactionBodyInput {
+  return { ...DEFAULT_HTTP_CREATE, categoryId }
 }
 
-async function createTransaction(
-  access_token: string,
-  {
-    categoryId,
-    occurredOn = '2026-01-01',
-    amountInCents = 10050,
-    transactionType = 'expense',
-    notes,
-  }: {
-    categoryId: string
-    occurredOn?: string
-    amountInCents?: number
-    transactionType?: 'income' | 'expense'
-    notes?: string
-  },
-) {
-  return request(app)
+async function postTransaction(app: HttpTestApp, token: string, categoryId: string) {
+  const res = await request(app)
     .post('/transactions')
-    .send({
-      occurredOn,
-      amountInCents,
-      transactionType,
-      categoryId,
-      ...(notes === undefined ? {} : { notes }),
-    })
-    .set('Authorization', `Bearer ${access_token}`)
+    .set('Authorization', `Bearer ${token}`)
+    .send(validCreateBody(categoryId))
     .expect(201)
+
+  return res.body as { id: string }
 }
 
-test('POST /transactions returns 201 with created transaction', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
+describe('authorization', () => {
+  test.for([
+    ['POST /transactions', 'post', '/transactions', validCreateBody(UNKNOWN_UUID)],
+    ['GET /transactions', 'get', '/transactions'],
+    ['GET /transactions/:id', 'get', `/transactions/${UNKNOWN_UUID}`],
+    ['PATCH /transactions/:id', 'patch', `/transactions/${UNKNOWN_UUID}`, { amountInCents: 100 }],
+    ['DELETE /transactions/:id', 'delete', `/transactions/${UNKNOWN_UUID}`],
+    ['GET /transactions/monthly-balance', 'get', '/transactions/monthly-balance'],
+  ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
+    app,
+  }) => {
+    await sendUnauthorized(app, method, path, body).expect(401)
+  })
+})
 
-  const res = await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
+describe('POST /transactions', () => {
+  test('returns 201 with created transaction', async ({ app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    const res = await request(app)
+      .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validCreateBody(category.id))
+      .expect(201)
+
+    expect(res.body).toMatchObject({
+      id: expect.any(String),
+      amountInCents: DEFAULT_HTTP_CREATE.amountInCents,
+      notes: DEFAULT_HTTP_CREATE.notes,
+      occurredAt: TEST_OCCURRED_AT_RESPONSE,
       transactionType: 'expense',
-      categoryId: category.body.id,
+      category: { id: category.id, name: DEFAULT_CATEGORY_NAME },
     })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(201)
+  })
 
-  expect(res.body).toStrictEqual({
-    id: expect.any(String),
-    occurredOn: '2026-01-01',
-    amountInCents: 10050,
-    transactionType: 'expense',
-    category: {
-      id: category.body.id,
-      name: category.body.name,
-    },
-    notes: null,
-    createdAt: expect.any(String),
+  test.for([
+    ['missing amountInCents', { occurredAt: TEST_OCCURRED_AT, categoryId: UNKNOWN_UUID }],
+    [
+      'invalid occurredAt',
+      { occurredAt: 'not-a-date', amountInCents: 1000, categoryId: UNKNOWN_UUID },
+    ],
+    [
+      'negative amount',
+      { occurredAt: TEST_OCCURRED_AT, amountInCents: -1, categoryId: UNKNOWN_UUID },
+    ],
+    ['extra field (strictObject)', { ...validCreateBody(UNKNOWN_UUID), hacker: true }],
+    ['notes longer than 70', { ...validCreateBody(UNKNOWN_UUID), notes: 'a'.repeat(71) }],
+  ])('returns 400 when %s', async ([_label, body], { app, authenticate }) => {
+    const { token } = await authenticate()
+    await request(app)
+      .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
+      .send(body)
+      .expect(400)
   })
 })
 
-test('POST /transactions with invalid body returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
+describe('GET /transactions', () => {
+  test('returns 200 with an empty list', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-  await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
+    const res = await request(app)
+      .get('/transactions')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
 
-test('POST /transactions with unknown category returns 404', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: '00000000-0000-0000-0000-000000000000',
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(404)
-})
-
-test('POST /transactions with category from another user returns 404', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
+    expect(res.body).toEqual([])
   })
-  const category_user2 = await createCategory(access_token_user2)
 
-  await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: category_user2.body.id,
-    })
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(404)
-})
+  test('returns 400 with invalid query params', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-test('POST /transactions with empty notes returns 201 with null notes', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-
-  const res = await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: category.body.id,
-      notes: '',
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(201)
-
-  expect(res.body).toStrictEqual({
-    id: expect.any(String),
-    occurredOn: '2026-01-01',
-    amountInCents: 10050,
-    transactionType: 'expense',
-    category: {
-      id: category.body.id,
-      name: category.body.name,
-    },
-    notes: null,
-    createdAt: expect.any(String),
+    await request(app)
+      .get('/transactions?limit=0')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
   })
 })
 
-test('POST /transactions with omitted notes returns 201 with null notes', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
+describe('GET /transactions/:id', () => {
+  test('returns 400 with invalid id', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-  const res = await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: category.body.id,
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(201)
-
-  expect(res.body).toStrictEqual({
-    id: expect.any(String),
-    occurredOn: '2026-01-01',
-    amountInCents: 10050,
-    transactionType: 'expense',
-    category: {
-      id: category.body.id,
-      name: category.body.name,
-    },
-    notes: null,
-    createdAt: expect.any(String),
+    await request(app)
+      .get('/transactions/invalid-uuid')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
   })
 })
 
-test('POST /transactions with notes longer than 70 characters returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
+describe('PATCH /transactions/:id', () => {
+  test('returns 400 with empty body', async ({ app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    const { id } = await postTransaction(app, token, category.id)
 
-  await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: category.body.id,
-      notes: 'a'.repeat(71),
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('POST /transactions without authorization header returns 401', async () => {
-  await request(app)
-    .post('/transactions')
-    .send({
-      occurredOn: '2026-01-01',
-      amountInCents: 10050,
-      transactionType: 'expense',
-      categoryId: '00000000-0000-0000-0000-000000000000',
-    })
-    .expect(401)
-})
-
-test('GET /transactions returns 200 with an empty list', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const res = await request(app)
-    .get('/transactions')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
-
-  expect(res.body).toStrictEqual([])
-})
-test('GET /transactions returns 200 with authenticated user transactions', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const oldestTransaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-01',
-    amountInCents: 10050,
-    notes: 'breakfast',
-  })
-  const newestTransaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-02',
-    amountInCents: 20075,
-    notes: 'lunch',
+    await request(app)
+      .patch(`/transactions/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(400)
   })
 
-  const res = await request(app)
-    .get('/transactions')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
+  test('returns 400 with invalid id', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-  expect(res.body).toStrictEqual([newestTransaction.body, oldestTransaction.body])
-})
-
-test('GET /transactions does not return transactions from other users', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
-  })
-  const category_user2 = await createCategory(access_token_user2)
-
-  await createTransaction(access_token_user2, {
-    categoryId: category_user2.body.id,
-    notes: 'not mine',
+    await request(app)
+      .patch('/transactions/invalid-uuid')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ amountInCents: 100 })
+      .expect(400)
   })
 
-  const res = await request(app)
-    .get('/transactions')
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(200)
+  test.for([['negative amount', { amountInCents: -1 }]])('returns 400 when %s', async ([
+    _label,
+    body,
+  ], { app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    const { id } = await postTransaction(app, token, category.id)
 
-  expect(res.body).toStrictEqual([])
-})
-
-test('GET /transactions respects limit and offset', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-
-  await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-01',
-    notes: 'oldest',
-  })
-  const middleTransaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-02',
-    notes: 'middle',
-  })
-  await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-03',
-    notes: 'newest',
-  })
-
-  const res = await request(app)
-    .get('/transactions?limit=1&offset=1')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
-
-  expect(res.body).toStrictEqual([middleTransaction.body])
-})
-
-test('GET /transactions with invalid query params returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .get('/transactions?limit=0')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('GET /transactions without authorization header returns 401', async () => {
-  await request(app).get('/transactions').expect(401)
-})
-
-test('GET /transactions/:id returns 200 with transaction', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    notes: 'find me',
-  })
-
-  const res = await request(app)
-    .get(`/transactions/${transaction.body.id}`)
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
-
-  expect(res.body).toStrictEqual(transaction.body)
-})
-
-test('GET /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .get('/transactions/invalid-uuid')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('GET /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .get('/transactions/00000000-0000-0000-0000-000000000000')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(404)
-})
-
-test('GET /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
-  })
-  const category_user2 = await createCategory(access_token_user2)
-  const transaction_user2 = await createTransaction(access_token_user2, {
-    categoryId: category_user2.body.id,
-  })
-
-  await request(app)
-    .get(`/transactions/${transaction_user2.body.id}`)
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(404)
-})
-
-test('GET /transactions/:id without authorization header returns 401', async () => {
-  await request(app).get('/transactions/00000000-0000-0000-0000-000000000000').expect(401)
-})
-
-test('PATCH /transactions/:id returns 200 with updated transaction', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    notes: 'old note',
-  })
-
-  const res = await request(app)
-    .patch(`/transactions/${transaction.body.id}`)
-    .send({
-      occurredOn: '2026-02-03',
-      amountInCents: 30025,
-      transactionType: 'income',
-      notes: 'updated note',
-    })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
-
-  expect(res.body).toStrictEqual({
-    ...transaction.body,
-    occurredOn: '2026-02-03',
-    amountInCents: 30025,
-    transactionType: 'income',
-    notes: 'updated note',
+    await request(app)
+      .patch(`/transactions/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(body)
+      .expect(400)
   })
 })
 
-test('PATCH /transactions/:id preserves omitted fields', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    occurredOn: '2026-01-10',
-    amountInCents: 10050,
-    transactionType: 'expense',
-    notes: 'keep me',
+describe('DELETE /transactions/:id', () => {
+  test('returns 204 when transaction is deleted', async ({ app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    const { id } = await postTransaction(app, token, category.id)
+
+    await request(app)
+      .delete(`/transactions/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
   })
 
-  const res = await request(app)
-    .patch(`/transactions/${transaction.body.id}`)
-    .send({ amountInCents: 50075 })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
+  test('returns 400 with invalid id', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-  expect(res.body).toStrictEqual({
-    ...transaction.body,
-    amountInCents: 50075,
-  })
-})
-
-test('PATCH /transactions/:id with empty body returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-  })
-
-  await request(app)
-    .patch(`/transactions/${transaction.body.id}`)
-    .send({})
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('PATCH /transactions/:id with invalid body returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-  })
-
-  await request(app)
-    .patch(`/transactions/${transaction.body.id}`)
-    .send({ amountInCents: -1 })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('PATCH /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .patch('/transactions/invalid-uuid')
-    .send({ amountInCents: 50075 })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('PATCH /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .patch('/transactions/00000000-0000-0000-0000-000000000000')
-    .send({ amountInCents: 50075 })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(404)
-})
-
-test('PATCH /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
-  })
-  const category_user2 = await createCategory(access_token_user2)
-  const transaction_user2 = await createTransaction(access_token_user2, {
-    categoryId: category_user2.body.id,
-    amountInCents: 10050,
-  })
-
-  await request(app)
-    .patch(`/transactions/${transaction_user2.body.id}`)
-    .send({ amountInCents: 50075 })
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(404)
-
-  const res = await request(app)
-    .get(`/transactions/${transaction_user2.body.id}`)
-    .set('Authorization', `Bearer ${access_token_user2}`)
-    .expect(200)
-
-  expect(res.body.amountInCents).toBe(10050)
-})
-
-test('PATCH /transactions/:id with category from another user returns 404', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
-  })
-  const category_user1 = await createCategory(access_token_user1, { name: 'Mine' })
-  const category_user2 = await createCategory(access_token_user2, { name: 'Theirs' })
-  const transaction_user1 = await createTransaction(access_token_user1, {
-    categoryId: category_user1.body.id,
-  })
-
-  await request(app)
-    .patch(`/transactions/${transaction_user1.body.id}`)
-    .send({ categoryId: category_user2.body.id })
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(404)
-})
-
-test('PATCH /transactions/:id with empty notes returns 200 with null notes', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
-    notes: 'clear me',
-  })
-
-  const res = await request(app)
-    .patch(`/transactions/${transaction.body.id}`)
-    .send({ notes: '' })
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(200)
-
-  expect(res.body).toStrictEqual({
-    ...transaction.body,
-    notes: null,
+    await request(app)
+      .delete('/transactions/invalid-uuid')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
   })
 })
 
-test('PATCH /transactions/:id without authorization header returns 401', async () => {
-  await request(app)
-    .patch('/transactions/00000000-0000-0000-0000-000000000000')
-    .send({ amountInCents: 50075 })
-    .expect(401)
-})
+describe('GET /transactions/monthly-balance', () => {
+  test('returns 200 with monthly balance rows', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
 
-test('DELETE /transactions/:id returns 204', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-  const category = await createCategory(access_token)
-  const transaction = await createTransaction(access_token, {
-    categoryId: category.body.id,
+    const res = await request(app)
+      .get('/transactions/monthly-balance')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    expect(res.body).toEqual([])
   })
 
-  await request(app)
-    .delete(`/transactions/${transaction.body.id}`)
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(204)
+  test.for([
+    ['invalid from date', '?from=not-a-date'],
+    ['from after until', `?from=${TEST_OCCURRED_AT_LATER}&until=${TEST_OCCURRED_AT}`],
+  ])('returns 400 when %s', async ([_label, query], { app, authenticate }) => {
+    const { token } = await authenticate()
 
-  await request(app)
-    .get(`/transactions/${transaction.body.id}`)
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(404)
-})
-
-test('DELETE /transactions/:id with invalid id returns 400', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .delete('/transactions/invalid-uuid')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(400)
-})
-
-test('DELETE /transactions/:id with unknown transaction returns 404', async () => {
-  const access_token = await getTestAccessToken(dbTest)
-
-  await request(app)
-    .delete('/transactions/00000000-0000-0000-0000-000000000000')
-    .set('Authorization', `Bearer ${access_token}`)
-    .expect(404)
-})
-
-test('DELETE /transactions/:id from another user returns 404', async () => {
-  const access_token_user1 = await getTestAccessToken(dbTest)
-  const access_token_user2 = await getTestAccessToken(dbTest, {
-    email: 'user2@domain.com',
-    password: '123456789',
+    await request(app)
+      .get(`/transactions/monthly-balance${query}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
   })
-  const category_user2 = await createCategory(access_token_user2)
-  const transaction_user2 = await createTransaction(access_token_user2, {
-    categoryId: category_user2.body.id,
-  })
-
-  await request(app)
-    .delete(`/transactions/${transaction_user2.body.id}`)
-    .set('Authorization', `Bearer ${access_token_user1}`)
-    .expect(404)
-
-  await request(app)
-    .get(`/transactions/${transaction_user2.body.id}`)
-    .set('Authorization', `Bearer ${access_token_user2}`)
-    .expect(200)
-})
-
-test('DELETE /transactions/:id without authorization header returns 401', async () => {
-  await request(app).delete('/transactions/00000000-0000-0000-0000-000000000000').expect(401)
 })

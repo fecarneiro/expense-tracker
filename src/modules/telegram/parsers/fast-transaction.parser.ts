@@ -1,4 +1,4 @@
-import { categoryNameField } from '../../categories/http/category.http.dto.js'
+import { categoryNameField } from '../../categories/category.schemas.js'
 import type {
   TransactionAmountInCents,
   TransactionType,

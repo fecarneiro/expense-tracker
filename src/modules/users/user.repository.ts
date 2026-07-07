@@ -4,28 +4,19 @@ import type { Database, DatabaseClient } from '../../database/db.js'
 import { type NewUserRow, usersTable } from '../../database/schemas/user.schema.js'
 import { EmailAlreadyInUseError, UserCreationFailedError } from './user.error.js'
 import type {
-  CreateUserRepositoryInput,
   DeletedUser,
-  DeleteUserRepositoryInput,
   FindUserByEmailInput,
   FindUserByIdInput,
-  UpdatePasswordRepositoryInput,
+  UpdatePasswordInput,
   User,
 } from './user.types.js'
 
 export class UserRepository {
   constructor(private readonly database: Database) {}
 
-  async create(
-    data: CreateUserRepositoryInput,
-    dbClient: DatabaseClient = this.database,
-  ): Promise<User> {
-    const values: NewUserRow = {
-      email: data.email,
-      passwordHash: data.passwordHash,
-    }
+  async create(data: NewUserRow, dbClient: DatabaseClient = this.database): Promise<User> {
     try {
-      const [user] = await dbClient.insert(usersTable).values(values).returning()
+      const [user] = await dbClient.insert(usersTable).values(data).returning()
 
       if (!user) {
         throw new UserCreationFailedError()
@@ -55,7 +46,7 @@ export class UserRepository {
     return user ?? null
   }
 
-  async updatePassword(data: UpdatePasswordRepositoryInput): Promise<User | null> {
+  async updatePassword(data: UpdatePasswordInput): Promise<User | null> {
     const [user] = await this.database
       .update(usersTable)
       .set({ passwordHash: data.passwordHash })
@@ -65,7 +56,7 @@ export class UserRepository {
     return user ?? null
   }
 
-  async delete(data: DeleteUserRepositoryInput): Promise<DeletedUser | null> {
+  async delete(data: DeletedUser): Promise<DeletedUser | null> {
     const [user] = await this.database
       .delete(usersTable)
       .where(eq(usersTable.id, data.id))

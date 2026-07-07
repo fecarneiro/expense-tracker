@@ -38,11 +38,11 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 
 * User registration and authentication
 * Default income and expense categories seeded automatically on registration
-* Authenticated user profile management
+* Authenticated user profile management with time zone, currency and locale preferences
 * Category creation, listing, update and deletion
 * Income and expense registration
 * User transaction querying
-* Monthly reports with income, expense and balance summaries
+* Monthly balance reports with income, expense and balance summaries grouped by month in the user time zone
 * Interactive API documentation with OpenAPI and Scalar
 * Optional Telegram Bot integration with slash commands and fast text-based transaction registration
 
@@ -287,8 +287,7 @@ curl http://localhost:3000/health
 | `/auth`         | User registration, login and authentication     |
 | `/users`        | Authenticated user profile management           |
 | `/categories`   | Category creation, listing, update and deletion (defaults are seeded on registration) |
-| `/transactions` | Income and expense registration and querying    |
-| `/analytics`    | Financial reports and monthly summaries         |
+| `/transactions` | Income and expense registration, querying and monthly balance reports |
 | `/telegram`     | Optional Telegram Bot integration               |
 
 ## Quick Example
@@ -305,6 +304,8 @@ curl -X POST http://localhost:3000/auth/register \
     "password": "password123"
   }'
 ```
+
+Registration also accepts optional `timeZone` (IANA), `currency` (ISO 4217) and `locale` fields.
 
 ### Log in
 
@@ -341,6 +342,15 @@ curl -X POST http://localhost:3000/categories \
     "categoryType": "expense"
   }'
 ```
+
+### Monthly balance
+
+```bash
+curl "http://localhost:3000/transactions/monthly-balance" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+Optional `from` and `until` query parameters filter by `occurredAt` as ISO datetimes with offset. Omit both to include all transactions. `until` is exclusive.
 
 ## Authentication
 
@@ -410,7 +420,7 @@ The integration is optional. If `TELEGRAM_BOT_TOKEN` is not defined, the applica
 | `/expense`     | Registers a new expense                               |
 | `/income`      | Registers a new income                                |
 | `/last`        | Lists the latest transactions                         |
-| `/report`      | Shows the monthly financial summary                   |
+| `/report`      | Shows income, expense and balance summaries by month |
 
 ### Fast transaction messages
 
@@ -522,7 +532,7 @@ Each layer has a specific responsibility:
 
 Dependency composition is centralized in the application container. This avoids instantiating services and repositories directly inside routes, keeping the code more organized and easier to test and maintain.
 
-The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions`, `analytics` and `telegram`.
+The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions` and `telegram`.
 
 ## Project Structure
 
@@ -534,7 +544,6 @@ src/
 ├── database/        # Database connection, schemas and migrations
 ├── middlewares/     # Express middlewares
 ├── modules/         # Domain modules
-│   ├── analytics/
 │   ├── auth/
 │   ├── categories/
 │   ├── telegram/
@@ -573,7 +582,7 @@ This allows the same API to be consumed by different clients, such as a web appl
 
 ### Modular organization
 
-The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions`, `analytics` and `telegram`.
+The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions` and `telegram`.
 
 This choice keeps responsibilities close to the domain they belong to, avoiding a structure based only on technical file types.
 

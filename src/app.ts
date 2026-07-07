@@ -5,8 +5,6 @@ import { authRateLimiter, globalRateLimiter } from './config/rate-limit.config.j
 import type { Container } from './container.js'
 import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
-import { AnalyticsHttpController } from './modules/analytics/http/analytics.http.controller.js'
-import { analyticsHttpRouter } from './modules/analytics/http/analytics.http.routes.js'
 import { AuthHttpController } from './modules/auth/http/auth.http.controller.js'
 import { authHttpRouter } from './modules/auth/http/auth.http.routes.js'
 import { CategoryHttpController } from './modules/categories/http/category.http.controller.js'
@@ -28,7 +26,6 @@ export function createApp(container: Container) {
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionHttpController(container.transactionService)
-  const analyticsController = new AnalyticsHttpController(container.analyticsService)
   const telegramController = new TelegramHttpController(container.telegramService)
 
   if (isProduction) {
@@ -71,7 +68,6 @@ export function createApp(container: Container) {
     authMiddleware,
     transactionHttpRouter(transactionController),
   )
-  app.use('/analytics', globalRateLimiter, authMiddleware, analyticsHttpRouter(analyticsController))
 
   app.use('/telegram', globalRateLimiter, authMiddleware, telegramHttpRouter(telegramController))
 

@@ -1,12 +1,8 @@
 import type { Request, Response } from 'express'
-import { accessTokenConfig, generateToken } from '../../../shared/access-token.js'
+import { generateToken } from '../../../shared/access-token.js'
+import { toLoginResponse, toRegisterResponse } from '../auth.mapper.js'
+import { loginBodySchema, registerBodySchema } from '../auth.schemas.js'
 import type { AuthService } from '../auth.service.js'
-import {
-  loginBodySchema,
-  loginHttpResponseSchema,
-  registerBodySchema,
-  registerHttpResponseSchema,
-} from './auth.http.dto.js'
 
 export class AuthHttpController {
   constructor(private readonly authService: AuthService) {}
@@ -14,7 +10,7 @@ export class AuthHttpController {
   async register(req: Request, res: Response) {
     const data = registerBodySchema.parse(req.body)
     const user = await this.authService.register(data)
-    res.status(201).json(registerHttpResponseSchema.parse(user))
+    res.status(201).json(toRegisterResponse(user))
   }
 
   async login(req: Request, res: Response) {
@@ -23,13 +19,6 @@ export class AuthHttpController {
 
     const accessToken = await generateToken(user)
 
-    res.status(200).json(
-      loginHttpResponseSchema.parse({
-        user,
-        access_token: accessToken,
-        token_type: accessTokenConfig.tokenType,
-        expires_in: accessTokenConfig.expiresInSeconds,
-      }),
-    )
+    res.status(200).json(toLoginResponse(user, accessToken))
   }
 }

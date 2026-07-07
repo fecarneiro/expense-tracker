@@ -1,7 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
   check,
-  date,
   foreignKey,
   index,
   integer,
@@ -23,7 +22,10 @@ export const transactionsTable = pgTable(
     userId: uuid()
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
-    occurredOn: date({ mode: 'string' }).notNull(),
+    occurredAt: timestamp({ withTimezone: true }).notNull(),
+    createdByUserId: uuid()
+      .notNull()
+      .references(() => usersTable.id),
     categoryId: uuid().notNull(),
     transactionType: transactionTypeEnum().notNull(),
     amountInCents: integer().notNull(),
@@ -32,7 +34,7 @@ export const transactionsTable = pgTable(
   },
 
   (table) => [
-    index('transactions_user_occurred_on_id_idx').on(table.userId, table.occurredOn, table.id),
+    index('transactions_user_occurred_at_id_idx').on(table.userId, table.occurredAt, table.id),
     check('amount_check', sql`${table.amountInCents} > 0`),
     foreignKey({
       name: 'transactions_category_user_fk',
