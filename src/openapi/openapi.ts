@@ -1,8 +1,8 @@
 import 'zod-openapi'
 import { createDocument } from 'zod-openapi'
 import { authOpenApiPaths } from '../modules/auth/http/auth.openapi.js'
+import { botOpenApiPaths } from '../modules/bot/http/bot.openapi.js'
 import { categoryOpenApiPaths } from '../modules/categories/http/category.openapi.js'
-import { telegramOpenApiPaths } from '../modules/telegram/http/telegram.openapi.js'
 import { transactionOpenApiPaths } from '../modules/transactions/http/transactions.openapi.js'
 import { userOpenApiPaths } from '../modules/users/http/user.openapi.js'
 import { healthOpenApiPaths } from './health.openapi.js'
@@ -38,8 +38,8 @@ export const openApiDocument = createDocument({
       description: 'Manage income and expense records',
     },
     {
-      name: 'Telegram',
-      description: 'Telegram account linking and bot access',
+      name: 'Bot',
+      description: 'Bot account linking and messaging access',
     },
     {
       name: 'Health',
@@ -60,7 +60,7 @@ export const openApiDocument = createDocument({
     ...categoryOpenApiPaths,
     ...userOpenApiPaths,
     ...transactionOpenApiPaths,
-    ...telegramOpenApiPaths,
+    ...botOpenApiPaths,
     ...healthOpenApiPaths,
   },
 })

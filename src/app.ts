@@ -7,10 +7,10 @@ import { authMiddleware } from './middlewares/auth.middleware.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
 import { AuthHttpController } from './modules/auth/http/auth.http.controller.js'
 import { authHttpRouter } from './modules/auth/http/auth.http.routes.js'
+import { BotHttpController } from './modules/bot/http/bot.http.controller.js'
+import { botHttpRouter } from './modules/bot/http/bot.http.routes.js'
 import { CategoryHttpController } from './modules/categories/http/category.http.controller.js'
 import { categoryHttpRouter } from './modules/categories/http/category.http.routes.js'
-import { TelegramHttpController } from './modules/telegram/http/telegram.http.controller.js'
-import { telegramHttpRouter } from './modules/telegram/http/telegram.http.routes.js'
 import { TransactionHttpController } from './modules/transactions/http/transaction.http.controller.js'
 import { transactionHttpRouter } from './modules/transactions/http/transaction.http.routes.js'
 import { UserHttpController } from './modules/users/http/user.http.controller.js'
@@ -26,7 +26,7 @@ export function createApp(container: Container) {
   const userController = new UserHttpController(container.userService)
   const categoryHttpController = new CategoryHttpController(container.categoryService)
   const transactionController = new TransactionHttpController(container.transactionService)
-  const telegramController = new TelegramHttpController(container.telegramService)
+  const botController = new BotHttpController(container.botService)
 
   if (isProduction) {
     app.set('trust proxy', 1)
@@ -69,7 +69,7 @@ export function createApp(container: Container) {
     transactionHttpRouter(transactionController),
   )
 
-  app.use('/telegram', globalRateLimiter, authMiddleware, telegramHttpRouter(telegramController))
+  app.use('/bot', globalRateLimiter, authMiddleware, botHttpRouter(botController))
 
   app.use(errorMiddleware)
 

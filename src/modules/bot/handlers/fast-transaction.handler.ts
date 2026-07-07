@@ -1,0 +1,68 @@
+import type { Filter } from 'grammy'
+import { centsToString } from '../../../utils/money.utils.js'
+import type { CategoryService } from '../../categories/category.service.js'
+import type { TransactionService } from '../../transactions/transaction.service.js'
+import type { BotContext } from '../bot.context.js'
+import { fastTransactionParser } from '../parsers/fast-transaction.parser.js'
+
+export async function handleFastTransaction(
+  ctx: Filter<BotContext, 'message:text'>,
+  categoryService: CategoryService,
+  transactionService: TransactionService,
+) {
+  const { userId } = ctx
+  const message = ctx.msg.text
+
+  const parsed = fastTransactionParser(message)
+
+  if (!parsed) {
+    await ctx.reply(
+      `Your message is not a valid input.\n\n` +
+        `If you meant to record a transaction, send it like this:\n\n` +
+        `<b>Expense:</b>\n<pre>200 eating out\n` +
+        `-40.10 groceries</pre>\n\n` +
+        `<b>Income:</b>\n<pre>+300.90 salary</pre>`,
+      { parse_mode: 'HTML' },
+    )
+    return
+  }
+
+  const { transactionType, amountCents, categoryName } = parsed
+
+  const category = await categoryService.findByNameAndType({
+    userId,
+    name: parsed.categoryName,
+    categoryType: parsed.transactionType,
+  })
+
+  if (!category) {
+    return ctx.reply(
+      `No ${transactionType} category named "${categoryName}".\n\n` +
+        `Create it in the app first, or use /${transactionType} to pick from existing categories.`,
+    )
+  }
+
+  const transaction = await transactionService.create({
+    userId,
+    amountCents: parsed.amountCents,
+    categoryId: category.id,
+    occurredAt: new Date(),
+    description: null,
+  })
+
+  ctx.logger.info(
+    {
+      handler: 'fast-transaction',
+      transactionId: transaction.id,
+      transactionType,
+      occurredAt: new Date().toISOString(),
+    },
+    'bot.handler.fast-transaction.created',
+  )
+
+  // ── Reply ─────────────────────────────────────
+  const label = transactionType === 'expense' ? 'Expense' : 'Income'
+  const amount = centsToString(amountCents)
+
+  return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
+}

@@ -8,11 +8,11 @@
 
 Expense Tracker is an **API-first** backend project for personal finance management.
 
-The application was built as a REST API designed to be consumed by frontend clients, such as web or mobile applications. Besides the API, I also implemented a personal Telegram integration, allowing users to interact with some features through a bot.
+The application was built as a REST API designed to be consumed by frontend clients, such as web or mobile applications. Besides the API, I also implemented a personal bot integration, allowing users to interact with some features through a bot.
 
 The interactive API documentation is available at [expenses.fecarneiro.dev/docs](https://expenses.fecarneiro.dev/docs).
 
-The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bot) section.
+The Bot usage documentation can be found in the [Bot](#bot) section.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 * [Quick Example](#quick-example)
 * [Authentication](#authentication)
 * [Error Format](#error-format)
-* [Telegram Bot](#telegram-bot)
+* [Bot](#bot)
 * [Architecture](#architecture)
 * [Project Structure](#project-structure)
 * [Technical Decisions](#technical-decisions)
@@ -44,7 +44,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 * User transaction querying
 * Monthly balance reports with income, expense and balance summaries grouped by month in the user time zone
 * Interactive API documentation with OpenAPI and Scalar
-* Optional Telegram Bot integration with slash commands and fast text-based transaction registration
+* Optional Bot integration with slash commands and fast text-based transaction registration
 
 ## Stack
 
@@ -60,7 +60,7 @@ The Telegram usage documentation can be found in the [Telegram Bot](#telegram-bo
 * **Biome**
 * **Pino**, for structured logging
 * **Husky**, for Git hooks
-* **grammY**, for the optional Telegram integration
+* **grammY**, for the optional bot integration
 * **Docker & Docker Compose**, for containerized development
 
 ## Getting Started
@@ -105,14 +105,14 @@ DATABASE_URL=postgresql://user:password@localhost:5432/expense_tracker
 JWT_SECRET=a-string-secret-at-least-256-bits-long
 LOG_LEVEL=info
 
-# Telegram Bot
-# Optional. If empty, the API runs without the Telegram bot.
+# Bot
+# Optional. If empty, the API runs without the bot.
 # Required in both development and production if you want to enable the bot.
 # In development, the bot uses polling.
 # In production, the bot uses webhook.
 TELEGRAM_BOT_TOKEN=
 
-# Telegram Webhook
+# Bot Webhook
 # Required only when NODE_ENV=production and TELEGRAM_BOT_TOKEN is defined.
 # Not required in development because polling is used instead of webhook.
 APP_URL=
@@ -288,7 +288,7 @@ curl http://localhost:3000/health
 | `/users`        | Authenticated user profile management           |
 | `/categories`   | Category creation, listing, update and deletion (defaults are seeded on registration) |
 | `/transactions` | Income and expense registration, querying and monthly balance reports |
-| `/telegram`     | Optional Telegram Bot integration               |
+| `/bot`     | Optional Bot integration               |
 
 ## Quick Example
 
@@ -403,11 +403,11 @@ Validation errors return a general message and a list of invalid fields:
 
 This format makes it easier for frontend clients, mobile applications or external integrations to handle API errors.
 
-## Telegram Bot
+## Bot
 
-Besides the REST API, the project includes an optional Telegram Bot integration using [grammY](https://grammy.dev/).
+Besides the REST API, the project includes an optional Bot integration using [grammY](https://grammy.dev/).
 
-This integration was created as an alternative way to interact with some Expense Tracker features without depending on a frontend interface. The goal is to allow users to register or query financial information directly from Telegram.
+This integration was created as an alternative way to interact with some Expense Tracker features without depending on a frontend interface. The goal is to allow users to register or query financial information directly from the bot.
 
 The integration is optional. If `TELEGRAM_BOT_TOKEN` is not defined, the application runs normally as a REST API only.
 
@@ -416,7 +416,7 @@ The integration is optional. If `TELEGRAM_BOT_TOKEN` is not defined, the applica
 | Command        | Description                                           |
 | -------------- | ----------------------------------------------------- |
 | `/start`       | Starts the interaction with the bot                   |
-| `/link <code>` | Links the Telegram account to an existing API account |
+| `/link <code>` | Links the bot account to an existing API account |
 | `/expense`     | Registers a new expense                               |
 | `/income`      | Registers a new income                                |
 | `/last`        | Lists the latest transactions                         |
@@ -450,7 +450,7 @@ For a guided flow with category selection, use `/expense` or `/income` instead.
 
 ### Linking with the API account
 
-To use the protected bot commands, the Telegram account must first be linked to an existing API user.
+To use the protected bot commands, the bot account must first be linked to an existing API user.
 
 The flow works as follows:
 
@@ -474,7 +474,7 @@ The bot can run in two modes:
 * **Polling**, used in development
 * **Webhook**, used in production
 
-In development, with `NODE_ENV=development`, the bot uses polling. In this mode, the application fetches updates directly from Telegram and does not require a public URL.
+In development, with `NODE_ENV=development`, the bot uses polling. In this mode, the application fetches updates directly from the bot and does not require a public URL.
 
 In production, with `NODE_ENV=production`, the bot uses webhook. In this mode, Telegram sends updates to a public URL exposed by the application.
 
@@ -487,7 +487,7 @@ In production, besides the bot token, also define `APP_URL` and `TELEGRAM_WEBHOO
 The webhook endpoint follows this format:
 
 ```txt
-{APP_URL}/webhooks/telegram
+{APP_URL}/webhooks/bot
 ```
 
 The `TELEGRAM_WEBHOOK_SECRET` is sent securely as a secret token in the `X-Telegram-Bot-Api-Secret-Token` header rather than being part of the URL path.
@@ -497,8 +497,8 @@ The `TELEGRAM_WEBHOOK_SECRET` is sent securely as a secret token in the `X-Teleg
 In a simplified view, the integration flow is:
 
 ```txt
-Telegram user
-  -> Telegram Bot
+Bot user
+  -> Bot
   -> Webhook or polling
   -> Expense Tracker API
   -> Database
@@ -532,7 +532,7 @@ Each layer has a specific responsibility:
 
 Dependency composition is centralized in the application container. This avoids instantiating services and repositories directly inside routes, keeping the code more organized and easier to test and maintain.
 
-The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions` and `telegram`.
+The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions` and `bot`.
 
 ## Project Structure
 
@@ -546,7 +546,7 @@ src/
 ├── modules/         # Domain modules
 │   ├── auth/
 │   ├── categories/
-│   ├── telegram/
+│   ├── bot/
 │   ├── transactions/
 │   └── users/
 ├── openapi/         # OpenAPI document composition
@@ -568,7 +568,7 @@ modules/
 
 This separation keeps the HTTP entry point isolated from business logic. Controllers and routes handle request-specific details, while services and repositories concentrate domain rules and persistence.
 
-In practice, this makes automated testing easier and allows other application entry points, such as the Telegram Bot, to reuse the same services without going through the HTTP layer.
+In practice, this makes automated testing easier and allows other application entry points, such as the Bot, to reuse the same services without going through the HTTP layer.
 
 ## Technical Decisions
 
@@ -578,11 +578,11 @@ Some project decisions were made to keep the API simple to run, easy to test and
 
 I chose to build the project as API-first to separate the backend from the user interface.
 
-This allows the same API to be consumed by different clients, such as a web application, a mobile application or the Telegram Bot. This approach also makes it easier to test HTTP contracts through the interactive documentation before having a dedicated frontend.
+This allows the same API to be consumed by different clients, such as a web application, a mobile application or the Bot. This approach also makes it easier to test HTTP contracts through the interactive documentation before having a dedicated frontend.
 
 ### Modular organization
 
-The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions` and `telegram`.
+The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions` and `bot`.
 
 This choice keeps responsibilities close to the domain they belong to, avoiding a structure based only on technical file types.
 
@@ -590,7 +590,7 @@ This choice keeps responsibilities close to the domain they belong to, avoiding 
 
 Inside the modules, the HTTP layer is separated from services and repositories.
 
-This separation prevents business rules from depending directly on Express, requests or responses. In practice, it improves testability and allows other application entry points, such as the Telegram Bot, to reuse the same services.
+This separation prevents business rules from depending directly on Express, requests or responses. In practice, it improves testability and allows other application entry points, such as the Bot, to reuse the same services.
 
 ### PostgreSQL and Drizzle ORM
 
@@ -624,7 +624,7 @@ Rate limiting is enabled in both development and production. It is skipped only 
 
 Common routes use a global limit of 100 requests per 15 minutes. Authentication routes use a stricter limit of 10 requests per 15 minutes, since login and registration endpoints are more sensitive.
 
-The Telegram account linking flow also has its own in-memory rate limiter. Each Telegram user can fail linking code verification up to 3 times within a 10-minute window. This helps reduce brute-force attempts against 6-digit linking codes.
+The Bot account linking flow also has its own in-memory rate limiter. Each Bot user can fail linking code verification up to 3 times within a 10-minute window. This helps reduce brute-force attempts against 6-digit linking codes.
 
 ## Tests
 

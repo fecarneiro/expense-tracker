@@ -77,7 +77,7 @@ export class CategoryService {
   }
 
   async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
-    // Does not throw because it is used only by Telegram bot flows.
+    // Does not throw because it is used only by bot flows.
     return this.categoryRepository.findByNameAndType(data)
   }
 
