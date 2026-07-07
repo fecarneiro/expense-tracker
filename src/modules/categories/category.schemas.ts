@@ -1,4 +1,4 @@
-import * as z from 'zod'
+import { z } from 'zod'
 
 export const categoryTypeField = z.enum(['income', 'expense']).meta({
   example: 'expense',
@@ -42,7 +42,7 @@ export const updateCategoryBodySchema = z
     id: 'UpdateCategoryBody',
   })
 
-export const categoryHttpResponseSchema = z
+export const categoryResponseSchema = z
   .object({
     id: categoryIdField,
     name: categoryNameField,
@@ -52,6 +52,10 @@ export const categoryHttpResponseSchema = z
     id: 'Category',
   })
 
-export const categoriesHttpResponseSchema = z.array(categoryHttpResponseSchema).meta({
+export const categoriesResponseSchema = z.array(categoryResponseSchema).meta({
   id: 'CategoryList',
 })
+
+export type CreateCategoryBodyInput = z.input<typeof createCategoryBodySchema>
+export type UpdateCategoryBodyInput = z.input<typeof updateCategoryBodySchema>
+export type CategoryTypeQueryInput = z.input<typeof categoryTypeQuerySchema>

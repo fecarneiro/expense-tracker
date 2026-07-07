@@ -10,12 +10,13 @@ import {
   validationErrorResponse,
 } from '../../../openapi/openapi.responses.js'
 import {
-  categoriesHttpResponseSchema,
-  categoryHttpResponseSchema,
+  categoriesResponseSchema,
   categoryIdParamsSchema,
+  categoryResponseSchema,
+  categoryTypeQuerySchema,
   createCategoryBodySchema,
   updateCategoryBodySchema,
-} from './category.http.dto.js'
+} from '../category.schemas.js'
 
 export const categoryOpenApiPaths = {
   '/categories': {
@@ -25,7 +26,7 @@ export const categoryOpenApiPaths = {
       security: [{ bearerAuth: [] }],
       requestBody: jsonRequestBody(createCategoryBodySchema),
       responses: {
-        '201': jsonResponse('Category created', categoryHttpResponseSchema),
+        '201': jsonResponse('Category created', categoryResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '409': conflictResponse('Category already exists'),
@@ -37,8 +38,12 @@ export const categoryOpenApiPaths = {
       tags: ['Categories'],
       summary: 'List categories',
       security: [{ bearerAuth: [] }],
+      requestParams: {
+        query: categoryTypeQuerySchema,
+      },
       responses: {
-        '200': jsonResponse('Category list', categoriesHttpResponseSchema),
+        '200': jsonResponse('Category list', categoriesResponseSchema),
+        '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '429': tooManyRequestsResponse,
       },
@@ -54,7 +59,8 @@ export const categoryOpenApiPaths = {
         path: categoryIdParamsSchema,
       },
       responses: {
-        '200': jsonResponse('Category found', categoryHttpResponseSchema),
+        '200': jsonResponse('Category found', categoryResponseSchema),
+        '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),
         '429': tooManyRequestsResponse,
@@ -70,7 +76,7 @@ export const categoryOpenApiPaths = {
       },
       requestBody: jsonRequestBody(updateCategoryBodySchema),
       responses: {
-        '200': jsonResponse('Category updated', categoryHttpResponseSchema),
+        '200': jsonResponse('Category updated', categoryResponseSchema),
         '400': validationErrorResponse,
         '401': unauthorizedResponse,
         '404': notFoundResponse('Category not found'),

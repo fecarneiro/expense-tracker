@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { categoryIdField, categoryNameField } from '../categories/http/category.http.dto.js'
+import { categoryIdField, categoryNameField } from '../categories/category.schemas.js'
 import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
 
 export const transactionIdField = z.uuid().meta({

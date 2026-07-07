@@ -1,6 +1,11 @@
 import type { DatabaseClient } from '../../database/db.js'
 import { defaultCategories } from './category.defaults.js'
 import { CategoryCreationFailedError, CategoryNotFoundError } from './category.error.js'
+import {
+  type CategoryResponse,
+  toCategoriesResponse,
+  toCategoryResponse,
+} from './category.mapper.js'
 import type { CategoryRepository } from './category.repository.js'
 import type {
   Category,
@@ -17,14 +22,14 @@ import type {
 export class CategoryService {
   constructor(private readonly categoryRepository: CategoryRepository) {}
 
-  async create(data: CreateCategoryInput): Promise<Category> {
+  async create(data: CreateCategoryInput): Promise<CategoryResponse> {
     const category = await this.categoryRepository.create(data)
 
     if (!category) {
       throw new CategoryCreationFailedError()
     }
 
-    return category
+    return toCategoryResponse(category)
   }
 
   async createDefaultsForUser(
@@ -46,28 +51,29 @@ export class CategoryService {
     return categories
   }
 
-  async update(data: UpdateCategoryInput): Promise<Category> {
+  async update(data: UpdateCategoryInput): Promise<CategoryResponse> {
     const category = await this.categoryRepository.update(data)
 
     if (!category) {
       throw new CategoryNotFoundError()
     }
 
-    return category
+    return toCategoryResponse(category)
   }
 
-  async findById(data: FindCategoryByIdInput): Promise<Category> {
+  async findById(data: FindCategoryByIdInput): Promise<CategoryResponse> {
     const category = await this.categoryRepository.findById(data)
 
     if (!category) {
       throw new CategoryNotFoundError()
     }
 
-    return category
+    return toCategoryResponse(category)
   }
 
-  async findByType(data: FindCategoryByTypeInput): Promise<Category[]> {
-    return this.categoryRepository.findByType(data)
+  async findByType(data: FindCategoryByTypeInput): Promise<CategoryResponse[]> {
+    const categories = await this.categoryRepository.findByType(data)
+    return toCategoriesResponse(categories)
   }
 
   async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
@@ -75,8 +81,9 @@ export class CategoryService {
     return this.categoryRepository.findByNameAndType(data)
   }
 
-  async findAll(data: FindAllCategoriesInput): Promise<Category[]> {
-    return this.categoryRepository.findAll(data)
+  async findAll(data: FindAllCategoriesInput): Promise<CategoryResponse[]> {
+    const categories = await this.categoryRepository.findAll(data)
+    return toCategoriesResponse(categories)
   }
 
   async delete(data: DeleteCategoryInput): Promise<void> {
