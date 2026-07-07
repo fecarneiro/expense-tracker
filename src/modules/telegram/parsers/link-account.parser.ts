@@ -1,4 +1,4 @@
-import { linkingCodeField } from '../http/telegram.http.dto.js'
+import { linkingCodeField } from '../telegram.schemas.js'
 
 export function linkingCodeParser(message: string) {
   const numeric = Number(message)
