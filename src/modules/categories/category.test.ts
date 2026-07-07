@@ -1,10 +1,8 @@
-import { beforeAll, beforeEach, expect, test } from 'vitest'
-import { createContainer } from '../../container.js'
-import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
+import { describe } from 'vitest'
 import { transactionsTable } from '../../database/schemas/transaction.schema.js'
-import { usersTable } from '../../database/schemas/user.schema.js'
-import { setupDbTest } from '../../tests/db/setup-db-test.js'
+import { TEST_OCCURRED_AT_DATE } from '../../tests/constants.js'
+import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
+import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { defaultCategories } from './category.defaults.js'
 import {
   CategoryAlreadyExistsError,
@@ -12,585 +10,548 @@ import {
   CategoryNotFoundError,
 } from './category.error.js'
 
-let dbTest: Database
+describe('CategoryService', () => {
+  test('create returns the public category', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
 
-beforeAll(async () => {
-  const setup = await setupDbTest()
-  dbTest = setup.dbTest as unknown as Database
-
-  return async () => {
-    setup.client.close()
-  }
-})
-
-beforeEach(async () => {
-  await dbTest.delete(transactionsTable)
-  await dbTest.delete(categoriesTable)
-  await dbTest.delete(usersTable)
-})
-
-async function seed(email = 'user@test.com') {
-  const [user] = await dbTest
-    .insert(usersTable)
-    .values({
-      email: email,
-      passwordHash: 'hashedPassword',
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
     })
-    .returning()
 
-  if (!user) throw new Error('seed: user not created')
-
-  return { user }
-}
-
-function sut() {
-  return createContainer(dbTest)
-}
-
-test('create returns the persisted category', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    expect(created).toStrictEqual({
+      id: created.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
   })
 
-  expect(created).toStrictEqual({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-    createdAt: expect.any(Date),
-  })
-})
+  test('create fails when the name already exists with different capitalization', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
 
-test('create fails when the name already exists with different capitalization', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Salary',
-    categoryType: 'income',
-  })
-
-  await expect(
-    categoryService.create({
-      userId: owner.user.id,
+    await container.categoryService.create({
+      userId: owner.id,
       name: 'Salary',
       categoryType: 'income',
-    }),
-  ).rejects.toThrow(new CategoryAlreadyExistsError())
-})
+    })
 
-test('create allows the same name for different users', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    await expect(
+      container.categoryService.create({
+        userId: owner.id,
+        name: 'Salary',
+        categoryType: 'income',
+      }),
+    ).rejects.toThrow(CategoryAlreadyExistsError)
   })
 
-  await expect(
-    categoryService.create({
-      userId: other.user.id,
+  test('create allows the same name for different users', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
       name: 'Hobbies',
       categoryType: 'expense',
-    }),
-  ).resolves.toMatchObject({ name: 'Hobbies' })
-})
+    })
 
-test('createDefaultsForUser creates default categories for a user', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const categories = await categoryService.createDefaultsForUser({ userId: owner.user.id })
-  expect(categories.length).toBe(defaultCategories.length)
-})
-
-test('createDefaultsForUser fails when the default categories already exist', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.createDefaultsForUser({ userId: owner.user.id })
-  await expect(categoryService.createDefaultsForUser({ userId: owner.user.id })).rejects.toThrow(
-    new CategoryAlreadyExistsError(),
-  )
-})
-
-test('update changes the fields of the owner category', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'income',
+    await expect(
+      container.categoryService.create({
+        userId: other.id,
+        name: 'Hobbies',
+        categoryType: 'expense',
+      }),
+    ).resolves.toMatchObject({ name: 'Hobbies' })
   })
 
-  const updated = await categoryService.update({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Eating Out',
-    categoryType: 'expense',
+  test('createDefaultsForUser creates default categories for a user', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const categories = await container.categoryService.createDefaultsForUser({ userId: owner.id })
+    expect(categories.length).toBe(defaultCategories.length)
   })
 
-  expect(updated).toStrictEqual({
-    id: created.id,
-    name: 'Eating Out',
-    userId: owner.user.id,
-    categoryType: 'expense',
-    createdAt: expect.any(Date),
-  })
-})
+  test('createDefaultsForUser fails when the default categories already exist', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
 
-test('update allows keeping the same name', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    await container.categoryService.createDefaultsForUser({ userId: owner.id })
+    await expect(
+      container.categoryService.createDefaultsForUser({ userId: owner.id }),
+    ).rejects.toThrow(new CategoryAlreadyExistsError())
   })
 
-  const updated = await categoryService.update({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
+  test('update changes the fields of the owner category', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
 
-  expect(updated).toStrictEqual({
-    id: created.id,
-    name: 'Hobbies',
-    userId: owner.user.id,
-    categoryType: 'expense',
-    createdAt: expect.any(Date),
-  })
-})
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'income',
+    })
 
-test('update fails when the name already exists', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Sports',
-    categoryType: 'expense',
-  })
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  await expect(
-    categoryService.update({
+    const updated = await container.categoryService.update({
       id: created.id,
-      userId: owner.user.id,
+      userId: owner.id,
+      name: 'Eating Out',
+      categoryType: 'expense',
+    })
+
+    expect(updated).toStrictEqual({
+      id: created.id,
+      name: 'Eating Out',
+      categoryType: 'expense',
+    })
+  })
+
+  test('update allows keeping the same name', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    const updated = await container.categoryService.update({
+      id: created.id,
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    expect(updated).toStrictEqual({
+      id: created.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+  })
+
+  test('update fails when the name already exists', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
       name: 'Sports',
       categoryType: 'expense',
-    }),
-  ).rejects.toThrow(new CategoryAlreadyExistsError())
-})
+    })
 
-test('update fails when the name already exists with different capitalization', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Sports',
-    categoryType: 'expense',
-  })
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  await expect(
-    categoryService.update({
-      id: created.id,
-      userId: owner.user.id,
-      name: 'sports',
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
       categoryType: 'expense',
-    }),
-  ).rejects.toThrow(new CategoryAlreadyExistsError())
-})
+    })
 
-test('update fails and preserves data when the user is not the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    await expect(
+      container.categoryService.update({
+        id: created.id,
+        userId: owner.id,
+        name: 'Sports',
+        categoryType: 'expense',
+      }),
+    ).rejects.toThrow(CategoryAlreadyExistsError)
   })
 
-  await expect(
-    categoryService.update({
-      id: created.id,
-      userId: other.user.id,
+  test('update fails when the name already exists with different capitalization', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
       name: 'Sports',
       categoryType: 'expense',
-    }),
-  ).rejects.toThrow(new CategoryNotFoundError())
+    })
 
-  await expect(
-    categoryService.findById({
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.update({
+        id: created.id,
+        userId: owner.id,
+        name: 'sports',
+        categoryType: 'expense',
+      }),
+    ).rejects.toThrow(CategoryAlreadyExistsError)
+  })
+
+  test('update fails and preserves data when the user is not the owner', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.update({
+        id: created.id,
+        userId: other.id,
+        name: 'Sports',
+        categoryType: 'expense',
+      }),
+    ).rejects.toThrow(CategoryNotFoundError)
+
+    await expect(
+      container.categoryService.findById({
+        id: created.id,
+        userId: owner.id,
+      }),
+    ).resolves.toMatchObject({ name: 'Hobbies' })
+  })
+
+  test('findById returns the category of the owner', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    const result = await container.categoryService.findById({
       id: created.id,
-      userId: owner.user.id,
-    }),
-  ).resolves.toMatchObject({ name: 'Hobbies' })
-})
+      userId: owner.id,
+    })
 
-test('findById returns the category of the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  const result = await categoryService.findById({
-    id: created.id,
-    userId: owner.user.id,
-  })
-
-  expect(result).toStrictEqual({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-    createdAt: expect.any(Date),
-  })
-})
-
-test('findById fails when the user is not the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  await expect(
-    categoryService.findById({
+    expect(result).toStrictEqual({
       id: created.id,
-      userId: other.user.id,
-    }),
-  ).rejects.toThrow(new CategoryNotFoundError())
-})
-
-test('findByType returns the category specified by type of the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
   })
 
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Sports',
-    categoryType: 'expense',
+  test('findById fails when the user is not the owner', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.findById({
+        id: created.id,
+        userId: other.id,
+      }),
+    ).rejects.toThrow(CategoryNotFoundError)
   })
 
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Salary',
-    categoryType: 'income',
+  test('findByType returns the category specified by type of the owner', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Sports',
+      categoryType: 'expense',
+    })
+
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Salary',
+      categoryType: 'income',
+    })
+
+    const categories = await container.categoryService.findByType({
+      categoryType: 'expense',
+      userId: owner.id,
+    })
+
+    expect(categories.length).toBe(2)
+    expect(categories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Hobbies', categoryType: 'expense' }),
+        expect.objectContaining({ name: 'Sports', categoryType: 'expense' }),
+      ]),
+    )
   })
 
-  const categories = await categoryService.findByType({
-    categoryType: 'expense',
-    userId: owner.user.id,
+  test('findByType only returns categories of the given user', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.findByType({ categoryType: 'expense', userId: owner.id }),
+    ).resolves.toStrictEqual([
+      {
+        id: expect.any(String),
+        name: 'Hobbies',
+        categoryType: 'expense',
+      },
+    ])
+
+    await expect(
+      container.categoryService.findByType({ categoryType: 'expense', userId: other.id }),
+    ).resolves.toStrictEqual([])
   })
 
-  expect(categories.length).toBe(2)
-  expect(categories).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ name: 'Hobbies', categoryType: 'expense' }),
-      expect.objectContaining({ name: 'Sports', categoryType: 'expense' }),
-    ]),
-  )
-})
+  test('findByName returns the category of the owner ignoring capitalization', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
 
-test('findByType only returns categories of the given user', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
 
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
+    const result = await container.categoryService.findByNameAndType({
+      name: 'hobbies',
+      userId: owner.id,
+      categoryType: 'expense',
+    })
 
-  await expect(
-    categoryService.findByType({ categoryType: 'expense', userId: owner.user.id }),
-  ).resolves.toStrictEqual([
-    {
-      id: expect.any(String),
-      userId: owner.user.id,
+    expect(result).toStrictEqual({
+      id: created.id,
+      userId: owner.id,
       name: 'Hobbies',
       categoryType: 'expense',
       createdAt: expect.any(Date),
-    },
-  ])
-
-  await expect(
-    categoryService.findByType({ categoryType: 'expense', userId: other.user.id }),
-  ).resolves.toStrictEqual([])
-})
-
-test('findByName returns the category of the owner ignoring capitalization', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    })
   })
 
-  const result = await categoryService.findByNameAndType({
-    name: 'hobbies',
-    userId: owner.user.id,
-    categoryType: 'expense',
+  test('findByName returns null when the category does not exist', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const result = await container.categoryService.findByNameAndType({
+      name: 'Nonexistent',
+      userId: owner.id,
+      categoryType: 'expense',
+    })
+
+    expect(result).toBeNull()
   })
 
-  expect(result).toStrictEqual({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-    createdAt: expect.any(Date),
-  })
-})
+  test('findByName does not return categories from another user', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertTestUser(db, { email: 'other@domain.com' })
 
-test('findByName returns null when the category does not exist', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const result = await categoryService.findByNameAndType({
-    name: 'Nonexistent',
-    userId: owner.user.id,
-    categoryType: 'expense',
-  })
-
-  expect(result).toBeNull()
-})
-
-test('findByName does not return categories from another user', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@domain.com')
-
-  await categoryService.create({
-    userId: other.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  const result = await categoryService.findByNameAndType({
-    name: 'Hobbies',
-    categoryType: 'expense',
-    userId: owner.user.id,
-  })
-
-  expect(result).toBeNull()
-})
-
-test('findAll returns an empty list when the user has no categories', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const result = await categoryService.findAll({
-    userId: owner.user.id,
-  })
-
-  expect(result).toStrictEqual([])
-})
-
-test('findAll returns only the categories of the given user', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
-  })
-
-  await categoryService.create({
-    userId: other.user.id,
-    name: 'Hiking',
-    categoryType: 'expense',
-  })
-
-  const result = await categoryService.findAll({
-    userId: owner.user.id,
-  })
-
-  expect(result).toStrictEqual([
-    {
-      id: expect.any(String),
-      userId: owner.user.id,
+    await container.categoryService.create({
+      userId: other.id,
       name: 'Hobbies',
       categoryType: 'expense',
-      createdAt: expect.any(Date),
-    },
-  ])
-})
+    })
 
-test('delete removes the category of the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
+    const result = await container.categoryService.findByNameAndType({
+      name: 'Hobbies',
+      categoryType: 'expense',
+      userId: owner.id,
+    })
 
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    expect(result).toBeNull()
   })
 
-  await expect(
-    categoryService.delete({
+  test('findAll returns an empty list when the user has no categories', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+
+    const result = await container.categoryService.findAll({
+      userId: owner.id,
+    })
+
+    expect(result).toStrictEqual([])
+  })
+
+  test('findAll returns only the categories of the given user', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await container.categoryService.create({
+      userId: other.id,
+      name: 'Hiking',
+      categoryType: 'expense',
+    })
+
+    const result = await container.categoryService.findAll({
+      userId: owner.id,
+    })
+
+    expect(result).toStrictEqual([
+      {
+        id: expect.any(String),
+        name: 'Hobbies',
+        categoryType: 'expense',
+      },
+    ])
+  })
+
+  test('delete removes the category of the owner', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.delete({
+        id: created.id,
+        userId: owner.id,
+      }),
+    ).resolves.toBeUndefined()
+
+    await expect(
+      container.categoryService.findById({
+        id: created.id,
+        userId: owner.id,
+      }),
+    ).rejects.toThrow(CategoryNotFoundError)
+  })
+
+  test('delete fails and preserves data when the user is not the owner', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+    const other = await insertOtherTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await expect(
+      container.categoryService.delete({
+        id: created.id,
+        userId: other.id,
+      }),
+    ).rejects.toThrow(CategoryNotFoundError)
+
+    await expect(
+      container.categoryService.findById({
+        id: created.id,
+        userId: owner.id,
+      }),
+    ).resolves.toMatchObject({ id: created.id })
+  })
+
+  test('delete fails when the category is in use by a transaction', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Hobbies',
+      categoryType: 'expense',
+    })
+
+    await db.insert(transactionsTable).values({
+      userId: owner.id,
+      createdByUserId: owner.id,
+      categoryId: created.id,
+      transactionType: 'expense',
+      occurredAt: TEST_OCCURRED_AT_DATE,
+      amountInCents: 99999,
+      notes: 'mine',
+    })
+
+    await expect(
+      container.categoryService.delete({ id: created.id, userId: owner.id }),
+    ).rejects.toThrow(new CategoryInUseError())
+  })
+
+  test('create persists and returns the categoryType', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const income = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Salary',
+      categoryType: 'income',
+    })
+
+    const expense = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Groceries',
+      categoryType: 'expense',
+    })
+
+    expect(income.categoryType).toBe('income')
+    expect(expense.categoryType).toBe('expense')
+  })
+
+  test('update can change the categoryType', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+
+    const created = await container.categoryService.create({
+      userId: owner.id,
+      name: 'Variable',
+      categoryType: 'expense',
+    })
+
+    const updated = await container.categoryService.update({
       id: created.id,
-      userId: owner.user.id,
-    }),
-  ).resolves.toBeUndefined()
+      userId: owner.id,
+      name: 'Variable',
+      categoryType: 'income',
+    })
 
-  await expect(
-    categoryService.findById({
-      id: created.id,
-      userId: owner.user.id,
-    }),
-  ).rejects.toThrow(new CategoryNotFoundError())
-})
-
-test('delete fails and preserves data when the user is not the owner', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-  const other = await seed('other@test.com')
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    expect(updated.categoryType).toBe('income')
   })
 
-  await expect(
-    categoryService.delete({
-      id: created.id,
-      userId: other.user.id,
-    }),
-  ).rejects.toThrow(new CategoryNotFoundError())
+  test('findAll returns categoryType for each category', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
 
-  await expect(
-    categoryService.findById({
-      id: created.id,
-      userId: owner.user.id,
-    }),
-  ).resolves.toMatchObject({ id: created.id })
-})
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Salary',
+      categoryType: 'income',
+    })
+    await container.categoryService.create({
+      userId: owner.id,
+      name: 'Food',
+      categoryType: 'expense',
+    })
 
-test('delete fails when the category is in use by a transaction', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
+    const all = await container.categoryService.findAll({ userId: owner.id })
 
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Hobbies',
-    categoryType: 'expense',
+    expect(all).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'Salary', categoryType: 'income' }),
+        expect.objectContaining({ name: 'Food', categoryType: 'expense' }),
+      ]),
+    )
   })
-
-  await dbTest.insert(transactionsTable).values({
-    userId: owner.user.id,
-    categoryId: created.id,
-    transactionType: 'expense',
-    occurredAt: '2026-06-03',
-    amountInCents: 99999,
-    notes: 'mine',
-  })
-
-  await expect(categoryService.delete({ id: created.id, userId: owner.user.id })).rejects.toThrow(
-    new CategoryInUseError(),
-  )
-})
-
-test('create persists and returns the categoryType', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const income = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Salary',
-    categoryType: 'income',
-  })
-
-  const expense = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Groceries',
-    categoryType: 'expense',
-  })
-
-  expect(income.categoryType).toBe('income')
-  expect(expense.categoryType).toBe('expense')
-})
-
-test('update can change the categoryType', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  const created = await categoryService.create({
-    userId: owner.user.id,
-    name: 'Variable',
-    categoryType: 'expense',
-  })
-
-  const updated = await categoryService.update({
-    id: created.id,
-    userId: owner.user.id,
-    name: 'Variable',
-    categoryType: 'income',
-  })
-
-  expect(updated.categoryType).toBe('income')
-})
-
-test('findAll returns categoryType for each category', async () => {
-  const { categoryService } = sut()
-  const owner = await seed()
-
-  await categoryService.create({ userId: owner.user.id, name: 'Salary', categoryType: 'income' })
-  await categoryService.create({ userId: owner.user.id, name: 'Food', categoryType: 'expense' })
-
-  const all = await categoryService.findAll({ userId: owner.user.id })
-
-  expect(all).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ name: 'Salary', categoryType: 'income' }),
-      expect.objectContaining({ name: 'Food', categoryType: 'expense' }),
-    ]),
-  )
 })
