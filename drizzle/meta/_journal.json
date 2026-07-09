@@ -134,6 +134,13 @@
       "when": 1783592393321,
       "tag": "0018_serious_sinister_six",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783602391672,
+      "tag": "0019_pretty_phalanx",
+      "breakpoints": true
     }
   ]
 }
