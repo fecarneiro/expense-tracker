@@ -127,6 +127,13 @@
       "when": 1783588054786,
       "tag": "0017_tired_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783592393321,
+      "tag": "0018_serious_sinister_six",
+      "breakpoints": true
     }
   ]
 }
