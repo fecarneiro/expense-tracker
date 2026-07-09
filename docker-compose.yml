@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    command: sh -c "pnpm db:migrate && pnpm exec tsx watch src/server.ts"
     container_name: expense-tracker-api
     ports:
       - "3000:3000"

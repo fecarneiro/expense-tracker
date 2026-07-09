@@ -8,7 +8,6 @@
   "packageManager": "pnpm@11.9.0",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
-    "dev:docker": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
