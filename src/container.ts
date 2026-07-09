@@ -4,8 +4,8 @@ import { BotRepository } from './modules/bot/bot.repository.js'
 import { BotService } from './modules/bot/bot.service.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
-import { ConnectionsRepository } from './modules/connections/connections.repository.js'
-import { ConnectionsService } from './modules/connections/connections.service.js'
+import { ConnectionRepository } from './modules/connections/connection.repository.js'
+import { ConnectionService } from './modules/connections/connection.service.js'
 import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
@@ -24,7 +24,7 @@ export function createContainer(db: Database) {
   const transactionRepository = new TransactionRepository(db)
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
-  const connectionsRepository = new ConnectionsRepository(db)
+  const connectionsRepository = new ConnectionRepository(db)
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -38,7 +38,7 @@ export function createContainer(db: Database) {
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
-  const connectionService = new ConnectionsService(connectionsRepository)
+  const connectionService = new ConnectionService(connectionsRepository, linkingCodeService)
 
   return {
     authService,

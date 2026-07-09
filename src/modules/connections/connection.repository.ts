@@ -3,9 +3,9 @@ import {
   connectionsTable,
   type NewConnectionRow,
 } from '../../database/schemas/connections.schema.js'
-import type { Connection } from './connections.service.js'
+import type { Connection } from './connection.service.js'
 
-export class ConnectionsRepository {
+export class ConnectionRepository {
   constructor(private readonly database: Database) {}
 
   async create(data: NewConnectionRow): Promise<Connection | null> {
