@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { describe, vi } from 'vitest'
 import type { Database } from '../../database/db.js'
-import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { LINKING_CODE } from './linking-code.constants.js'
@@ -30,8 +30,8 @@ describe('LinkingCodeService', () => {
 
       const [persistedLinkingCode] = await db
         .select()
-        .from(botLinkingCodesTable)
-        .where(eq(botLinkingCodesTable.userId, user.id))
+        .from(linkingCodesTable)
+        .where(eq(linkingCodesTable.userId, user.id))
 
       expect(persistedLinkingCode).toStrictEqual({
         id: expect.any(String),
@@ -54,8 +54,8 @@ describe('LinkingCodeService', () => {
 
       const persistedLinkingCodes = await db
         .select()
-        .from(botLinkingCodesTable)
-        .where(eq(botLinkingCodesTable.userId, user.id))
+        .from(linkingCodesTable)
+        .where(eq(linkingCodesTable.userId, user.id))
 
       expect(persistedLinkingCodes).toHaveLength(1)
       expect(persistedLinkingCodes[0]).toStrictEqual({

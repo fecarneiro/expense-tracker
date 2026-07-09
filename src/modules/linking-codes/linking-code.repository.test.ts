@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { describe } from 'vitest'
-import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
@@ -27,8 +27,8 @@ describe('LinkingCodeRepository', () => {
 
     const persistedCodes = await db
       .select()
-      .from(botLinkingCodesTable)
-      .where(eq(botLinkingCodesTable.code, code))
+      .from(linkingCodesTable)
+      .where(eq(linkingCodesTable.code, code))
 
     expect(persistedCodes).toHaveLength(1)
     expect(persistedCodes[0]).toMatchObject({ userId: firstUser.id, code })

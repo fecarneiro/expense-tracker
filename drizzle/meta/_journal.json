@@ -120,6 +120,13 @@
       "when": 1783438639741,
       "tag": "0016_omniscient_cerise",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783588054786,
+      "tag": "0017_tired_stranger",
+      "breakpoints": true
     }
   ]
 }

@@ -2,9 +2,9 @@ import { eq, sql } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import {
-  botLinkingCodesTable,
+  linkingCodesTable,
   type NewLinkingCode,
-} from '../../database/schemas/bot-codes.schema.js'
+} from '../../database/schemas/linking-codes.schema.js'
 import type {
   DeleteLinkingCodeByUserIdInput,
   FindLinkingCodeByCode,
@@ -19,15 +19,15 @@ export class LinkingCodeRepository {
 
     try {
       const [generatedLinkingCode] = await this.database
-        .insert(botLinkingCodesTable)
+        .insert(linkingCodesTable)
         .values({ userId, code })
         .onConflictDoUpdate({
-          target: botLinkingCodesTable.userId,
+          target: linkingCodesTable.userId,
           set: { code, createdAt: sql`now()` },
         })
         .returning({
-          code: botLinkingCodesTable.code,
-          createdAt: botLinkingCodesTable.createdAt,
+          code: linkingCodesTable.code,
+          createdAt: linkingCodesTable.createdAt,
         })
 
       if (!generatedLinkingCode) {
@@ -52,15 +52,13 @@ export class LinkingCodeRepository {
 
     const [user] = await this.database
       .select()
-      .from(botLinkingCodesTable)
-      .where(eq(botLinkingCodesTable.code, code))
+      .from(linkingCodesTable)
+      .where(eq(linkingCodesTable.code, code))
 
     return user ?? null
   }
 
   async deleteByUserId(data: DeleteLinkingCodeByUserIdInput) {
-    await this.database
-      .delete(botLinkingCodesTable)
-      .where(eq(botLinkingCodesTable.userId, data.userId))
+    await this.database.delete(linkingCodesTable).where(eq(linkingCodesTable.userId, data.userId))
   }
 }

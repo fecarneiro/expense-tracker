@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { describe } from 'vitest'
-import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { BotAccountAlreadyExistsError } from './bot.error.js'
@@ -38,8 +38,8 @@ describe('BotService', () => {
 
       const persistedLinkingCodes = await db
         .select()
-        .from(botLinkingCodesTable)
-        .where(eq(botLinkingCodesTable.userId, user.id))
+        .from(linkingCodesTable)
+        .where(eq(linkingCodesTable.userId, user.id))
 
       expect(persistedLinkingCodes).toHaveLength(0)
     })
