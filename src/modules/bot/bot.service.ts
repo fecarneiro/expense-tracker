@@ -1,3 +1,5 @@
+import type { LinkingCodeService } from '../linking-codes/linking-code.service.js'
+import type { CreateLinkingCodeBodyInput } from '../linking-codes/linking-code.types.js'
 import { BotLinkAccountFailedError } from './bot.error.js'
 import { type GeneratedLinkingCodeResponse, toGeneratedLinkingCodeResponse } from './bot.mapper.js'
 import type { BotRepository } from './bot.repository.js'
@@ -6,8 +8,6 @@ import type {
   FindAccountByTelegramIdInput,
   VerifyAndLinkAccountInput,
 } from './bot.types.js'
-import type { LinkingCodeService } from './linking-code/linking-code.service.js'
-import type { CreateLinkingCodeBodyInput } from './linking-code/linking-code.types.js'
 
 export class BotService {
   constructor(

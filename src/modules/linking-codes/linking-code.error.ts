@@ -1,4 +1,4 @@
-import { AppError } from '../../../shared/app-error.js'
+import { AppError } from '../../shared/app-error.js'
 
 export class InvalidOrExpiredLinkingCodeError extends AppError {
   constructor() {

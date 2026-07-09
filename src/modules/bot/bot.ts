@@ -13,6 +13,7 @@ import { handleMonthlyReport } from './handlers/report.handler.js'
 import { handleStart } from './handlers/start.handler.js'
 import { botLoggerMiddleware } from './middlewares/bot-logger.middleware.js'
 import { userIdentityMiddleware } from './middlewares/user-identity.middleware.js'
+import { botLinkRateLimiter } from './rate-limit/bot.rate-limiter.js'
 
 export function createBot(container: Container, config: Pick<BotRuntimeConfig, 'botToken'>) {
   const { botService, categoryService, transactionService } = container
@@ -24,7 +25,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   // ── Public Commands ───────────────────────────────────
   bot.command('start', (ctx) => handleStart(ctx))
-  bot.command('link', (ctx) => handleLinkAccount(ctx, botService))
+  bot.command('link', botLinkRateLimiter, (ctx) => handleLinkAccount(ctx, botService))
 
   // ── Authenticated Commands ─────────────────────────────
   // Middleware

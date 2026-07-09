@@ -2,11 +2,10 @@ import type { Database } from './database/db.js'
 import { AuthService } from './modules/auth/auth.service.js'
 import { BotRepository } from './modules/bot/bot.repository.js'
 import { BotService } from './modules/bot/bot.service.js'
-import { LinkingCodeRepository } from './modules/bot/linking-code/linking-code.repository.js'
-import { LinkingCodeService } from './modules/bot/linking-code/linking-code.service.js'
-import { LinkingCodeRateLimiter } from './modules/bot/linking-code/linking-code-rate-limiter.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
+import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
+import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { TransactionService } from './modules/transactions/transaction.service.js'
 import { UserRepository } from './modules/users/user.repository.js'
@@ -23,7 +22,6 @@ export function createContainer(db: Database) {
   const transactionRepository = new TransactionRepository(db)
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
-  const linkingCodeRateLimiter = new LinkingCodeRateLimiter()
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -35,7 +33,7 @@ export function createContainer(db: Database) {
     userRepository,
     userService,
   )
-  const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
+  const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
 
   return {

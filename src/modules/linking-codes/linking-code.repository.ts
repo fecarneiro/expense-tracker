@@ -1,10 +1,10 @@
 import { eq, sql } from 'drizzle-orm'
-import { isUniqueViolation } from '../../../database/db.error.js'
-import type { Database } from '../../../database/db.js'
+import { isUniqueViolation } from '../../database/db.error.js'
+import type { Database } from '../../database/db.js'
 import {
   botLinkingCodesTable,
   type NewLinkingCode,
-} from '../../../database/schemas/bot-codes.schema.js'
+} from '../../database/schemas/bot-codes.schema.js'
 import type {
   DeleteLinkingCodeByUserIdInput,
   FindLinkingCodeByCode,

@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { describe } from 'vitest'
-import { botLinkingCodesTable } from '../../../database/schemas/bot-codes.schema.js'
-import { insertOtherTestUser, insertTestUser } from '../../../tests/factories/user.factory.js'
-import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
+import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
+import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
 
 describe('LinkingCodeRepository', () => {

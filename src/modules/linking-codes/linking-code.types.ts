@@ -1,3 +1,13 @@
+import type { LINKING_CODE } from './linking-code.constants.js'
+
+export type LinkingCodePurpose = (typeof LINKING_CODE.PURPOSE)[number]
+
+// export type CreateLinkingCodeBodyInput = {
+//   userId: string
+//   purpose: LinkingCodePurpose
+// }
+
+//---
 export type CreateLinkingCodeBodyInput = {
   userId: string
 }

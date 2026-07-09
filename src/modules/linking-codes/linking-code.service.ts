@@ -1,4 +1,5 @@
 import { randomInt } from 'node:crypto'
+import { LINKING_CODE } from './linking-code.constants.js'
 import {
   BotGenerateCodeFailedError,
   InvalidOrExpiredLinkingCodeError,
@@ -10,24 +11,15 @@ import type {
   GeneratedLinkingCode,
   VerifyLinkingCodeInput,
 } from './linking-code.types.js'
-import type { LinkingCodeRateLimiter } from './linking-code-rate-limiter.js'
-
-export const LINKING_CODE_GENERATION_MAX_ATTEMPTS = 5
-export const LINKING_CODE_MIN_NUMBER = 100_000
-export const LINKING_CODE_MAX_NUMBER = 1_000_000
-export const LINKING_CODE_TTL_MS = 15 * 60 * 1000
 
 export class LinkingCodeService {
-  constructor(
-    private readonly linkingCodeRepository: LinkingCodeRepository,
-    private readonly linkingCodeRateLimiter: LinkingCodeRateLimiter,
-  ) {}
+  constructor(private readonly linkingCodeRepository: LinkingCodeRepository) {}
 
   async create(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCode> {
     const userId = data.userId
 
-    for (let attempt = 1; attempt <= LINKING_CODE_GENERATION_MAX_ATTEMPTS; attempt++) {
-      const code = randomInt(LINKING_CODE_MIN_NUMBER, LINKING_CODE_MAX_NUMBER)
+    for (let attempt = 1; attempt <= LINKING_CODE.GENERATION_MAX_ATTEMPTS; attempt++) {
+      const code = randomInt(LINKING_CODE.MIN_NUMBER, LINKING_CODE.MAX_NUMBER)
       const result = await this.linkingCodeRepository.saveLinkingCode({ userId, code })
 
       if (!result.saved) {
@@ -40,18 +32,11 @@ export class LinkingCodeService {
   }
 
   async verify(data: VerifyLinkingCodeInput): Promise<{ userId: string }> {
-    const { telegramId, code } = data
-
-    this.linkingCodeRateLimiter.assertAllowed(telegramId)
-
-    const linkingCode = await this.linkingCodeRepository.findByCode({ code })
+    const linkingCode = await this.linkingCodeRepository.findByCode({ code: data.code })
 
     if (!linkingCode || this.isLinkingCodeExpired(linkingCode.createdAt)) {
-      this.linkingCodeRateLimiter.recordFailure(telegramId)
       throw new InvalidOrExpiredLinkingCodeError()
     }
-
-    this.linkingCodeRateLimiter.clear(telegramId)
 
     return { userId: linkingCode.userId }
   }
@@ -61,6 +46,6 @@ export class LinkingCodeService {
   }
 
   private isLinkingCodeExpired(createdAt: Date): boolean {
-    return Date.now() - createdAt.getTime() > LINKING_CODE_TTL_MS
+    return Date.now() - createdAt.getTime() > LINKING_CODE.TTL_MS
   }
 }

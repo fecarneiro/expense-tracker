@@ -1,21 +1,16 @@
 import { eq } from 'drizzle-orm'
 import { describe, vi } from 'vitest'
-import type { Database } from '../../../database/db.js'
-import { botLinkingCodesTable } from '../../../database/schemas/bot-codes.schema.js'
-import { insertTestUser } from '../../../tests/factories/user.factory.js'
-import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
+import type { Database } from '../../database/db.js'
+import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { insertTestUser } from '../../tests/factories/user.factory.js'
+import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
+import { LINKING_CODE } from './linking-code.constants.js'
 import { BotGenerateCodeFailedError } from './linking-code.error.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
-import {
-  LINKING_CODE_GENERATION_MAX_ATTEMPTS,
-  LINKING_CODE_MAX_NUMBER,
-  LINKING_CODE_MIN_NUMBER,
-  LinkingCodeService,
-} from './linking-code.service.js'
-import { LinkingCodeRateLimiter } from './linking-code-rate-limiter.js'
+import { LinkingCodeService } from './linking-code.service.js'
 
 function linkingCodeService(db: Database) {
-  return new LinkingCodeService(new LinkingCodeRepository(db), new LinkingCodeRateLimiter())
+  return new LinkingCodeService(new LinkingCodeRepository(db))
 }
 
 describe('LinkingCodeService', () => {
@@ -30,8 +25,8 @@ describe('LinkingCodeService', () => {
         code: expect.any(Number),
         createdAt: expect.any(Date),
       })
-      expect(linkingCode.code).toBeGreaterThanOrEqual(LINKING_CODE_MIN_NUMBER)
-      expect(linkingCode.code).toBeLessThan(LINKING_CODE_MAX_NUMBER)
+      expect(linkingCode.code).toBeGreaterThanOrEqual(LINKING_CODE.MIN_NUMBER)
+      expect(linkingCode.code).toBeLessThan(LINKING_CODE.MAX_NUMBER)
 
       const [persistedLinkingCode] = await db
         .select()
@@ -83,7 +78,7 @@ describe('LinkingCodeService', () => {
         new BotGenerateCodeFailedError(),
       )
 
-      expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE_GENERATION_MAX_ATTEMPTS)
+      expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE.GENERATION_MAX_ATTEMPTS)
       saveLinkingCodeSpy.mockRestore()
     })
   })
