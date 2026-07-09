@@ -485,6 +485,14 @@
         "expense"
       ]
     },
+    "public.purpose": {
+      "name": "purpose",
+      "schema": "public",
+      "values": [
+        "bot_link",
+        "user_link"
+      ]
+    },
     "public.transaction_type": {
       "name": "transaction_type",
       "schema": "public",
