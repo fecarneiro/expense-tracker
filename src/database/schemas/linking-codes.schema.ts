@@ -1,7 +1,7 @@
 import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { usersTable } from './user.schema.js'
 
-const purposeEnum = pgEnum('purpose', ['bot_link', 'user_link'])
+const purposeEnum = pgEnum('linking_code_purpose', ['bot_link', 'user_link'])
 
 export const linkingCodesTable = pgTable(
   'linking_codes',
