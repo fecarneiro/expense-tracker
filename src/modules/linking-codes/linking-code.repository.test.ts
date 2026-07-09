@@ -16,13 +16,13 @@ describe('LinkingCodeRepository', () => {
 
     const code = 123_456
 
-    const firstResult = await repository.saveLinkingCode({ userId: firstUser.id, code })
+    const firstResult = await repository.save({ userId: firstUser.id, code, purpose: 'bot_link' })
     expect(firstResult).toEqual({
       saved: true,
       generatedLinkingCode: { code, createdAt: expect.any(Date) },
     })
 
-    const secondResult = await repository.saveLinkingCode({ userId: secondUser.id, code })
+    const secondResult = await repository.save({ userId: secondUser.id, code, purpose: 'bot_link' })
     expect(secondResult).toEqual({ saved: false })
 
     const persistedCodes = await db

@@ -6,7 +6,10 @@ export class BotHttpController {
 
   async createLinkingCode(req: Request, res: Response) {
     const userId = req.auth.userId
-    const generatedLinkingCode = await this.botService.createLinkingCode({ userId })
+    const generatedLinkingCode = await this.botService.createLinkingCode({
+      userId,
+      purpose: 'bot_link',
+    })
     res.status(201).json(generatedLinkingCode)
   }
 }

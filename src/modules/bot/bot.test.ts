@@ -21,9 +21,12 @@ describe('BotService', () => {
       const user = await insertTestUser(db)
       const telegramId = 1234567890
 
-      const { code } = await container.botService.createLinkingCode({ userId: user.id })
+      const { code } = await container.botService.createLinkingCode({
+        userId: user.id,
+        purpose: 'bot_link',
+      })
 
-      await container.botService.verifyAndLinkAccount({ telegramId, code })
+      await container.botService.verifyAndLinkAccount({ telegramId, code, purpose: 'bot_link' })
 
       const botAccount = await container.botService.findAccountByTelegramId({
         telegramId,
@@ -54,16 +57,26 @@ describe('BotService', () => {
 
       const { code: user1Code } = await container.botService.createLinkingCode({
         userId: user1.id,
+        purpose: 'bot_link',
       })
 
-      await container.botService.verifyAndLinkAccount({ telegramId, code: user1Code })
+      await container.botService.verifyAndLinkAccount({
+        telegramId,
+        code: user1Code,
+        purpose: 'bot_link',
+      })
 
       const { code: user2Code } = await container.botService.createLinkingCode({
         userId: user2.id,
+        purpose: 'bot_link',
       })
 
       await expect(
-        container.botService.verifyAndLinkAccount({ telegramId, code: user2Code }),
+        container.botService.verifyAndLinkAccount({
+          telegramId,
+          code: user2Code,
+          purpose: 'bot_link',
+        }),
       ).rejects.toThrow(new BotAccountAlreadyExistsError())
     })
   })

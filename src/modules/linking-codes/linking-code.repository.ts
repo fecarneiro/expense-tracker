@@ -1,29 +1,30 @@
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import {
   linkingCodesTable,
-  type NewLinkingCode,
+  type NewLinkingCodeRow,
 } from '../../database/schemas/linking-codes.schema.js'
 import type {
-  DeleteLinkingCodeByUserIdInput,
-  FindLinkingCodeByCode,
+  DeleteLinkingCode,
+  FindLinkingCode,
   SaveLinkingCodeResult,
 } from './linking-code.types.js'
 
 export class LinkingCodeRepository {
   constructor(private readonly database: Database) {}
 
-  async saveLinkingCode(data: NewLinkingCode): Promise<SaveLinkingCodeResult> {
-    const { userId, code } = data
-
+  async save(data: NewLinkingCodeRow): Promise<SaveLinkingCodeResult> {
     try {
       const [generatedLinkingCode] = await this.database
         .insert(linkingCodesTable)
-        .values({ userId, code })
+        .values(data)
         .onConflictDoUpdate({
-          target: linkingCodesTable.userId,
-          set: { code, createdAt: sql`now()` },
+          target: [linkingCodesTable.purpose, linkingCodesTable.userId],
+          set: {
+            code: data.code,
+            createdAt: sql`now()`,
+          },
         })
         .returning({
           code: linkingCodesTable.code,
@@ -39,7 +40,7 @@ export class LinkingCodeRepository {
         generatedLinkingCode,
       }
     } catch (err) {
-      if (isUniqueViolation(err, 'bot_linking_codes_unique')) {
+      if (isUniqueViolation(err, 'linking_codes_unique')) {
         return { saved: false }
       }
 
@@ -47,18 +48,22 @@ export class LinkingCodeRepository {
     }
   }
 
-  async findByCode(data: FindLinkingCodeByCode) {
-    const { code } = data
-
-    const [user] = await this.database
+  async find(data: FindLinkingCode) {
+    const [linkingCode] = await this.database
       .select()
       .from(linkingCodesTable)
-      .where(eq(linkingCodesTable.code, code))
+      .where(
+        and(eq(linkingCodesTable.code, data.code), eq(linkingCodesTable.purpose, data.purpose)),
+      )
 
-    return user ?? null
+    return linkingCode ?? null
   }
 
-  async deleteByUserId(data: DeleteLinkingCodeByUserIdInput) {
-    await this.database.delete(linkingCodesTable).where(eq(linkingCodesTable.userId, data.userId))
+  async delete(data: DeleteLinkingCode) {
+    await this.database
+      .delete(linkingCodesTable)
+      .where(
+        and(eq(linkingCodesTable.userId, data.userId), eq(linkingCodesTable.purpose, data.purpose)),
+      )
   }
 }

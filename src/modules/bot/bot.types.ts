@@ -14,4 +14,5 @@ export type BotUserIdentity = Pick<BotAccount, 'userId'>
 export type VerifyAndLinkAccountInput = {
   telegramId: number
   code: number
+  purpose: 'bot_link'
 }

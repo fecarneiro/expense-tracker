@@ -25,12 +25,14 @@ export class BotService {
   }
 
   async verifyAndLinkAccount(data: VerifyAndLinkAccountInput): Promise<void> {
-    const { telegramId, code } = data
-    const { userId } = await this.linkingCodeService.verify({ telegramId, code })
-    const linked = await this.botRepository.linkAccount({ userId, telegramId })
+    const { userId } = await this.linkingCodeService.verify({
+      code: data.code,
+      purpose: data.purpose,
+    })
+    const linked = await this.botRepository.linkAccount({ userId, telegramId: data.telegramId })
 
     if (!linked) throw new BotLinkAccountFailedError()
 
-    await this.linkingCodeService.deleteByUserId({ userId })
+    await this.linkingCodeService.delete({ userId, purpose: data.purpose })
   }
 }
