@@ -2,6 +2,11 @@ import type { ConnectionRow } from '../../database/schemas/connections.schema.js
 
 import type { LinkingCodeService } from '../linking-codes/linking-code.service.js'
 import type { GeneratedLinkingCode } from '../linking-codes/linking-code.types.js'
+import { defaultSharedCategories } from '../shared_categories/shared_category.defaults.js'
+import type {
+  SharedCategory,
+  SharedCategoryService,
+} from '../shared_categories/shared_category.service.js'
 import { ConnectionCreationError } from './connection.error.js'
 import type { ConnectionRepository } from './connection.repository.js'
 
@@ -20,6 +25,7 @@ export class ConnectionService {
   constructor(
     private readonly connectionsRepository: ConnectionRepository,
     private readonly linkingCodeService: LinkingCodeService,
+    private readonly sharedCategoryService: SharedCategoryService,
   ) {}
 
   async generateConnectionCode(data: GenerateConnectionCodeInput): Promise<GeneratedLinkingCode> {
@@ -48,6 +54,13 @@ export class ConnectionService {
     if (!connection) {
       throw new ConnectionCreationError()
     }
+
+    await this.sharedCategoryService.createMany(
+      defaultSharedCategories.map((cat) => ({
+        connectionId: connection.id,
+        name: cat.name,
+      })),
+    )
 
     return connection
   }

@@ -2,6 +2,8 @@ import { describe } from 'vitest'
 import type { Database } from '../../database/db.js'
 import { insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
+import { defaultSharedCategories } from '../shared_categories/shared_category.defaults.js'
+import { ConnectionCreationError } from './connection.error.js'
 
 async function createUsers(db: Database) {
   const [userA, userB] = await Promise.all([
@@ -13,7 +15,7 @@ async function createUsers(db: Database) {
 
 describe('ConnectionsService', () => {
   describe('create', () => {
-    test('creates a connection', async ({ container, db }) => {
+    test('creates a connection with default shared categories', async ({ container, db }) => {
       const { userA, userB } = await createUsers(db)
 
       const { code } = await container.connectionService.generateConnectionCode({
@@ -22,7 +24,15 @@ describe('ConnectionsService', () => {
 
       const connection = await container.connectionService.create({
         userId: userB.id,
-        code: code,
+        code,
+      })
+
+      if (!connection) {
+        throw new ConnectionCreationError()
+      }
+
+      const sharedCategories = await container.sharedCategoryService.findManyByConnectionId({
+        connectionId: connection.id,
       })
 
       expect(connection).toMatchObject({
@@ -31,6 +41,19 @@ describe('ConnectionsService', () => {
         userBId: userB.id,
         createdAt: expect.any(Date),
       })
+
+      expect(sharedCategories).toHaveLength(defaultSharedCategories.length)
+
+      expect(sharedCategories).toEqual(
+        expect.arrayContaining(
+          defaultSharedCategories.map((category) =>
+            expect.objectContaining({
+              connectionId: connection.id,
+              name: category.name,
+            }),
+          ),
+        ),
+      )
     })
   })
 })

@@ -8,6 +8,8 @@ import { ConnectionRepository } from './modules/connections/connection.repositor
 import { ConnectionService } from './modules/connections/connection.service.js'
 import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
+import { SharedCategoryRepository } from './modules/shared_categories/shared_category.repository.js'
+import { SharedCategoryService } from './modules/shared_categories/shared_category.service.js'
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { TransactionService } from './modules/transactions/transaction.service.js'
 import { UserRepository } from './modules/users/user.repository.js'
@@ -25,6 +27,7 @@ export function createContainer(db: Database) {
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
   const connectionsRepository = new ConnectionRepository(db)
+  const sharedCategoryRepository = new SharedCategoryRepository(db)
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -38,7 +41,12 @@ export function createContainer(db: Database) {
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
-  const connectionService = new ConnectionService(connectionsRepository, linkingCodeService)
+  const sharedCategoryService = new SharedCategoryService(sharedCategoryRepository)
+  const connectionService = new ConnectionService(
+    connectionsRepository,
+    linkingCodeService,
+    sharedCategoryService,
+  )
 
   return {
     authService,
@@ -47,6 +55,7 @@ export function createContainer(db: Database) {
     transactionService,
     botService,
     connectionService,
+    sharedCategoryService,
   }
 }
 
