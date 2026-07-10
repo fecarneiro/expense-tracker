@@ -1,4 +1,4 @@
-import type { UserRow } from '../../database/schemas/user.schema.js'
+import type { UserRow } from '../../database/schemas/users.schema.js'
 
 export type User = UserRow
 type Password = string

@@ -1,8 +1,8 @@
 import { describe } from 'vitest'
 import type { createContainer } from '../../container.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
-import { transactionsTable } from '../../database/schemas/transaction.schema.js'
-import { usersTable } from '../../database/schemas/user.schema.js'
+import { categoriesTable } from '../../database/schemas/categories.schema.js'
+import { transactionsTable } from '../../database/schemas/transactions.schema.js'
+import { usersTable } from '../../database/schemas/users.schema.js'
 import {
   TEST_EMAIL,
   TEST_OCCURRED_AT_DATE,

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database, DatabaseClient } from '../../database/db.js'
-import { type NewUserRow, usersTable } from '../../database/schemas/user.schema.js'
+import { type NewUserRow, usersTable } from '../../database/schemas/users.schema.js'
 import { EmailAlreadyInUseError, UserCreationFailedError } from './user.error.js'
 import type {
   DeletedUser,

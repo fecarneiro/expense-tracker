@@ -2,12 +2,12 @@ import { and, desc, eq, getTableColumns, gte, lt, sql } from 'drizzle-orm'
 
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
+import { categoriesTable } from '../../database/schemas/categories.schema.js'
 import {
   type NewTransactionRow,
   type TransactionRow,
   transactionsTable,
-} from '../../database/schemas/transaction.schema.js'
+} from '../../database/schemas/transactions.schema.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,

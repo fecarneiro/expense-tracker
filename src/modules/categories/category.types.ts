@@ -1,4 +1,4 @@
-import type { CategoryRow } from '../../database/schemas/category.schema.js'
+import type { CategoryRow } from '../../database/schemas/categories.schema.js'
 
 export type CategoryType = 'income' | 'expense'
 

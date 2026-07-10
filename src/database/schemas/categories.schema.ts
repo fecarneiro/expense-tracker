@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { pgEnum, pgTable, timestamp, unique, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
 
-import { usersTable } from './user.schema.js'
+import { usersTable } from './users.schema.js'
 
 export const categoryTypeEnum = pgEnum('category_type', ['income', 'expense'])
 

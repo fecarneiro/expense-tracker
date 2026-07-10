@@ -1,7 +1,7 @@
 import { describe } from 'vitest'
 import type { createContainer } from '../../container.js'
-import type { CategoryRow } from '../../database/schemas/category.schema.js'
-import type { UserRow } from '../../database/schemas/user.schema.js'
+import type { CategoryRow } from '../../database/schemas/categories.schema.js'
+import type { UserRow } from '../../database/schemas/users.schema.js'
 import {
   TEST_OCCURRED_AT_DATE,
   TEST_OCCURRED_AT_FAR_LATER_DATE,

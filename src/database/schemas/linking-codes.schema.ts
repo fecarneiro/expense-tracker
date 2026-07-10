@@ -1,5 +1,5 @@
 import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
-import { usersTable } from './user.schema.js'
+import { usersTable } from './users.schema.js'
 
 const purposeEnum = pgEnum('linking_code_purpose', ['bot_link', 'user_link'])
 

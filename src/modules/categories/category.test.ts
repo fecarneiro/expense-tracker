@@ -1,5 +1,5 @@
 import { describe } from 'vitest'
-import { transactionsTable } from '../../database/schemas/transaction.schema.js'
+import { transactionsTable } from '../../database/schemas/transactions.schema.js'
 import { TEST_OCCURRED_AT_DATE } from '../../tests/constants.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'

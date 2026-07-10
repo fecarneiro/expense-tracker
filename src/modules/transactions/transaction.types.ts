@@ -1,4 +1,4 @@
-import type { TransactionRow } from '../../database/schemas/transaction.schema.js'
+import type { TransactionRow } from '../../database/schemas/transactions.schema.js'
 import type { Category } from '../categories/category.types.js'
 
 export type Transaction = TransactionRow
