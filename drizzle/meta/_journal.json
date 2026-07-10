@@ -176,6 +176,13 @@
       "when": 1783631000000,
       "tag": "0024_rename_shared_categories_to_partnership_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1783702885125,
+      "tag": "0025_noisy_whiplash",
+      "breakpoints": true
     }
   ]
 }
