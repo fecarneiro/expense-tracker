@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { isForeignKeyViolation, isUniqueViolation } from '../../database/db.error.js'
 import type { Database, DatabaseClient } from '../../database/db.js'
-import { categoriesTable, type NewCategoryRow } from '../../database/schemas/category.schema.js'
+import { categoriesTable, type NewCategoryRow } from '../../database/schemas/categories.schema.js'
 import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
   Category,
