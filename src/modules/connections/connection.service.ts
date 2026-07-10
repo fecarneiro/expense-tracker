@@ -3,10 +3,7 @@ import type { ConnectionRow } from '../../database/schemas/connections.schema.js
 import type { LinkingCodeService } from '../linking-codes/linking-code.service.js'
 import type { GeneratedLinkingCode } from '../linking-codes/linking-code.types.js'
 import { defaultSharedCategories } from '../shared_categories/shared_category.defaults.js'
-import type {
-  SharedCategory,
-  SharedCategoryService,
-} from '../shared_categories/shared_category.service.js'
+import type { SharedCategoryService } from '../shared_categories/shared_category.service.js'
 import { ConnectionCreationError } from './connection.error.js'
 import type { ConnectionRepository } from './connection.repository.js'
 
