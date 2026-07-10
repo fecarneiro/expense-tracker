@@ -1,4 +1,4 @@
-export const defaultSharedCategories = [
+export const defaultPartnershipCategories = [
   { name: 'Groceries' },
   { name: 'Eating Out' },
   { name: 'Transport' },

@@ -162,6 +162,20 @@
       "when": 1783625755911,
       "tag": "0022_neat_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1783630000000,
+      "tag": "0023_rename_connections_to_partnerships",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1783631000000,
+      "tag": "0024_rename_shared_categories_to_partnership_categories",
+      "breakpoints": true
     }
   ]
 }

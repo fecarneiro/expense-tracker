@@ -1,7 +1,7 @@
 import { pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { usersTable } from './user.schema.js'
 
-export const connectionsTable = pgTable('connections', {
+export const partnershipsTable = pgTable('partnerships', {
   id: uuid().primaryKey().defaultRandom(),
   userAId: uuid()
     .notNull()
@@ -12,5 +12,5 @@ export const connectionsTable = pgTable('connections', {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
 
-export type NewConnectionRow = typeof connectionsTable.$inferInsert
-export type ConnectionRow = typeof connectionsTable.$inferSelect
+export type NewPartnershipRow = typeof partnershipsTable.$inferInsert
+export type PartnershipRow = typeof partnershipsTable.$inferSelect
