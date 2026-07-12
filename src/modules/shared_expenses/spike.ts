@@ -23,6 +23,8 @@ type Transaction = {
   amountCents: number
 }
 
+type TransactionInput = Omit<Transaction, 'id'>
+
 type SharedExpense = {
   id: string
   partnershipId: string
@@ -83,6 +85,8 @@ function resolveOwedAmount(totalAmountCents: number, split: SplitType) {
   throw new Error('split type not valid')
 }
 
+// function resolveIndividualTransactions()
+
 // User A - generates linking code
 
 function generateLinkingCode(userId: string): LinkingCode {
@@ -135,7 +139,7 @@ console.log('----Partnership ----\n', JSON.stringify(existingPartnership, null, 
 
 // ---
 const transactionsDb: Transaction[] = []
-const sharedExpenses = []
+const sharedExpensesDb: SharedExpense[] = []
 
 function createTransaction(
   userId: string,
@@ -149,7 +153,7 @@ function createTransaction(
     amountCents,
   }
 
-  transactionsDb.push(transaction)
+  // transactionsDb.push(transaction)
   return transaction
 }
 
@@ -161,25 +165,38 @@ function CreateSharedExpenseUseCase(
   const partnership = existingPartnership
   if (!partnership) throw new Error('Partnership not found')
 
-  const partner = partnerOf(partnership, userId)
+  const partnerId = partnerOf(partnership, userId)
   const owedAmountCents = resolveOwedAmount(totalAmountCents, split)
+
+  if (split === SPLIT_TYPE.FULL) {
+    const partnerTransaction = createTransaction(partnerId, owedAmountCents, userId)
+    transactionsDb.push(partnerTransaction)
+    // return owed
+  }
+
+  if (split === SPLIT_TYPE.HALF) {
+    const halfAmount = totalAmountCents / 2
+    const payerTransaction = createTransaction(partnerId, halfAmount, userId)
+    const partnerTransaction = createTransaction(userId, halfAmount)
+    transactionsDb.push(payerTransaction, partnerTransaction)
+    // return
+  }
 
   const sharedExpense = {
     id: generateRandomId(),
     partnershipId: partnership.id,
     payerUserId: userId,
-    owedUserId: partner,
+    owedUserId: partnerId,
     totalAmountCents,
     owedAmountCents,
   }
 
-  sharedExpenses.push(sharedExpense)
-
-  // createTransaction(userA.id, 200, userB.id)
-  // createTransaction(userA.id, 200, userB.id)
-  // create transaction (solo) will need accept createdBy
+  sharedExpensesDb.push(sharedExpense)
 
   return sharedExpense
 }
 
-// createTransaction(userA.id, 200, userB.id)
+CreateSharedExpenseUseCase(userA.id, 200, 'half')
+
+console.log(sharedExpensesDb)
+console.log(transactionsDb)
