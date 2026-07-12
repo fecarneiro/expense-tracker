@@ -29,6 +29,7 @@ export class TransactionService {
     private readonly userService: UserService,
   ) {}
 
+  // TODO: createdBy user id as params too
   async create(data: CreateTransactionInput): Promise<TransactionResponse> {
     const category = await this.categoryRepository.findById({
       id: data.categoryId,
