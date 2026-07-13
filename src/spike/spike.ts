@@ -55,7 +55,15 @@ type SharedExpense = {
   totalAmountCents: number
   owedAmountCents: number
   sharedCategoryId: string
+  settlementId: string | null
 }
+
+// type Settlement = {
+//   id: string
+//   partnershipId: string
+//   payedByUserId: string
+//   totalAmountCents: string
+// }
 
 type CreateSharedExpense = {
   userId: string
@@ -163,12 +171,8 @@ function partnerOf(p: Partnership, userId: string): string {
 }
 
 function resolveOwedAmount(totalAmountCents: number, split: SplitType) {
-  if (split === SPLIT_TYPE.FULL) {
-    return totalAmountCents
-  }
-  if (split === SPLIT_TYPE.HALF) {
-    return totalAmountCents / 2
-  }
+  if (split === SPLIT_TYPE.FULL) return totalAmountCents
+  if (split === SPLIT_TYPE.HALF) return Math.round(totalAmountCents / 2)
   throw new Error('split type not valid')
 }
 
@@ -239,6 +243,13 @@ function createPartnershipRepository(userId1: string, userId2: string): Partners
   return result
 }
 
+function settleSharedExpensePaidRepository(pendingExpenseIds: string[]) {
+  db.sharedExpenses.map(() => ({
+    ...pendingExpenseIds,
+    settlementId: randomUUID(),
+  }))
+}
+
 function createSharedCategoryDefaults(partnershipId: string): SharedCategory[] {
   const cats = SHARED_CATEGORY_DEFAULTS.map((cat, index) => ({
     id: `${index + 1}-SCAT`,
@@ -302,6 +313,7 @@ export function createSharedExpense(input: CreateSharedExpense): SharedExpense {
     owedUserId: partnerId,
     totalAmountCents,
     owedAmountCents,
+    settlementId: null,
   }
   db.sharedExpenses.push(sharedExpense)
 
@@ -310,16 +322,101 @@ export function createSharedExpense(input: CreateSharedExpense): SharedExpense {
 
   if (split === SPLIT_TYPE.FULL) {
     createTransaction(partnerId, owedAmountCents, partnerCategory.id, userId)
-    // return owed
   }
 
   if (split === SPLIT_TYPE.HALF) {
-    const halfAmount = totalAmountCents / 2
-    createTransaction(userId, halfAmount, userCategory.id, userId)
-    createTransaction(partnerId, halfAmount, partnerCategory.id)
+    const shareAmountCents = owedAmountCents
 
-    // return
+    createTransaction(userId, shareAmountCents, userCategory.id, userId)
+    createTransaction(partnerId, shareAmountCents, partnerCategory.id)
   }
 
   return sharedExpense
 }
+
+function getPendingPayments(userId: string) {
+  const partnership = findActivePartnershipByUserId(userId)
+  if (!partnership) throw new Error('Partnership not found')
+
+  const partnerId = partnerOf(partnership, userId)
+
+  const pendingList = db.sharedExpenses.filter((t) => t.settlementId === null)
+  if (pendingList.length === 0) throw new Error('There are no transaction pending ')
+
+  const userTotals = pendingList
+    .filter((t) => t.owedUserId === userId)
+    .reduce((sum, t) => sum + t.owedAmountCents, 0)
+
+  const partnerTotals = pendingList
+    .filter((t) => t.owedUserId === partnerId)
+    .reduce((sum, t) => sum + t.owedAmountCents, 0)
+
+  return { userTotals, partnerTotals, pendingList }
+}
+
+function payPartnershipDebts(userId: string) {
+  const { userTotals, partnerTotals, pendingList } = getPendingPayments(userId)
+
+  const owedAmount = userTotals - partnerTotals
+  if (owedAmount <= 0) throw new Error('Nothing to settle')
+
+  const pendingExpenseIds = pendingList.map((p) => p.id)
+  settleSharedExpensePaidRepository(pendingExpenseIds)
+  getPendingPayments(userId)
+}
+
+// --- SPIKE ----
+
+function runSpike() {
+  const alice = { id: 'ID-ALICE' }
+  const bob = { id: 'ID-BOB' }
+  const aliceCategories: Category[] = [
+    { id: 'A-FOOD', userId: alice.id, name: 'Food', systemKey: null },
+    {
+      id: 'ALICE-UNCATEGORIZED',
+      userId: alice.id,
+      name: 'Uncategorized',
+      systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+    },
+  ]
+  const bobCategories: Category[] = [
+    { id: 'BOB-DINNER', userId: bob.id, name: 'Dinner', systemKey: null },
+    {
+      id: 'BOB-UNCATEGORIZED',
+      userId: bob.id,
+      name: 'Uncategorized',
+      systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+    },
+  ]
+  db.categories.push(...aliceCategories, ...bobCategories)
+
+  const generatedCode = generateLinkingCode(alice.id)
+  const partnership = createPartnership(bob.id, generatedCode.code)
+  const sharedCategory = findSharedCategoryByIdRepository(partnership.id, '1-SCAT')
+
+  createSharedExpense({
+    userId: bob.id,
+    sharedCategoryId: sharedCategory.id,
+    totalAmountCents: 3000,
+    split: 'half',
+  })
+
+  createSharedExpense({
+    userId: bob.id,
+    sharedCategoryId: sharedCategory.id,
+    totalAmountCents: 1000,
+    split: 'full',
+  })
+
+  getPendingPayments(bob.id)
+  payPartnershipDebts(alice.id)
+  const pendingYet = getPendingPayments(bob.id).pendingList
+  console.log(pendingYet)
+}
+
+runSpike()
+
+// console.log('----Partnership ----\n', JSON.stringify(db.partnerships, null, 2))
+// console.log('----Individual Transactions ----\n', JSON.stringify(db.transactions, null, 2))
+// console.log('----Shared Expenses ----\n', JSON.stringify(db.sharedExpenses, null, 2))
+// console.log('----Pending Payments ----\n', JSON.stringify(db.sharedExpenses, null, 2))
