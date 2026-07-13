@@ -1,7 +1,8 @@
 export const defaultPartnershipCategories = [
-  { name: 'Groceries' },
   { name: 'Eating Out' },
+  { name: 'Groceries' },
   { name: 'Transport' },
-  { name: 'Housing' },
+  { name: 'House' },
+  { name: 'Pets' },
   { name: 'Other' },
 ] as const

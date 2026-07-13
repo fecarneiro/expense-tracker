@@ -7,6 +7,7 @@ import {
   pgEnum,
   pgTable,
   timestamp,
+  // unique,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
@@ -30,11 +31,13 @@ export const transactionsTable = pgTable(
     transactionType: transactionTypeEnum().notNull(),
     amountCents: integer().notNull(),
     description: varchar({ length: 70 }),
+    // idempotencyKey: varchar({ length: 255 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
 
   (table) => [
     index('transactions_user_occurred_at_id_idx').on(table.userId, table.occurredAt, table.id),
+    // unique('idempotency_key_user_id').on(table.userId, table.idempotencyKey),
     check('amount_check', sql`${table.amountCents} > 0`),
     foreignKey({
       name: 'transactions_category_user_fk',

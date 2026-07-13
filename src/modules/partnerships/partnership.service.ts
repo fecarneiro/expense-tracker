@@ -1,13 +1,10 @@
-import type { PartnershipRow } from '../../database/schemas/partnerships.schema.js'
-
 import type { LinkingCodeService } from '../linking-codes/linking-code.service.js'
 import type { GeneratedLinkingCode } from '../linking-codes/linking-code.types.js'
 import { defaultPartnershipCategories } from '../partnership-categories/partnership-category.defaults.js'
 import type { PartnershipCategoryService } from '../partnership-categories/partnership-category.service.js'
 import { PartnershipCreationError } from './partnership.error.js'
 import type { PartnershipRepository } from './partnership.repository.js'
-
-export type Partnership = PartnershipRow
+import type { Partnership } from './partnership.types.js'
 
 export type CreatePartnershipInput = {
   userId: string
