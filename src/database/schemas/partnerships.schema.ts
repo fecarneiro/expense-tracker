@@ -1,4 +1,5 @@
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { categoriesTable } from './categories.schema.js'
 import { usersTable } from './users.schema.js'
 
 export const partnershipsTable = pgTable('partnerships', {
@@ -19,5 +20,19 @@ export const sharedCategoriesTable = pgTable('shared_categories', {
     .notNull()
     .references(() => partnershipsTable.id),
   name: varchar({ length: 50 }).notNull(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+})
+
+export const sharedCategoriesMappingTable = pgTable('shared_category_mappings', {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid()
+    .notNull()
+    .references(() => usersTable.id),
+  userCategoryId: uuid()
+    .notNull()
+    .references(() => categoriesTable.id),
+  sharedCategoryId: uuid()
+    .notNull()
+    .references(() => sharedCategoriesTable.id),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })

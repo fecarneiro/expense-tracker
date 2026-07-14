@@ -1,27 +1,32 @@
 import type { Database, DatabaseClient } from '../../database/db.js'
+import type { CategoryService } from '../categories/category.service.js'
 import type { LinkingCodeService } from '../linking-codes/linking-code.service.js'
 import { SHARED_CATEGORY_DEFAULTS } from './partnership.defaults.js'
 import {
   CannotPartnerWithYourselfError,
   InviteeAlreadyHasActivePartnership,
   InviterAlreadyHasActivePartnership,
+  SharedCategoryNotFoundError,
 } from './partnership.errors.js'
 import type { PartnershipRepository } from './partnership.repository.js'
-import type { Partnership } from './partnership.types.js'
+import type { Partnership, SharedCategoryMapping } from './partnership.types.js'
 
 export type CreatePartnership = {
   inviteeId: string
   code: number
 }
-export type CreateSharedCategory = {
+export type CreateSharedCategoryMapping = {
+  userId: string
   partnershipId: string
-  name: string
+  userCategoryId: string
+  sharedCategoryId: string
 }
 
 export class PartnershipService {
   constructor(
     private readonly linkingCodeService: LinkingCodeService,
     private readonly partnershipRepository: PartnershipRepository,
+    private readonly categoryService: CategoryService,
     private readonly db: Database,
   ) {}
 
@@ -57,6 +62,32 @@ export class PartnershipService {
     })
   }
 
+  async mapUserCategoryToShared(
+    input: CreateSharedCategoryMapping,
+  ): Promise<SharedCategoryMapping> {
+    const { userId, partnershipId, userCategoryId, sharedCategoryId } = input
+    // TODO: partnership will be validated from middleware
+    this.categoryService.findById({
+      id: userCategoryId,
+      userId,
+    })
+
+    const sharedCategory = this.partnershipRepository.findSharedCategory({
+      partnershipId,
+      sharedCategoryId,
+    })
+
+    if (!sharedCategory) throw new SharedCategoryNotFoundError()
+
+    const mappedCategory = await this.partnershipRepository.createSharedCategoryMapping({
+      userId,
+      userCategoryId,
+      sharedCategoryId,
+    })
+
+    return mappedCategory
+  }
+
   private async hasActivePartnership(userId: string): Promise<boolean> {
     return (await this.partnershipRepository.findUserActivePartnership(userId)) !== null
   }
@@ -66,12 +97,12 @@ export class PartnershipService {
       ? { userAId: userId1, userBId: userId2 }
       : { userAId: userId2, userBId: userId1 }
   }
-
-  private partnerOf(p: Partnership, userId: string): string {
-    if (p.userAId === userId) return p.userBId
-    if (p.userBId === userId) return p.userAId
-    throw new Error('not a member')
-  }
+  // TODO: get partner ID from middleware
+  // private partnerOf(p: Partnership, userId: string): string {
+  //   if (p.userAId === userId) return p.userBId
+  //   if (p.userBId === userId) return p.userAId
+  //   throw new Error('Not a member')
+  // }
 
   private async createDefaultSharedCategories(partnershipId: string, client: DatabaseClient) {
     const defaults = SHARED_CATEGORY_DEFAULTS.map((cat) => ({

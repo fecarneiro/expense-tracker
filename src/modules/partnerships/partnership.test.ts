@@ -1,6 +1,5 @@
 import { eq } from 'drizzle-orm'
 import { describe } from 'vitest'
-import type { Database } from '../../database/db.js'
 import { sharedCategoriesTable } from '../../database/schemas/partnerships.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'

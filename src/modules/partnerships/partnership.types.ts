@@ -12,3 +12,10 @@ export type SharedCategory = {
   name: string
   createdAt: Date
 }
+
+export type SharedCategoryMapping = {
+  id: string
+  userId: string
+  userCategoryId: string
+  sharedCategoryId: string
+}

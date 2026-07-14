@@ -39,7 +39,12 @@ export function createContainer(db: Database) {
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
-  const partnershipService = new PartnershipService(linkingCodeService, partnershipRepository, db)
+  const partnershipService = new PartnershipService(
+    linkingCodeService,
+    partnershipRepository,
+    categoryService,
+    db,
+  )
 
   return {
     authService,
