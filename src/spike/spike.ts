@@ -1,5 +1,4 @@
 import { randomInt, randomUUID } from 'node:crypto'
-import { number, string } from 'zod'
 
 /**
  * 1) Categories will need CategorySystemKey for uncategorized (cant be deleted), com findCategoryBySystemKey
@@ -154,20 +153,20 @@ function findUserMappedCategoryRepository(
   sharedCategoryId: string,
 ): SharedCategoryMapping | null {
   const found = db.sharedCategoryMappings.find(
-    (sc) => sc.userId === userId && sc.id === sharedCategoryId,
+    (sc) => sc.userId === userId && sc.sharedCategoryId === sharedCategoryId,
   )
   if (!found) return null
   return found
 }
 
-function createSettlement(input: SettlementInput) {
-  db.settlements.push({
+function createSettlement(input: SettlementInput): Settlement {
+  const settlement = {
     id: randomUUID(),
-    partnershipId: input.partnershipId,
-    fromUserId: input.fromUserId,
-    toUserId: input.toUserId,
-    totalAmountCents: input.totalAmountCents,
-  })
+    ...input,
+  }
+
+  db.settlements.push(settlement)
+  return settlement
 }
 
 // Utils
@@ -186,10 +185,17 @@ function partnerOf(p: Partnership, userId: string): string {
   throw new Error('not a member')
 }
 
-function resolveOwedAmount(totalAmountCents: number, split: SplitType) {
-  if (split === SPLIT_TYPE.FULL) return totalAmountCents
-  if (split === SPLIT_TYPE.HALF) return Math.round(totalAmountCents / 2)
-  throw new Error('split type not valid')
+function resolveSplitAmounts(totalAmountCents: number, split: SplitType) {
+  if (split === SPLIT_TYPE.FULL) {
+    return { payerAmountCents: 0, owedAmountCents: totalAmountCents }
+  }
+
+  const owedAmountCents = Math.floor(totalAmountCents / 2)
+
+  return {
+    payerAmountCents: totalAmountCents - owedAmountCents,
+    owedAmountCents,
+  }
 }
 
 function resolveMappedCategory(userId: string, sharedCategoryId: string): Category {
@@ -259,10 +265,8 @@ function createPartnershipRepository(userId1: string, userId2: string): Partners
   return result
 }
 
-function settleSharedExpensePaidRepository(pendingExpenses: SharedExpense[]) {
-  const settlementId = randomUUID()
-
-  for (const expense of pendingExpenses) {
+function markExpensesAsSettled(expenses: SharedExpense[], settlementId: string) {
+  for (const expense of expenses) {
     expense.settlementId = settlementId
   }
 }
@@ -319,7 +323,7 @@ export function createSharedExpense(input: CreateSharedExpense): SharedExpense {
   if (!sharedCategory) throw new Error('Shared category not found')
 
   const partnerId = partnerOf(partnership, userId)
-  const owedAmountCents = resolveOwedAmount(totalAmountCents, split)
+  const { payerAmountCents, owedAmountCents } = resolveSplitAmounts(totalAmountCents, split)
 
   // EVERYTHING BELLOW MUST BE A TX IN DB
   const sharedExpense = {
@@ -342,10 +346,8 @@ export function createSharedExpense(input: CreateSharedExpense): SharedExpense {
   }
 
   if (split === SPLIT_TYPE.HALF) {
-    const shareAmountCents = owedAmountCents
-
-    createTransaction(userId, shareAmountCents, userCategory.id, userId)
-    createTransaction(partnerId, shareAmountCents, partnerCategory.id)
+    createTransaction(userId, payerAmountCents, userCategory.id, userId)
+    createTransaction(partnerId, owedAmountCents, partnerCategory.id, userId)
   }
 
   return sharedExpense
@@ -356,7 +358,10 @@ function getPendingExpenses(userId: string) {
   if (!partnership) throw new Error('Partnership not found')
 
   const partnerId = partnerOf(partnership, userId)
-  const pendingList = db.sharedExpenses.filter((t) => t.settlementId === null)
+  const pendingList = db.sharedExpenses.filter(
+    (expense) => expense.partnershipId === partnership.id && expense.settlementId === null,
+  )
+
   if (pendingList.length === 0) throw new Error('There are no transaction pending ')
 
   const userTotals = pendingList
@@ -377,14 +382,14 @@ function payPartnershipDebts(userId: string) {
   const owedAmount = userTotals - partnerTotals
   if (owedAmount <= 0) throw new Error('Nothing to settle')
 
-  settleSharedExpensePaidRepository(pendingList)
-
-  createSettlement({
+  const settlement = createSettlement({
     partnershipId: partnership.id,
     fromUserId: userId,
     toUserId: partnerId,
     totalAmountCents: owedAmount,
   })
+
+  markExpensesAsSettled(pendingList, settlement.id)
 }
 
 // --- SPIKE ----
