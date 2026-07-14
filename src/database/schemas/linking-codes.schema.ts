@@ -1,7 +1,10 @@
 import { integer, pgEnum, pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
 import { usersTable } from './users.schema.js'
 
-const purposeEnum = pgEnum('linking_code_purpose', ['bot_link', 'user_link'])
+export const linkingCodePurposeEnum = pgEnum('linking_code_purpose', [
+  'bot_link',
+  'partnership_link',
+])
 
 export const linkingCodesTable = pgTable(
   'linking_codes',
@@ -11,7 +14,7 @@ export const linkingCodesTable = pgTable(
       .notNull()
       .references(() => usersTable.id, { onDelete: 'cascade' }),
     code: integer().notNull().unique('linking_codes_unique'),
-    purpose: purposeEnum().notNull(),
+    purpose: linkingCodePurposeEnum().notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex('linking_codes_unique_purpose_user_id').on(table.purpose, table.userId)],
