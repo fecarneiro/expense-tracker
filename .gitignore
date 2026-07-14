@@ -41,5 +41,5 @@ tempCodeRunner*
 # personal dev scripts (local only)
 .dev/local/
 scripts/
-*.md
+*/*.md
 !README.md
