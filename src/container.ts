@@ -6,10 +6,7 @@ import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
 import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
-import { PartnershipCategoryRepository } from './modules/partnership-categories/partnership-category.repository.js'
-import { PartnershipCategoryService } from './modules/partnership-categories/partnership-category.service.js'
-import { PartnershipRepository } from './modules/partnerships/partnership.repository.js'
-import { PartnershipService } from './modules/partnerships/partnership.service.js'
+
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { TransactionService } from './modules/transactions/transaction.service.js'
 import { UserRepository } from './modules/users/user.repository.js'
@@ -26,8 +23,6 @@ export function createContainer(db: Database) {
   const transactionRepository = new TransactionRepository(db)
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
-  const partnershipsRepository = new PartnershipRepository(db)
-  const partnershipCategoryRepository = new PartnershipCategoryRepository(db)
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -41,12 +36,6 @@ export function createContainer(db: Database) {
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
-  const partnershipCategoryService = new PartnershipCategoryService(partnershipCategoryRepository)
-  const partnershipService = new PartnershipService(
-    partnershipsRepository,
-    linkingCodeService,
-    partnershipCategoryService,
-  )
 
   return {
     authService,
@@ -54,8 +43,6 @@ export function createContainer(db: Database) {
     categoryService,
     transactionService,
     botService,
-    partnershipService,
-    partnershipCategoryService,
   }
 }
 

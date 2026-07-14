@@ -120,69 +120,6 @@
       "when": 1783438639741,
       "tag": "0016_omniscient_cerise",
       "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1783588054786,
-      "tag": "0017_tired_stranger",
-      "breakpoints": true
-    },
-    {
-      "idx": 18,
-      "version": "7",
-      "when": 1783592393321,
-      "tag": "0018_serious_sinister_six",
-      "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "7",
-      "when": 1783602391672,
-      "tag": "0019_pretty_phalanx",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "7",
-      "when": 1783602562248,
-      "tag": "0020_sleepy_jane_foster",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "7",
-      "when": 1783617977131,
-      "tag": "0021_lying_sister_grimm",
-      "breakpoints": true
-    },
-    {
-      "idx": 22,
-      "version": "7",
-      "when": 1783625755911,
-      "tag": "0022_neat_kid_colt",
-      "breakpoints": true
-    },
-    {
-      "idx": 23,
-      "version": "7",
-      "when": 1783630000000,
-      "tag": "0023_rename_connections_to_partnerships",
-      "breakpoints": true
-    },
-    {
-      "idx": 24,
-      "version": "7",
-      "when": 1783631000000,
-      "tag": "0024_rename_shared_categories_to_partnership_categories",
-      "breakpoints": true
-    },
-    {
-      "idx": 25,
-      "version": "7",
-      "when": 1783702885125,
-      "tag": "0025_noisy_whiplash",
-      "breakpoints": true
     }
   ]
 }

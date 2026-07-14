@@ -1,7 +1,5 @@
 export * from './bot-accounts.schema.js'
 export * from './categories.schema.js'
 export * from './linking-codes.schema.js'
-export * from './partnership-category.schema.js'
-export * from './partnerships.schema.js'
 export * from './transactions.schema.js'
 export * from './users.schema.js'
