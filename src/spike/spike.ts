@@ -1,7 +1,9 @@
 import { randomInt, randomUUID } from 'node:crypto'
+import { number, string } from 'zod'
 
 /**
  * 1) Categories will need CategorySystemKey for uncategorized (cant be deleted), com findCategoryBySystemKey
+ * 2) Idempotency key
  */
 
 type LinkingCode = {
@@ -58,12 +60,14 @@ type SharedExpense = {
   settlementId: string | null
 }
 
-// type Settlement = {
-//   id: string
-//   partnershipId: string
-//   payedByUserId: string
-//   totalAmountCents: string
-// }
+type Settlement = {
+  id: string
+  partnershipId: string
+  fromUserId: string
+  toUserId: string
+  totalAmountCents: number
+}
+type SettlementInput = Omit<Settlement, 'id'>
 
 type CreateSharedExpense = {
   userId: string
@@ -101,6 +105,7 @@ type InMemoryDatabase = {
   sharedCategoryMappings: SharedCategoryMapping[]
   transactions: Transaction[]
   sharedExpenses: SharedExpense[]
+  settlements: Settlement[]
 }
 
 export const db: InMemoryDatabase = {
@@ -111,6 +116,7 @@ export const db: InMemoryDatabase = {
   sharedCategoryMappings: [],
   transactions: [],
   sharedExpenses: [],
+  settlements: [],
 }
 
 function findCategoryByIdRepository(userId: string, categoryId: string): Category {
@@ -152,6 +158,16 @@ function findUserMappedCategoryRepository(
   )
   if (!found) return null
   return found
+}
+
+function createSettlement(input: SettlementInput) {
+  db.settlements.push({
+    id: randomUUID(),
+    partnershipId: input.partnershipId,
+    fromUserId: input.fromUserId,
+    toUserId: input.toUserId,
+    totalAmountCents: input.totalAmountCents,
+  })
 }
 
 // Utils
@@ -243,11 +259,12 @@ function createPartnershipRepository(userId1: string, userId2: string): Partners
   return result
 }
 
-function settleSharedExpensePaidRepository(pendingExpenseIds: string[]) {
-  db.sharedExpenses.map(() => ({
-    ...pendingExpenseIds,
-    settlementId: randomUUID(),
-  }))
+function settleSharedExpensePaidRepository(pendingExpenses: SharedExpense[]) {
+  const settlementId = randomUUID()
+
+  for (const expense of pendingExpenses) {
+    expense.settlementId = settlementId
+  }
 }
 
 function createSharedCategoryDefaults(partnershipId: string): SharedCategory[] {
@@ -334,12 +351,11 @@ export function createSharedExpense(input: CreateSharedExpense): SharedExpense {
   return sharedExpense
 }
 
-function getPendingPayments(userId: string) {
+function getPendingExpenses(userId: string) {
   const partnership = findActivePartnershipByUserId(userId)
   if (!partnership) throw new Error('Partnership not found')
 
   const partnerId = partnerOf(partnership, userId)
-
   const pendingList = db.sharedExpenses.filter((t) => t.settlementId === null)
   if (pendingList.length === 0) throw new Error('There are no transaction pending ')
 
@@ -351,18 +367,24 @@ function getPendingPayments(userId: string) {
     .filter((t) => t.owedUserId === partnerId)
     .reduce((sum, t) => sum + t.owedAmountCents, 0)
 
-  return { userTotals, partnerTotals, pendingList }
+  return { partnership, partnerId, userTotals, partnerTotals, pendingList }
 }
 
 function payPartnershipDebts(userId: string) {
-  const { userTotals, partnerTotals, pendingList } = getPendingPayments(userId)
+  const { partnership, partnerId, userTotals, partnerTotals, pendingList } =
+    getPendingExpenses(userId)
 
   const owedAmount = userTotals - partnerTotals
   if (owedAmount <= 0) throw new Error('Nothing to settle')
 
-  const pendingExpenseIds = pendingList.map((p) => p.id)
-  settleSharedExpensePaidRepository(pendingExpenseIds)
-  getPendingPayments(userId)
+  settleSharedExpensePaidRepository(pendingList)
+
+  createSettlement({
+    partnershipId: partnership.id,
+    fromUserId: userId,
+    toUserId: partnerId,
+    totalAmountCents: owedAmount,
+  })
 }
 
 // --- SPIKE ----
@@ -408,10 +430,9 @@ function runSpike() {
     split: 'full',
   })
 
-  getPendingPayments(bob.id)
+  console.log(getPendingExpenses(alice.id))
   payPartnershipDebts(alice.id)
-  const pendingYet = getPendingPayments(bob.id).pendingList
-  console.log(pendingYet)
+  console.log(db.settlements)
 }
 
 runSpike()
