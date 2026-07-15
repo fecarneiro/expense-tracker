@@ -6,8 +6,12 @@ import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
 import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
-import { PartnershipRepository } from './modules/partnerships/partnership.repository.js'
-import { PartnershipService } from './modules/partnerships/partnership.service.js'
+import { PartnershipRepository } from './modules/partners/partnerships/partnership.repository.js'
+import { PartnershipService } from './modules/partners/partnerships/partnership.service.js'
+import { SharedCategoryRepository } from './modules/partners/shared-categories/shared-category.repository.js'
+import { SharedCategoryService } from './modules/partners/shared-categories/shared-category.service.js'
+import { SharedExpenseRepository } from './modules/partners/shared-expenses/shared-expense.repository.js'
+import { SharedExpenseService } from './modules/partners/shared-expenses/shared-expense.service.js'
 
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { TransactionService } from './modules/transactions/transaction.service.js'
@@ -26,6 +30,8 @@ export function createContainer(db: Database) {
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
   const partnershipRepository = new PartnershipRepository(db)
+  const sharedCategoryRepository = new SharedCategoryRepository(db)
+  const sharedExpenseRepository = new SharedExpenseRepository(db)
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -39,10 +45,19 @@ export function createContainer(db: Database) {
   )
   const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
+  const sharedCategoryService = new SharedCategoryService(sharedCategoryRepository, categoryService)
   const partnershipService = new PartnershipService(
     linkingCodeService,
     partnershipRepository,
-    categoryService,
+    sharedCategoryService,
+    db,
+  )
+  const sharedExpenseService = new SharedExpenseService(
+    sharedExpenseRepository,
+    partnershipRepository,
+    sharedCategoryRepository,
+    categoryRepository,
+    transactionRepository,
     db,
   )
 
@@ -53,6 +68,8 @@ export function createContainer(db: Database) {
     transactionService,
     botService,
     partnershipService,
+    sharedCategoryService,
+    sharedExpenseService,
   }
 }
 

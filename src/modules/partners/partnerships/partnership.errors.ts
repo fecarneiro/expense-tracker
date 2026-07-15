@@ -1,4 +1,4 @@
-import { AppError } from '../../shared/app-error.js'
+import { AppError } from '../../../shared/app-error.js'
 
 export class CannotPartnerWithYourselfError extends AppError {
   constructor() {
@@ -6,6 +6,7 @@ export class CannotPartnerWithYourselfError extends AppError {
     this.name = 'CannotPartnerWithYourselfError'
   }
 }
+
 export class InviteeAlreadyHasActivePartnership extends AppError {
   constructor() {
     super('Invitee already has active partnership', 400)
@@ -27,23 +28,9 @@ export class PartnershipCreationError extends AppError {
   }
 }
 
-export class SharedCategoriesCreationError extends AppError {
+export class NotAPartnershipMemberError extends AppError {
   constructor() {
-    super('Could not create partnership shared categories', 500)
-    this.name = 'SharedCategoriesCreationError'
-  }
-}
-
-export class SharedCategoryNotFoundError extends AppError {
-  constructor() {
-    super('Shared category not found', 500)
-    this.name = 'SharedCategoryNotFoundError'
-  }
-}
-
-export class SharedCategoryMappingError extends AppError {
-  constructor() {
-    super('Could not map user category', 500)
-    this.name = 'SharedCategoryMappingError'
+    super('User is not a member of this partnership', 403)
+    this.name = 'NotAPartnershipMemberError'
   }
 }

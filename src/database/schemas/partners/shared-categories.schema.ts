@@ -1,18 +1,7 @@
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
-import { categoriesTable } from './categories.schema.js'
-import { usersTable } from './users.schema.js'
-
-export const partnershipsTable = pgTable('partnerships', {
-  id: uuid().primaryKey().defaultRandom(),
-  userAId: uuid()
-    .notNull()
-    .references(() => usersTable.id),
-  userBId: uuid()
-    .notNull()
-    .references(() => usersTable.id),
-  endedAt: timestamp({ withTimezone: true }),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-})
+import { categoriesTable } from '../categories.schema.js'
+import { usersTable } from '../users.schema.js'
+import { partnershipsTable } from './partnerships.schema.js'
 
 export const sharedCategoriesTable = pgTable('shared_categories', {
   id: uuid().primaryKey().defaultRandom(),
@@ -36,3 +25,8 @@ export const sharedCategoriesMappingTable = pgTable('shared_category_mappings', 
     .references(() => sharedCategoriesTable.id),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 })
+
+export type SharedCategoryRow = typeof sharedCategoriesTable.$inferSelect
+export type NewSharedCategoryRow = typeof sharedCategoriesTable.$inferInsert
+export type SharedCategoryMappingRow = typeof sharedCategoriesMappingTable.$inferSelect
+export type NewSharedCategoryMappingRow = typeof sharedCategoriesMappingTable.$inferInsert
