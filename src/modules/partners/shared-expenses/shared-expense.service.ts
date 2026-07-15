@@ -44,6 +44,9 @@ export class SharedExpenseService {
 
     const partnerId = partnerOf(partnership, userId)
     const { payerAmountCents, owedAmountCents } = resolveSplitAmounts(totalAmountCents, split)
+    const userCategory = await this.resolveMappedCategory(userId, sharedCategoryId)
+    const partnerCategory = await this.resolveMappedCategory(partnerId, sharedCategoryId)
+    const occurredAt = new Date()
 
     return await this.db.transaction(async (tx) => {
       const sharedExpense = await this.sharedExpenseRepository.create(
@@ -58,10 +61,6 @@ export class SharedExpenseService {
         },
         tx,
       )
-
-      const userCategory = await this.resolveMappedCategory(userId, sharedCategoryId)
-      const partnerCategory = await this.resolveMappedCategory(partnerId, sharedCategoryId)
-      const occurredAt = new Date()
 
       if (split === SPLIT_TYPE.FULL) {
         await this.transactionRepository.create(
