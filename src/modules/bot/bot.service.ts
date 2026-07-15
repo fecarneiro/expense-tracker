@@ -3,11 +3,13 @@ import type { CreateLinkingCodeBodyInput } from '../linking-codes/linking-code.t
 import { BotLinkAccountFailedError } from './bot.error.js'
 import { type GeneratedLinkingCodeResponse, toGeneratedLinkingCodeResponse } from './bot.mapper.js'
 import type { BotRepository } from './bot.repository.js'
-import type {
-  BotAccount,
-  FindAccountByTelegramIdInput,
-  VerifyAndLinkAccountInput,
-} from './bot.types.js'
+import type { BotAccount } from './bot.types.js'
+
+export type VerifyAndLinkAccountInput = {
+  telegramId: number
+  code: number
+  purpose: 'bot_link'
+}
 
 export class BotService {
   constructor(
@@ -15,8 +17,8 @@ export class BotService {
     private readonly linkingCodeService: LinkingCodeService,
   ) {}
 
-  async findAccountByTelegramId(data: FindAccountByTelegramIdInput): Promise<BotAccount | null> {
-    return await this.botRepository.findAccountByTelegramId(data)
+  async findAccountByTelegramId(telegramId: number): Promise<BotAccount | null> {
+    return await this.botRepository.findAccountByTelegramId(telegramId)
   }
 
   async createLinkingCode(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCodeResponse> {

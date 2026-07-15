@@ -3,11 +3,7 @@ import { isUniqueViolation } from '../../database/db.error.js'
 import type { Database } from '../../database/db.js'
 import { botAccountsTable, type NewBotAccount } from '../../database/schemas/bot-accounts.schema.js'
 import { BotAccountAlreadyExistsError } from './bot.error.js'
-import type {
-  BotAccount,
-  FindAccountByTelegramIdInput,
-  LinkBotAccountRepositoryInput,
-} from './bot.types.js'
+import type { BotAccount, LinkBotAccountRepositoryInput } from './bot.types.js'
 
 export class BotRepository {
   constructor(private readonly database: Database) {}
@@ -30,11 +26,11 @@ export class BotRepository {
     }
   }
 
-  async findAccountByTelegramId(data: FindAccountByTelegramIdInput): Promise<BotAccount | null> {
+  async findAccountByTelegramId(telegramId: number): Promise<BotAccount | null> {
     const [user] = await this.database
       .select()
       .from(botAccountsTable)
-      .where(eq(botAccountsTable.telegramId, data.telegramId))
+      .where(eq(botAccountsTable.telegramId, telegramId))
 
     return user ?? null
   }

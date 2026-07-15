@@ -4,7 +4,7 @@ import {
   tooManyRequestsResponse,
   unauthorizedResponse,
 } from '../../../openapi/openapi.responses.js'
-import { generatedLinkingCodeResponseSchema } from '../bot.schemas.js'
+import { generatedLinkingCodeResponseSchema } from '../../linking-codes/linking-code.schemas.js'
 
 export const botOpenApiPaths = {
   '/bot/generate-linking-code': {

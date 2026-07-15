@@ -1,5 +1,5 @@
-import { transactionAmountCentsField } from '../../transactions/transaction.schemas.js'
-import type { TransactionAmountCents } from '../../transactions/transaction.types.js'
+import { transactionAmountCentsField } from '../../transaction.schemas.js'
+import type { TransactionAmountCents } from '../../transaction.types.js'
 
 export function transactionAmountParser(message: string): TransactionAmountCents | null {
   if (!message) return null

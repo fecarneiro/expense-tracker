@@ -1,8 +1,5 @@
-import { categoryNameField } from '../../categories/category.schemas.js'
-import type {
-  TransactionAmountCents,
-  TransactionType,
-} from '../../transactions/transaction.types.js'
+import { categoryNameField } from '../../../categories/category.schemas.js'
+import type { TransactionAmountCents, TransactionType } from '../../transaction.types.js'
 import { transactionAmountParser } from './transaction-amount.parser.js'
 
 export type FastTransaction = {

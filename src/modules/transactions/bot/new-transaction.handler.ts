@@ -1,13 +1,10 @@
 import { InlineKeyboard } from 'grammy'
 import { centsToString } from '../../../utils/money.utils.js'
+import type { BotConversation, BotConversationContext } from '../../bot/bot.context.js'
 import type { CategoryService } from '../../categories/category.service.js'
-import type { TransactionService } from '../../transactions/transaction.service.js'
-import type {
-  TransactionAmountCents,
-  TransactionType,
-} from '../../transactions/transaction.types.js'
-import type { BotConversation, BotConversationContext } from '../bot.context.js'
-import { transactionAmountParser } from '../parsers/transaction-amount.parser.js'
+import type { TransactionService } from '../transaction.service.js'
+import type { TransactionAmountCents, TransactionType } from '../transaction.types.js'
+import { transactionAmountParser } from './parsers/transaction-amount.parser.js'
 
 export function handleNewTransactionConversation(
   categoryService: CategoryService,

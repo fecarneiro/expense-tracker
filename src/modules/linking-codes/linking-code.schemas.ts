@@ -10,5 +10,12 @@ export const generatedLinkingCodeResponseSchema = z
     createdAt: z.iso.datetime(),
   })
   .meta({
-    id: 'GeneratedBotLinkingCode',
+    id: 'GeneratedLinkingCode',
   })
+
+export function linkingCodeParser(message: string) {
+  const numeric = Number(message)
+  const result = linkingCodeField.safeParse(numeric)
+
+  return result.success ? result.data : null
+}

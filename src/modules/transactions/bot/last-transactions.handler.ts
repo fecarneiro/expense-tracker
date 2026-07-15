@@ -1,7 +1,7 @@
 import { isoDateTimeToReadable } from '../../../utils/date.utils.js'
 import { centsToString } from '../../../utils/money.utils.js'
-import type { TransactionService } from '../../transactions/transaction.service.js'
-import type { BotContext } from '../bot.context.js'
+import type { BotContext } from '../../bot/bot.context.js'
+import type { TransactionService } from '../transaction.service.js'
 
 export async function handleLastTransactions(
   ctx: BotContext,

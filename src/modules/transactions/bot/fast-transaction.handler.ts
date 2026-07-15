@@ -1,9 +1,9 @@
 import type { Filter } from 'grammy'
 import { centsToString } from '../../../utils/money.utils.js'
+import type { BotContext } from '../../bot/bot.context.js'
 import type { CategoryService } from '../../categories/category.service.js'
-import type { TransactionService } from '../../transactions/transaction.service.js'
-import type { BotContext } from '../bot.context.js'
-import { fastTransactionParser } from '../parsers/fast-transaction.parser.js'
+import type { TransactionService } from '../transaction.service.js'
+import { fastTransactionParser } from './parsers/fast-transaction.parser.js'
 
 export async function handleFastTransaction(
   ctx: Filter<BotContext, 'message:text'>,

@@ -8,9 +8,9 @@ import { BotAccountAlreadyExistsError } from './bot.error.js'
 describe('BotService', () => {
   describe('findAccountByTelegramId', () => {
     test('returns null when no account is linked to the telegram id', async ({ container }) => {
-      const result = await container.botService.findAccountByTelegramId({
-        telegramId: 1234567832131319,
-      })
+      const telegramId = 1234567832131319
+
+      const result = await container.botService.findAccountByTelegramId(telegramId)
 
       expect(result).toBeNull()
     })
@@ -28,9 +28,7 @@ describe('BotService', () => {
 
       await container.botService.verifyAndLinkAccount({ telegramId, code, purpose: 'bot_link' })
 
-      const botAccount = await container.botService.findAccountByTelegramId({
-        telegramId,
-      })
+      const botAccount = await container.botService.findAccountByTelegramId(telegramId)
 
       expect(botAccount).toStrictEqual({
         id: expect.any(String),
