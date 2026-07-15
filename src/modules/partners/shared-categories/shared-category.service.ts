@@ -15,16 +15,6 @@ export class SharedCategoryService {
     private readonly categoryService: CategoryService,
   ) {}
 
-  async createDefaults(partnershipId: string, client: DatabaseClient) {
-    const defaults = SHARED_CATEGORY_DEFAULTS.map((cat) => ({
-      partnershipId,
-      name: cat.name,
-    }))
-
-    await this.sharedCategoryRepository.createSharedCategories(defaults, client)
-  }
-
-  // TODO: partnership will be validated from middleware
   async mapUserCategoryToShared(
     input: CreateSharedCategoryMapping,
   ): Promise<SharedCategoryMapping> {
@@ -52,5 +42,15 @@ export class SharedCategoryService {
 
   async findPartnershipSharedCategories(partnershipId: string): Promise<SharedCategory[]> {
     return this.sharedCategoryRepository.findPartnershipSharedCategories(partnershipId)
+  }
+
+  // Internal use only
+  async createDefaults(partnershipId: string, client: DatabaseClient) {
+    const defaults = SHARED_CATEGORY_DEFAULTS.map((cat) => ({
+      partnershipId,
+      name: cat.name,
+    }))
+
+    await this.sharedCategoryRepository.createSharedCategories(defaults, client)
   }
 }

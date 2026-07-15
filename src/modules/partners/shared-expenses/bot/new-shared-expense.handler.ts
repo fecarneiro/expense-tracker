@@ -103,6 +103,8 @@ export function handleNewSharedExpenseConversation(
       await choice.editMessageText('⏳ Saving your shared expense...')
     } while (split === null)
 
+    //TODO: implement description field to this flow
+
     await conversation.external(() =>
       sharedExpenseService.create({
         userId,

@@ -24,6 +24,7 @@ export class PartnershipRepository {
     return partnership
   }
 
+  // Internal use only
   async findUserActivePartnership(
     userId: string,
     client: DatabaseClient = this.db,

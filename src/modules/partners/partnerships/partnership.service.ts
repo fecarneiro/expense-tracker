@@ -1,6 +1,7 @@
 import type { Database } from '../../../database/db.js'
 import { LINKING_CODE_PURPOSE } from '../../linking-codes/linking-code.constants.js'
 import type { LinkingCodeService } from '../../linking-codes/linking-code.service.js'
+import type { GeneratedLinkingCode } from '../../linking-codes/linking-code.types.js'
 import type { SharedCategoryService } from '../shared-categories/shared-category.service.js'
 import {
   CannotPartnerWithYourselfError,
@@ -28,6 +29,17 @@ export class PartnershipService {
     private readonly sharedCategoryService: SharedCategoryService,
     private readonly db: Database,
   ) {}
+
+  async createLinkingCode(userId: string): Promise<GeneratedLinkingCode> {
+    if (await this.hasActivePartnership(userId)) {
+      throw new InviterAlreadyHasActivePartnership()
+    }
+
+    return this.linkingCodeService.create({
+      userId,
+      purpose: LINKING_CODE_PURPOSE.PARTNERSHIP_LINK,
+    })
+  }
 
   async createPartnership(data: CreatePartnership): Promise<Partnership> {
     const { inviteeId, code } = data
