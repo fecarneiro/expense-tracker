@@ -34,4 +34,13 @@ export class BotRepository {
 
     return user ?? null
   }
+
+  async findAccountByUserId(userId: string): Promise<BotAccount | null> {
+    const [account] = await this.database
+      .select()
+      .from(botAccountsTable)
+      .where(eq(botAccountsTable.userId, userId))
+
+    return account ?? null
+  }
 }

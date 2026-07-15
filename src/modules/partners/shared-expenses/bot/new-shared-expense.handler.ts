@@ -115,16 +115,31 @@ export function handleNewSharedExpenseConversation(
       }),
     )
 
-    const splitLabel =
+    const creatorSplitLabel =
       split === SPLIT_TYPE.HALF
         ? `Half ($${centsToString(halfSplit.owedAmountCents)} each)`
         : `Partner owes all ($${amountLabel})`
+
+    const partnerSplitLabel =
+      split === SPLIT_TYPE.HALF
+        ? `Half ($${centsToString(halfSplit.owedAmountCents)} each)`
+        : `You owe all ($${amountLabel})`
+
+    if (partnership.partnerTelegramId != null) {
+      await ctx.api.sendMessage(
+        partnership.partnerTelegramId,
+        `Your partner added a shared expense ✅\n\n` +
+          `Amount: $${amountLabel}\n` +
+          `Category: ${sharedCategoryName}\n` +
+          `Split: ${partnerSplitLabel}`,
+      )
+    }
 
     return ctx.reply(
       `Shared expense added ✅\n\n` +
         `Amount: $${amountLabel}\n` +
         `Category: ${sharedCategoryName}\n` +
-        `Split: ${splitLabel}`,
+        `Split: ${creatorSplitLabel}`,
     )
   }
 }

@@ -45,7 +45,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   // ── Authenticated Commands ─────────────────────────────
   bot.use(userIdentityMiddleware(botService))
-  bot.use(userPartnershipMiddleware(partnershipService))
+  bot.use(userPartnershipMiddleware(partnershipService, botService))
 
   // Conversations
   bot.use(conversations())

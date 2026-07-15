@@ -17,6 +17,32 @@ describe('BotService', () => {
     })
   })
 
+  describe('findTelegramIdByUserId', () => {
+    test('returns null when the user has no linked bot account', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+
+      const result = await container.botService.findTelegramIdByUserId(user.id)
+
+      expect(result).toBeNull()
+    })
+
+    test('returns the telegram id when the user is linked', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+      const telegramId = 1234567890
+
+      const { code } = await container.botService.createLinkingCode({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+      })
+
+      await container.botService.verifyAndLinkAccount({ telegramId, code })
+
+      const result = await container.botService.findTelegramIdByUserId(user.id)
+
+      expect(result).toBe(telegramId)
+    })
+  })
+
   describe('verifyAndLinkAccount', () => {
     test('links account and deletes the linking code on success', async ({ container, db }) => {
       const user = await insertTestUser(db)

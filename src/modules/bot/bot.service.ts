@@ -21,6 +21,11 @@ export class BotService {
     return await this.botRepository.findAccountByTelegramId(telegramId)
   }
 
+  async findTelegramIdByUserId(userId: string): Promise<number | null> {
+    const account = await this.botRepository.findAccountByUserId(userId)
+    return account?.telegramId ?? null
+  }
+
   async createLinkingCode(data: CreateLinkingCodeBodyInput): Promise<GeneratedLinkingCodeResponse> {
     const generatedLinkingCode = await this.linkingCodeService.create(data)
     return toGeneratedLinkingCodeResponse(generatedLinkingCode)

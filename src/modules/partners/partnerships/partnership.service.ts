@@ -20,6 +20,7 @@ export type CreatePartnership = {
 export type PartnershipContext = {
   id: string
   partnerId: string
+  partnerTelegramId: number | null
 }
 
 export class PartnershipService {
@@ -82,6 +83,7 @@ export class PartnershipService {
     return {
       id: partnership.id,
       partnerId: partnerOf(partnership, userId),
+      partnerTelegramId: null,
     }
   }
 
