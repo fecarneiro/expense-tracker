@@ -4,7 +4,7 @@ import type { Database } from '../../database/db.js'
 import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
-import { LINKING_CODE } from './linking-code.constants.js'
+import { LINKING_CODE, LINKING_CODE_PURPOSE } from './linking-code.constants.js'
 import { LinkingCodeGenerationError } from './linking-code.error.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
 import { LinkingCodeService } from './linking-code.service.js'
@@ -19,7 +19,10 @@ describe('LinkingCodeService', () => {
       const user = await insertTestUser(db)
       const service = linkingCodeService(db)
 
-      const linkingCode = await service.create({ userId: user.id, purpose: 'bot_link' })
+      const linkingCode = await service.create({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+      })
 
       expect(linkingCode).toStrictEqual({
         code: expect.any(Number),
@@ -38,7 +41,7 @@ describe('LinkingCodeService', () => {
         userId: user.id,
         code: linkingCode.code,
         createdAt: linkingCode.createdAt,
-        purpose: 'bot_link',
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
       })
     })
 
@@ -46,8 +49,14 @@ describe('LinkingCodeService', () => {
       const user = await insertTestUser(db)
       const service = linkingCodeService(db)
 
-      const firstLinkingCode = await service.create({ userId: user.id, purpose: 'bot_link' })
-      const secondLinkingCode = await service.create({ userId: user.id, purpose: 'bot_link' })
+      const firstLinkingCode = await service.create({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+      })
+      const secondLinkingCode = await service.create({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+      })
 
       expect(secondLinkingCode.createdAt.getTime()).toBeGreaterThanOrEqual(
         firstLinkingCode.createdAt.getTime(),
@@ -64,7 +73,7 @@ describe('LinkingCodeService', () => {
         userId: user.id,
         code: secondLinkingCode.code,
         createdAt: secondLinkingCode.createdAt,
-        purpose: 'bot_link',
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
       })
     })
 
@@ -76,9 +85,9 @@ describe('LinkingCodeService', () => {
         .spyOn(LinkingCodeRepository.prototype, 'save')
         .mockResolvedValue({ saved: false })
 
-      await expect(service.create({ userId: user.id, purpose: 'bot_link' })).rejects.toThrow(
-        new LinkingCodeGenerationError(),
-      )
+      await expect(
+        service.create({ userId: user.id, purpose: LINKING_CODE_PURPOSE.BOT_LINK }),
+      ).rejects.toThrow(new LinkingCodeGenerationError())
 
       expect(saveLinkingCodeSpy).toHaveBeenCalledTimes(LINKING_CODE.GENERATION_MAX_ATTEMPTS)
       saveLinkingCodeSpy.mockRestore()

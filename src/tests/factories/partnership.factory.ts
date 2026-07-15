@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import type { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import { sharedCategoriesTable } from '../../database/schemas/partners/shared-categories.schema.js'
+import { LINKING_CODE_PURPOSE } from '../../modules/linking-codes/linking-code.constants.js'
 import { LinkingCodeRepository } from '../../modules/linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from '../../modules/linking-codes/linking-code.service.js'
 import { insertOtherTestUser, insertTestUser } from './user.factory.js'
@@ -28,7 +29,7 @@ export async function createTestPartnership(
   const linkingCodeService = new LinkingCodeService(new LinkingCodeRepository(db))
   const { code } = await linkingCodeService.create({
     userId: inviter.id,
-    purpose: 'partnership_link',
+    purpose: LINKING_CODE_PURPOSE.PARTNERSHIP_LINK,
   })
 
   const partnership = await container.partnershipService.createPartnership({

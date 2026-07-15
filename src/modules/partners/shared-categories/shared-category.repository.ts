@@ -77,4 +77,12 @@ export class SharedCategoryRepository {
 
     return mapped ?? null
   }
+
+  async findPartnershipSharedCategories(partnershipId: string): Promise<SharedCategoryRow[]> {
+    const categories = await this.db
+      .select()
+      .from(sharedCategoriesTable)
+      .where(eq(sharedCategoriesTable.partnershipId, partnershipId))
+    return categories
+  }
 }

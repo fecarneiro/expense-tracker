@@ -3,6 +3,7 @@ import { describe } from 'vitest'
 import { sharedCategoriesTable } from '../../../database/schemas/partners/shared-categories.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
+import { LINKING_CODE_PURPOSE } from '../../linking-codes/linking-code.constants.js'
 import { LinkingCodeRepository } from '../../linking-codes/linking-code.repository.js'
 import { LinkingCodeService } from '../../linking-codes/linking-code.service.js'
 import { SHARED_CATEGORY_DEFAULTS } from '../shared-categories/shared-category.defaults.js'
@@ -19,7 +20,7 @@ describe('PartnershipService', () => {
 
     const { code } = await linkingCodeService.create({
       userId: inviter.id,
-      purpose: 'partnership_link',
+      purpose: LINKING_CODE_PURPOSE.PARTNERSHIP_LINK,
     })
 
     const partnership = await service.createPartnership({

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { LINKING_CODE } from './linking-code.constants.js'
+import { LINKING_CODE, LINKING_CODE_PURPOSE } from './linking-code.constants.js'
 import { InvalidOrExpiredLinkingCodeError } from './linking-code.error.js'
 import type { LinkingCodeRepository } from './linking-code.repository.js'
 import { LinkingCodeService } from './linking-code.service.js'
@@ -29,11 +29,11 @@ test('verify returns userId when code is valid', async () => {
     id: 'code-id',
     userId,
     code,
-    purpose: 'bot_link',
+    purpose: LINKING_CODE_PURPOSE.BOT_LINK,
     createdAt: new Date(),
   })
 
-  const result = await linkingCodeService.verify({ code, purpose: 'bot_link' })
+  const result = await linkingCodeService.verify({ code, purpose: LINKING_CODE_PURPOSE.BOT_LINK })
 
   expect(result).toEqual({ userId })
 })
@@ -41,9 +41,9 @@ test('verify returns userId when code is valid', async () => {
 test('verify throws and records failure when code is not found', async () => {
   vi.mocked(linkingCodeRepository.find).mockResolvedValue(null)
 
-  await expect(linkingCodeService.verify({ code, purpose: 'bot_link' })).rejects.toThrow(
-    InvalidOrExpiredLinkingCodeError,
-  )
+  await expect(
+    linkingCodeService.verify({ code, purpose: LINKING_CODE_PURPOSE.BOT_LINK }),
+  ).rejects.toThrow(InvalidOrExpiredLinkingCodeError)
 })
 
 test('verify throws and records failure when code is expired', async () => {
@@ -54,13 +54,13 @@ test('verify throws and records failure when code is expired', async () => {
     id: 'code-id',
     userId,
     code,
-    purpose: 'bot_link',
+    purpose: LINKING_CODE_PURPOSE.BOT_LINK,
     createdAt: new Date('2025-01-01T12:00:00Z'),
   })
 
   vi.advanceTimersByTime(LINKING_CODE.TTL_MS + 1)
 
-  await expect(linkingCodeService.verify({ code, purpose: 'bot_link' })).rejects.toThrow(
-    InvalidOrExpiredLinkingCodeError,
-  )
+  await expect(
+    linkingCodeService.verify({ code, purpose: LINKING_CODE_PURPOSE.BOT_LINK }),
+  ).rejects.toThrow(InvalidOrExpiredLinkingCodeError)
 })

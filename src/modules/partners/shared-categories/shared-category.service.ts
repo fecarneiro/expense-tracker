@@ -3,7 +3,11 @@ import type { CategoryService } from '../../categories/category.service.js'
 import { SHARED_CATEGORY_DEFAULTS } from './shared-category.defaults.js'
 import { SharedCategoryNotFoundError } from './shared-category.errors.js'
 import type { SharedCategoryRepository } from './shared-category.repository.js'
-import type { CreateSharedCategoryMapping, SharedCategoryMapping } from './shared-category.types.js'
+import type {
+  CreateSharedCategoryMapping,
+  SharedCategory,
+  SharedCategoryMapping,
+} from './shared-category.types.js'
 
 export class SharedCategoryService {
   constructor(
@@ -44,5 +48,9 @@ export class SharedCategoryService {
     })
 
     return mappedCategory
+  }
+
+  async findPartnershipSharedCategories(partnershipId: string): Promise<SharedCategory[]> {
+    return this.sharedCategoryRepository.findPartnershipSharedCategories(partnershipId)
   }
 }

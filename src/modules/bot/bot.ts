@@ -40,6 +40,8 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
     ),
   )
 
+  // TODO: partnership middleware
+
   // Commands
   bot.command('expense', async (ctx) => {
     await ctx.conversation.enter('newTransaction', 'expense')

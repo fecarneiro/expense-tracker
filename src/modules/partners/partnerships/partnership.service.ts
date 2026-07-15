@@ -1,4 +1,5 @@
 import type { Database } from '../../../database/db.js'
+import { LINKING_CODE_PURPOSE } from '../../linking-codes/linking-code.constants.js'
 import type { LinkingCodeService } from '../../linking-codes/linking-code.service.js'
 import type { SharedCategoryService } from '../shared-categories/shared-category.service.js'
 import {
@@ -8,11 +9,16 @@ import {
 } from './partnership.errors.js'
 import type { PartnershipRepository } from './partnership.repository.js'
 import type { Partnership } from './partnership.types.js'
-import { toCanonicalUserPair } from './partnership.utils.js'
+import { partnerOf, toCanonicalUserPair } from './partnership.utils.js'
 
 export type CreatePartnership = {
   inviteeId: string
   code: number
+}
+
+export type PartnershipContext = {
+  id: string
+  partnerId: string
 }
 
 export class PartnershipService {
@@ -28,13 +34,13 @@ export class PartnershipService {
 
     const { userId: inviterId } = await this.linkingCodeService.verify({
       code,
-      purpose: 'partnership_link',
+      purpose: LINKING_CODE_PURPOSE.PARTNERSHIP_LINK,
     })
 
     if (inviterId === inviteeId) {
       throw new CannotPartnerWithYourselfError()
     }
-
+    // TODO: remove this after middleware implementation
     if (await this.hasActivePartnership(inviteeId)) {
       throw new InviteeAlreadyHasActivePartnership()
     }
@@ -56,6 +62,18 @@ export class PartnershipService {
     })
   }
 
+  // Middleware usage
+  async findPartnershipContext(userId: string): Promise<PartnershipContext | null> {
+    const partnership = await this.partnershipRepository.findUserActivePartnership(userId)
+    if (!partnership) return null
+
+    return {
+      id: partnership.id,
+      partnerId: partnerOf(partnership, userId),
+    }
+  }
+
+  // TODO: remove this after middleware implementation
   private async hasActivePartnership(userId: string): Promise<boolean> {
     return (await this.partnershipRepository.findUserActivePartnership(userId)) !== null
   }

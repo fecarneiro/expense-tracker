@@ -3,6 +3,7 @@ import { describe } from 'vitest'
 import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
+import { LINKING_CODE_PURPOSE } from './linking-code.constants.js'
 import { LinkingCodeRepository } from './linking-code.repository.js'
 
 describe('LinkingCodeRepository', () => {
@@ -16,13 +17,21 @@ describe('LinkingCodeRepository', () => {
 
     const code = 123_456
 
-    const firstResult = await repository.save({ userId: firstUser.id, code, purpose: 'bot_link' })
+    const firstResult = await repository.save({
+      userId: firstUser.id,
+      code,
+      purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+    })
     expect(firstResult).toEqual({
       saved: true,
       generatedLinkingCode: { code, createdAt: expect.any(Date) },
     })
 
-    const secondResult = await repository.save({ userId: secondUser.id, code, purpose: 'bot_link' })
+    const secondResult = await repository.save({
+      userId: secondUser.id,
+      code,
+      purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+    })
     expect(secondResult).toEqual({ saved: false })
 
     const persistedCodes = await db

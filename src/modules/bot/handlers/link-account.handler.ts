@@ -29,7 +29,6 @@ export async function handleLinkAccount(ctx: BotContext, botService: BotService)
   await botService.verifyAndLinkAccount({
     telegramId,
     code: linkingCode,
-    purpose: 'bot_link',
   })
 
   await ctx.reply(
