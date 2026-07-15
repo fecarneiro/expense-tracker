@@ -10,6 +10,11 @@ export class PartnershipHttpController {
     res.status(201).json(linkingCode)
   }
 
+  async getMe(req: Request, res: Response) {
+    const partnership = await this.partnershipService.findPartnershipContext(req.auth.userId)
+    res.status(200).json(partnership)
+  }
+
   async create(req: Request, res: Response) {
     const { code } = createPartnershipBodySchema.parse(req.body)
     const partnership = await this.partnershipService.createPartnership({
