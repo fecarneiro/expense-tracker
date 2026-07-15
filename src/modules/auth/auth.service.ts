@@ -15,7 +15,8 @@ export class AuthService {
   async register(data: RegisterInput): Promise<UserResponse> {
     return await this.database.transaction(async (tx) => {
       const user = await this.userService.createWithPassword(data, tx)
-      await this.categoryService.createDefaultsForUser({ userId: user.id }, tx)
+      await this.categoryService.createDefaultsForUser(user.id, tx)
+
       return user
     })
   }

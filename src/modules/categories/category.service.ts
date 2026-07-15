@@ -32,13 +32,10 @@ export class CategoryService {
     return toCategoryResponse(category)
   }
 
-  async createDefaultsForUser(
-    data: CategorySystemDefaultsInput,
-    dbClient?: DatabaseClient,
-  ): Promise<Category[]> {
+  async createDefaultsForUser(userId: string, dbClient?: DatabaseClient): Promise<Category[]> {
     const categories = await this.categoryRepository.createSystemDefaults(
       {
-        userId: data.userId,
+        userId,
         categories: defaultCategories,
       },
       dbClient,
