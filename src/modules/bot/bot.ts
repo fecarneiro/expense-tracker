@@ -5,6 +5,7 @@ import { handlePartnershipInvite } from '../partners/partnerships/bot/invite.han
 import { handlePartnershipJoin } from '../partners/partnerships/bot/join.handler.js'
 import { handlePartnershipBalance } from '../partners/settlements/bot/balance.handler.js'
 import { handleSettleConversation } from '../partners/settlements/bot/settle.handler.js'
+import { handleMapCategoryConversation } from '../partners/shared-categories/bot/map-category.handler.js'
 import { handleNewSharedExpenseConversation } from '../partners/shared-expenses/bot/new-shared-expense.handler.js'
 import { handleFastTransaction } from '../transactions/bot/fast-transaction.handler.js'
 import { handleLastTransactions } from '../transactions/bot/last-transactions.handler.js'
@@ -60,6 +61,12 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
     ),
   )
   bot.use(createConversation(handleSettleConversation(settlementService), 'settlePartnership'))
+  bot.use(
+    createConversation(
+      handleMapCategoryConversation(sharedCategoryService, categoryService),
+      'mapSharedCategory',
+    ),
+  )
   // TODO: /cancel and timeout handling
 
   // Commands
@@ -89,6 +96,10 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   bot.command('join_partner', async (ctx) => {
     await handlePartnershipJoin(ctx, partnershipService)
+  })
+
+  bot.command('map_category', async (ctx) => {
+    await ctx.conversation.enter('mapSharedCategory')
   })
 
   bot.command('report', async (ctx) => {

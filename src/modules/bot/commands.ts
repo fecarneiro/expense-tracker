@@ -12,6 +12,7 @@ export function registerBotCommands(bot: Bot<BotContext>) {
     { command: 'settle', description: 'Settle partner balance' },
     { command: 'invite_partner', description: 'Invite a partner' },
     { command: 'join_partner', description: 'Join a partnership with an invite code' },
+    { command: 'map_category', description: 'Map your category to a shared category' },
     { command: 'last', description: 'View last transactions' },
     { command: 'report', description: 'View balance' },
   ])
