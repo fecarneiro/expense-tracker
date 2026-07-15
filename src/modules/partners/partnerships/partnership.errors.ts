@@ -21,13 +21,6 @@ export class InviterAlreadyHasActivePartnership extends AppError {
   }
 }
 
-export class InviteNoLongerValidError extends AppError {
-  constructor() {
-    super('This invite is no longer valid', 400)
-    this.name = 'InviteNoLongerValidError'
-  }
-}
-
 export class PartnershipCreationError extends AppError {
   constructor() {
     super('Could not create partnership', 500)

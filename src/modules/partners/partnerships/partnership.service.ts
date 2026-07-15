@@ -6,7 +6,6 @@ import type { SharedCategoryService } from '../shared-categories/shared-category
 import {
   CannotPartnerWithYourselfError,
   InviteeAlreadyHasActivePartnership,
-  InviteNoLongerValidError,
   InviterAlreadyHasActivePartnership,
 } from './partnership.errors.js'
 import type { PartnershipRepository } from './partnership.repository.js'
@@ -59,7 +58,7 @@ export class PartnershipService {
     }
 
     if (await this.hasActivePartnership(inviterId)) {
-      throw new InviteNoLongerValidError()
+      throw new InviterAlreadyHasActivePartnership()
     }
 
     const { userAId, userBId } = toCanonicalUserPair(inviterId, inviteeId)
