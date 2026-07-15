@@ -21,7 +21,8 @@ export async function handleFastTransaction(
         `If you meant to record a transaction, send it like this:\n\n` +
         `<b>Expense:</b>\n<pre>200 eating out\n` +
         `-40.10 groceries</pre>\n\n` +
-        `<b>Income:</b>\n<pre>+300.90 salary</pre>`,
+        `<b>Income:</b>\n<pre>+300.90 salary</pre>\n\n` +
+        `Or use /help for more information.`,
       { parse_mode: 'HTML' },
     )
     return
