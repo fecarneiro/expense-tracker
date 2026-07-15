@@ -15,6 +15,7 @@ import type { BotContext } from './bot.context.js'
 import { registerBotCommands } from './commands.js'
 import type { BotRuntimeConfig } from './config/bot.config.js'
 import { errorHandler } from './error-handler.js'
+import { handleCancel } from './handlers/cancel.handler.js'
 import { handleLinkAccount } from './handlers/link-account.handler.js'
 import { handleStart } from './handlers/start.handler.js'
 import { botLoggerMiddleware } from './middlewares/bot-logger.middleware.js'
@@ -48,6 +49,10 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   // Conversations
   bot.use(conversations())
+
+  bot.command('cancel', async (ctx) => {
+    await handleCancel(ctx)
+  })
   bot.use(
     createConversation(
       handleNewTransactionConversation(categoryService, transactionService),
@@ -67,7 +72,6 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
       'mapSharedCategory',
     ),
   )
-  // TODO: /cancel and timeout handling
 
   // Commands
   bot.command('expense', async (ctx) => {

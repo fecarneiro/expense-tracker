@@ -1,6 +1,7 @@
 import { InlineKeyboard } from 'grammy'
 import { centsToString } from '../../../../utils/money.utils.js'
 import type { BotConversation, BotConversationContext } from '../../../bot/bot.context.js'
+import { CANCEL_HINT } from '../../../bot/handlers/cancel.handler.js'
 import type { SettlementService } from '../settlement.service.js'
 
 export function handleSettleConversation(settlementService: SettlementService) {
@@ -23,7 +24,7 @@ export function handleSettleConversation(settlementService: SettlementService) {
       .text(`Confirm ($${amountLabel})`, 'settle:confirm')
       .text('Cancel', 'settle:cancel')
 
-    await ctx.reply(`Settle <b>$${amountLabel}</b> with your partner?`, {
+    await ctx.reply(`Settle <b>$${amountLabel}</b> with your partner?${CANCEL_HINT}`, {
       parse_mode: 'HTML',
       reply_markup: keyboard,
     })

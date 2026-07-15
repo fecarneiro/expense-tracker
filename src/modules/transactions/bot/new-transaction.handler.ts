@@ -1,6 +1,7 @@
 import { InlineKeyboard } from 'grammy'
 import { centsToString } from '../../../utils/money.utils.js'
 import type { BotConversation, BotConversationContext } from '../../bot/bot.context.js'
+import { CANCEL_HINT } from '../../bot/handlers/cancel.handler.js'
 import type { CategoryService } from '../../categories/category.service.js'
 import type { TransactionService } from '../transaction.service.js'
 import type { TransactionAmountCents, TransactionType } from '../transaction.types.js'
@@ -33,7 +34,7 @@ export function handleNewTransactionConversation(
     // ── Amount Input ─────────────────────────────
     const transactionLabel = transactionType === 'expense' ? 'spent' : 'received'
 
-    await ctx.reply(`How much did you ${transactionLabel}?`)
+    await ctx.reply(`How much did you ${transactionLabel}?${CANCEL_HINT}`)
     let amountCents: TransactionAmountCents | null = null
 
     do {

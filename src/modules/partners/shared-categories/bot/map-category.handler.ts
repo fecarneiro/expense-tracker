@@ -1,5 +1,6 @@
 import { InlineKeyboard } from 'grammy'
 import type { BotConversation, BotConversationContext } from '../../../bot/bot.context.js'
+import { CANCEL_HINT } from '../../../bot/handlers/cancel.handler.js'
 import type { CategoryService } from '../../../categories/category.service.js'
 import type { SharedCategoryService } from '../shared-category.service.js'
 
@@ -31,7 +32,9 @@ export function handleMapCategoryConversation(
     for (const category of sharedCategories) {
       sharedKeyboard.text(category.name, `shared:${category.id}`).row()
     }
-    await ctx.reply('Choose a shared category to map:', { reply_markup: sharedKeyboard })
+    await ctx.reply(`Choose a shared category to map:${CANCEL_HINT}`, {
+      reply_markup: sharedKeyboard,
+    })
 
     let sharedCategoryId: string | null = null
     let sharedCategoryName = ''
