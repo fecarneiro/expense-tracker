@@ -19,6 +19,7 @@ export type CreateSharedExpense = {
   totalAmountCents: number
   sharedCategoryId: string
   split: SplitType
+  description?: string | null
 }
 
 export class SharedExpenseService {
@@ -33,7 +34,7 @@ export class SharedExpenseService {
 
   // TODO: partnership will be validated from middleware
   async create(input: CreateSharedExpense): Promise<SharedExpense> {
-    const { userId, sharedCategoryId, totalAmountCents, split } = input
+    const { userId, sharedCategoryId, totalAmountCents, split, description = null } = input
 
     const partnership = await this.partnershipRepository.findUserActivePartnership(userId)
     if (!partnership) throw new ActivePartnershipNotFoundError()
@@ -60,6 +61,7 @@ export class SharedExpenseService {
           totalAmountCents,
           owedAmountCents,
           settlementId: null,
+          description,
         },
         tx,
       )
@@ -73,7 +75,7 @@ export class SharedExpenseService {
             createdByUserId: userId,
             transactionType: partnerCategory.categoryType,
             occurredAt,
-            description: null,
+            description,
           },
           tx,
         )
@@ -88,7 +90,7 @@ export class SharedExpenseService {
             createdByUserId: userId,
             transactionType: userCategory.categoryType,
             occurredAt,
-            description: null,
+            description,
           },
           tx,
         )
@@ -100,7 +102,7 @@ export class SharedExpenseService {
             createdByUserId: userId,
             transactionType: partnerCategory.categoryType,
             occurredAt,
-            description: null,
+            description,
           },
           tx,
         )

@@ -1,0 +1,1 @@
+ALTER TABLE "shared_expenses" ADD COLUMN "description" varchar(70);

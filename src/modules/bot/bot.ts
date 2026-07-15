@@ -4,6 +4,7 @@ import type { Container } from '../../container.js'
 import { handlePartnershipInvite } from '../partners/partnerships/bot/invite.handler.js'
 import { handlePartnershipJoin } from '../partners/partnerships/bot/join.handler.js'
 import { handlePartnershipBalance } from '../partners/settlements/bot/balance.handler.js'
+import { handlePendingSharedExpenses } from '../partners/settlements/bot/pending.handler.js'
 import { handleSettleConversation } from '../partners/settlements/bot/settle.handler.js'
 import { handleMapCategoryConversation } from '../partners/shared-categories/bot/map-category.handler.js'
 import { handleNewSharedExpenseConversation } from '../partners/shared-expenses/bot/new-shared-expense.handler.js'
@@ -16,6 +17,7 @@ import { registerBotCommands } from './commands.js'
 import type { BotRuntimeConfig } from './config/bot.config.js'
 import { errorHandler } from './error-handler.js'
 import { handleCancel } from './handlers/cancel.handler.js'
+import { handleHelp } from './handlers/help.handler.js'
 import { handleLinkAccount } from './handlers/link-account.handler.js'
 import { handleStart } from './handlers/start.handler.js'
 import { botLoggerMiddleware } from './middlewares/bot-logger.middleware.js'
@@ -41,6 +43,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   // ── Public Commands ───────────────────────────────────
   bot.command('start', (ctx) => handleStart(ctx))
+  bot.command('help', (ctx) => handleHelp(ctx))
   bot.command('link', botLinkRateLimiter, (ctx) => handleLinkAccount(ctx, botService))
 
   // ── Authenticated Commands ─────────────────────────────
@@ -88,6 +91,10 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   bot.command('balance', async (ctx) => {
     await handlePartnershipBalance(ctx, settlementService)
+  })
+
+  bot.command('pending', async (ctx) => {
+    await handlePendingSharedExpenses(ctx, settlementService)
   })
 
   bot.command('settle', async (ctx) => {

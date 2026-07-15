@@ -11,6 +11,8 @@ import {
   sharedExpenseAmountParser,
 } from './parsers/shared-expense-amount.parser.js'
 
+const DESCRIPTION_MAX_LENGTH = 70
+
 export function handleNewSharedExpenseConversation(
   sharedCategoryService: SharedCategoryService,
   sharedExpenseService: SharedExpenseService,
@@ -101,10 +103,55 @@ export function handleNewSharedExpenseConversation(
 
       split = selectedSplit
       await choice.answerCallbackQuery()
-      await choice.editMessageText('⏳ Saving your shared expense...')
+      await choice.editMessageText(
+        split === SPLIT_TYPE.HALF
+          ? `Split: Half ($${centsToString(halfSplit.owedAmountCents)} each)`
+          : `Split: Partner owes all ($${amountLabel})`,
+      )
     } while (split === null)
 
-    //TODO: implement description field to this flow
+    // ── Description (optional) ─────────────────────
+    const skipKeyboard = new InlineKeyboard().text('Skip', 'desc:skip')
+    await ctx.reply(`Add a description? (optional)${CANCEL_HINT}`, {
+      reply_markup: skipKeyboard,
+    })
+
+    let description: string | null = null
+    let descriptionDone = false
+
+    do {
+      const update = await conversation.waitFor(['message:text', 'callback_query:data'])
+
+      if (update.callbackQuery?.data === 'desc:skip') {
+        await update.answerCallbackQuery()
+        await update.editMessageText('Description: skipped')
+        description = null
+        descriptionDone = true
+        continue
+      }
+
+      if (update.callbackQuery) {
+        await update.answerCallbackQuery()
+        continue
+      }
+
+      const text = update.message?.text?.trim() ?? ''
+      if (text.length === 0) {
+        description = null
+        descriptionDone = true
+        continue
+      }
+
+      if (text.length > DESCRIPTION_MAX_LENGTH) {
+        await ctx.reply(`Description must be at most ${DESCRIPTION_MAX_LENGTH} characters.`)
+        continue
+      }
+
+      description = text
+      descriptionDone = true
+    } while (!descriptionDone)
+
+    await ctx.reply('⏳ Saving your shared expense...')
 
     await conversation.external(() =>
       sharedExpenseService.create({
@@ -112,6 +159,7 @@ export function handleNewSharedExpenseConversation(
         totalAmountCents: amountCents,
         sharedCategoryId,
         split,
+        description,
       }),
     )
 
@@ -125,13 +173,16 @@ export function handleNewSharedExpenseConversation(
         ? `Half ($${centsToString(halfSplit.owedAmountCents)} each)`
         : `You owe all ($${amountLabel})`
 
+    const descriptionLine = description ? `Description: ${description}\n` : ''
+
     if (partnership.partnerTelegramId != null) {
       await ctx.api.sendMessage(
         partnership.partnerTelegramId,
         `Your partner added a shared expense ✅\n\n` +
           `Amount: $${amountLabel}\n` +
           `Category: ${sharedCategoryName}\n` +
-          `Split: ${partnerSplitLabel}`,
+          `Split: ${partnerSplitLabel}\n` +
+          descriptionLine,
       )
     }
 
@@ -139,7 +190,8 @@ export function handleNewSharedExpenseConversation(
       `Shared expense added ✅\n\n` +
         `Amount: $${amountLabel}\n` +
         `Category: ${sharedCategoryName}\n` +
-        `Split: ${creatorSplitLabel}`,
+        `Split: ${creatorSplitLabel}\n` +
+        descriptionLine,
     )
   }
 }

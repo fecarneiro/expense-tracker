@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { check, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { check, integer, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { usersTable } from '../users.schema.js'
 import { partnershipsTable } from './partnerships.schema.js'
 import { settlementsTable } from './settlements.schema.js'
@@ -25,6 +25,7 @@ export const sharedExpensesTable = pgTable(
       .notNull()
       .references(() => sharedCategoriesTable.id),
     settlementId: uuid().references(() => settlementsTable.id),
+    description: varchar({ length: 70 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

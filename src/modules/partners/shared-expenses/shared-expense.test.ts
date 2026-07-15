@@ -122,6 +122,34 @@ describe('SharedExpenseService', () => {
       })
     })
 
+    test('passes description to created transactions', async ({ container, db }) => {
+      const {
+        inviter: payer,
+        invitee: partner,
+        sharedCategory,
+      } = await createTestPartnership(container, db, { withUserCategoryDefaults: true })
+
+      await container.sharedExpenseService.create({
+        userId: payer.id,
+        totalAmountCents: 1000,
+        sharedCategoryId: sharedCategory.id,
+        split: SPLIT_TYPE.HALF,
+        description: 'Dinner',
+      })
+
+      const transactions = await listTransactionsForUsers(db, [payer.id, partner.id])
+      expect(transactions).toHaveLength(2)
+      expect(transactions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ userId: payer.id, description: 'Dinner' }),
+          expect.objectContaining({ userId: partner.id, description: 'Dinner' }),
+        ]),
+      )
+
+      const balance = await container.settlementService.getPendingBalance(payer.id)
+      expect(balance.pendingExpenses).toEqual([expect.objectContaining({ description: 'Dinner' })])
+    })
+
     test('HALF with mapping uses mapped categories on both transactions', async ({
       container,
       db,

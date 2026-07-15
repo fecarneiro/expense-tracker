@@ -169,6 +169,13 @@
       "when": 1784121469921,
       "tag": "0023_motionless_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784146578828,
+      "tag": "0024_bitter_corsair",
+      "breakpoints": true
     }
   ]
 }

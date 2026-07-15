@@ -7,6 +7,7 @@ export type SharedExpense = {
   owedAmountCents: number
   sharedCategoryId: string
   settlementId: string | null
+  description: string | null
   createdAt: Date
 }
 
