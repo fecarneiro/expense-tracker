@@ -1,6 +1,10 @@
 import { conversations, createConversation } from '@grammyjs/conversations'
 import { Bot } from 'grammy'
 import type { Container } from '../../container.js'
+import { handlePartnershipInvite } from '../partners/partnerships/bot/invite.handler.js'
+import { handlePartnershipJoin } from '../partners/partnerships/bot/join.handler.js'
+import { handlePartnershipBalance } from '../partners/settlements/bot/balance.handler.js'
+import { handleSettleConversation } from '../partners/settlements/bot/settle.handler.js'
 import { handleNewSharedExpenseConversation } from '../partners/shared-expenses/bot/new-shared-expense.handler.js'
 import { handleFastTransaction } from '../transactions/bot/fast-transaction.handler.js'
 import { handleLastTransactions } from '../transactions/bot/last-transactions.handler.js'
@@ -25,6 +29,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
     partnershipService,
     sharedCategoryService,
     sharedExpenseService,
+    settlementService,
   } = container
 
   const bot = new Bot<BotContext>(config.botToken)
@@ -54,6 +59,8 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
       'newSharedExpense',
     ),
   )
+  bot.use(createConversation(handleSettleConversation(settlementService), 'settlePartnership'))
+  // TODO: /cancel and timeout handling
 
   // Commands
   bot.command('expense', async (ctx) => {
@@ -66,6 +73,22 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
 
   bot.command('shared', async (ctx) => {
     await ctx.conversation.enter('newSharedExpense')
+  })
+
+  bot.command('balance', async (ctx) => {
+    await handlePartnershipBalance(ctx, settlementService)
+  })
+
+  bot.command('settle', async (ctx) => {
+    await ctx.conversation.enter('settlePartnership')
+  })
+
+  bot.command('invite_partner', async (ctx) => {
+    await handlePartnershipInvite(ctx, partnershipService)
+  })
+
+  bot.command('join_partner', async (ctx) => {
+    await handlePartnershipJoin(ctx, partnershipService)
   })
 
   bot.command('report', async (ctx) => {

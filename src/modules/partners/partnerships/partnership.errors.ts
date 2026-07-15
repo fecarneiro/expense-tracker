@@ -9,15 +9,22 @@ export class CannotPartnerWithYourselfError extends AppError {
 
 export class InviteeAlreadyHasActivePartnership extends AppError {
   constructor() {
-    super('Invitee already has active partnership', 400)
+    super('You already have an active partnership', 400)
     this.name = 'InviteeAlreadyHasActivePartnership'
   }
 }
 
 export class InviterAlreadyHasActivePartnership extends AppError {
   constructor() {
-    super('Inviter already has active partnership', 400)
+    super('You already have an active partnership', 400)
     this.name = 'InviterAlreadyHasActivePartnership'
+  }
+}
+
+export class InviteNoLongerValidError extends AppError {
+  constructor() {
+    super('This invite is no longer valid', 400)
+    this.name = 'InviteNoLongerValidError'
   }
 }
 

@@ -5,6 +5,7 @@ import { partnershipsTable } from './partnerships.schema.js'
 import { settlementsTable } from './settlements.schema.js'
 import { sharedCategoriesTable } from './shared-categories.schema.js'
 
+// TODO: idempotency key
 export const sharedExpensesTable = pgTable(
   'shared_expenses',
   {

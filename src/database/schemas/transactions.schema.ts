@@ -15,7 +15,8 @@ import { categoriesTable } from './categories.schema.js'
 import { usersTable } from './users.schema.js'
 
 export const transactionTypeEnum = pgEnum('transaction_type', ['income', 'expense'])
-
+// TODO: idempotency key
+//TODO: remove pgEnum
 export const transactionsTable = pgTable(
   'transactions',
   {
