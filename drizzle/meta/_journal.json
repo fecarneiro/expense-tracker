@@ -162,6 +162,13 @@
       "when": 1784117757148,
       "tag": "0022_little_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1784121469921,
+      "tag": "0023_motionless_champions",
+      "breakpoints": true
     }
   ]
 }

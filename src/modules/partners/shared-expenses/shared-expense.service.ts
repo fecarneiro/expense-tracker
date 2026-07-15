@@ -5,6 +5,7 @@ import type { CategoryRepository } from '../../categories/category.repository.js
 import type { Category } from '../../categories/category.types.js'
 import type { TransactionRepository } from '../../transactions/transaction.repository.js'
 import type { PartnershipRepository } from '../partnerships/partnership.repository.js'
+
 import { partnerOf } from '../partnerships/partnership.utils.js'
 import { SharedCategoryNotFoundError } from '../shared-categories/shared-category.errors.js'
 import type { SharedCategoryRepository } from '../shared-categories/shared-category.repository.js'
@@ -30,6 +31,7 @@ export class SharedExpenseService {
     private readonly db: Database,
   ) {}
 
+  // TODO: partnership will be validated from middleware
   async create(input: CreateSharedExpense): Promise<SharedExpense> {
     const { userId, sharedCategoryId, totalAmountCents, split } = input
 

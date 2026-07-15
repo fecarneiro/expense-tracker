@@ -28,6 +28,13 @@ export class PartnershipCreationError extends AppError {
   }
 }
 
+export class PartnershipNotFoundError extends AppError {
+  constructor() {
+    super('Partnership not found', 404)
+    this.name = 'PartnershipNotFoundError'
+  }
+}
+
 export class NotAPartnershipMemberError extends AppError {
   constructor() {
     super('User is not a member of this partnership', 403)

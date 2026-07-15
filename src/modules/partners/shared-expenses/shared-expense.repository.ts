@@ -1,3 +1,4 @@
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import type { Database, DatabaseClient } from '../../../database/db.js'
 import {
   type NewSharedExpenseRow,
@@ -20,5 +21,33 @@ export class SharedExpenseRepository {
     }
 
     return sharedExpense
+  }
+
+  async findPendingByPartnership(
+    partnershipId: string,
+    client: DatabaseClient = this.db,
+  ): Promise<SharedExpense[]> {
+    return client
+      .select()
+      .from(sharedExpensesTable)
+      .where(
+        and(
+          eq(sharedExpensesTable.partnershipId, partnershipId),
+          isNull(sharedExpensesTable.settlementId),
+        ),
+      )
+  }
+
+  async markAsSettled(
+    expenseIds: string[],
+    settlementId: string,
+    client: DatabaseClient = this.db,
+  ): Promise<void> {
+    if (expenseIds.length === 0) return
+
+    await client
+      .update(sharedExpensesTable)
+      .set({ settlementId })
+      .where(inArray(sharedExpensesTable.id, expenseIds))
   }
 }

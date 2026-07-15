@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import { check, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { usersTable } from '../users.schema.js'
 import { partnershipsTable } from './partnerships.schema.js'
+import { settlementsTable } from './settlements.schema.js'
 import { sharedCategoriesTable } from './shared-categories.schema.js'
 
 export const sharedExpensesTable = pgTable(
@@ -22,8 +23,7 @@ export const sharedExpensesTable = pgTable(
     sharedCategoryId: uuid()
       .notNull()
       .references(() => sharedCategoriesTable.id),
-    // FK to settlements when that module exists
-    settlementId: uuid(),
+    settlementId: uuid().references(() => settlementsTable.id),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
