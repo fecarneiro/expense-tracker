@@ -1,4 +1,8 @@
-import type { CreateManyCategoriesInput } from './category.types.js'
+import type { CategorySystemDefaultsInput } from './category.types.js'
+
+export const CATEGORY_SYSTEM_KEY = {
+  UNCATEGORIZED: 'uncategorized',
+} as const
 
 export const defaultCategories = [
   // Income
@@ -20,4 +24,7 @@ export const defaultCategories = [
   { name: 'Bills', categoryType: 'expense' },
   { name: 'Savings', categoryType: 'expense' },
   { name: 'Other', categoryType: 'expense' },
-] as const satisfies CreateManyCategoriesInput['categories']
+
+  // ---- Special case for partnerships
+  { name: 'Uncategorized', categoryType: 'expense', systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED },
+] as const satisfies CategorySystemDefaultsInput['categories']

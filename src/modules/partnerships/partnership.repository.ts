@@ -14,15 +14,12 @@ import type { Partnership } from './partnership.types.js'
 
 export type PartnershipRow = typeof partnershipsTable.$inferSelect
 export type NewPartnershipRow = typeof partnershipsTable.$inferInsert
-
 export type SharedCategoryRow = typeof sharedCategoriesTable.$inferSelect
 export type NewSharedCategoryRow = typeof sharedCategoriesTable.$inferInsert
-
 export type FindSharedCategory = {
   sharedCategoryId: string
   partnershipId: string
 }
-
 export type SharedCategoryMappingRow = typeof sharedCategoriesMappingTable.$inferSelect
 export type NewSharedCategoryMappingRow = typeof sharedCategoriesMappingTable.$inferInsert
 

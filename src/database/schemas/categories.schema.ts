@@ -14,6 +14,7 @@ export const categoriesTable = pgTable(
       .references(() => usersTable.id, { onDelete: 'cascade' }),
     name: varchar({ length: 50 }).notNull(),
     categoryType: categoryTypeEnum().notNull(),
+    systemKey: varchar({ length: 50 }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

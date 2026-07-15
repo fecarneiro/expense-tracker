@@ -9,8 +9,8 @@ import {
 import type { CategoryRepository } from './category.repository.js'
 import type {
   Category,
+  CategorySystemDefaultsInput,
   CreateCategoryInput,
-  CreateDefaultCategoriesInput,
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
@@ -33,10 +33,10 @@ export class CategoryService {
   }
 
   async createDefaultsForUser(
-    data: CreateDefaultCategoriesInput,
+    data: CategorySystemDefaultsInput,
     dbClient?: DatabaseClient,
   ): Promise<Category[]> {
-    const categories = await this.categoryRepository.createMany(
+    const categories = await this.categoryRepository.createSystemDefaults(
       {
         userId: data.userId,
         categories: defaultCategories,
@@ -77,8 +77,12 @@ export class CategoryService {
   }
 
   async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
-    // Does not throw because it is used only by bot flows.
-    return this.categoryRepository.findByNameAndType(data)
+    const category = this.categoryRepository.findByNameAndType(data)
+    if (!category) {
+      throw new CategoryNotFoundError()
+    }
+
+    return category
   }
 
   async findAll(data: FindAllCategoriesInput): Promise<CategoryResponse[]> {

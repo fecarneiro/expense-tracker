@@ -5,8 +5,8 @@ import { categoriesTable, type NewCategoryRow } from '../../database/schemas/cat
 import { CategoryAlreadyExistsError, CategoryInUseError } from './category.error.js'
 import type {
   Category,
+  CategorySystemDefaultsInput,
   CreateCategoryInput,
-  CreateManyCategoriesInput,
   DeleteCategoryInput,
   DeletedCategory,
   FindAllCategoriesInput,
@@ -39,14 +39,15 @@ export class CategoryRepository {
     }
   }
 
-  async createMany(
-    data: CreateManyCategoriesInput,
+  async createSystemDefaults(
+    data: CategorySystemDefaultsInput,
     dbClient: DatabaseClient = this.database,
   ): Promise<Category[]> {
     const values: NewCategoryRow[] = data.categories.map((category) => ({
       userId: data.userId,
       name: category.name,
       categoryType: category.categoryType,
+      systemKey: category?.systemKey,
     }))
 
     try {

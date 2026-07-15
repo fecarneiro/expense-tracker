@@ -1,8 +1,23 @@
-import type { CategoryRow } from '../../database/schemas/categories.schema.js'
-
 export type CategoryType = 'income' | 'expense'
 
-export type Category = CategoryRow
+export type Category = {
+  categoryType: CategoryType
+  createdAt: Date
+  id: string
+  name: string
+  userId: string
+}
+
+export type CategorySystemDefaults = {
+  categoryType: CategoryType
+  name: string
+  systemKey?: string
+}
+
+export type CategorySystemDefaultsInput = {
+  userId: string
+  categories: ReadonlyArray<CategorySystemDefaults>
+}
 
 export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 
@@ -10,8 +25,6 @@ export type CreateManyCategoriesInput = {
   userId: string
   categories: ReadonlyArray<Pick<Category, 'name' | 'categoryType'>>
 }
-
-export type CreateDefaultCategoriesInput = Pick<Category, 'userId'>
 
 export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name' | 'categoryType'>
 
