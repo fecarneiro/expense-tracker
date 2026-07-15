@@ -7,6 +7,7 @@ export function registerBotCommands(bot: Bot<BotContext>) {
     { command: 'link', description: 'Link an existing API account' },
     { command: 'expense', description: 'Add expense' },
     { command: 'income', description: 'Add income' },
+    { command: 'shared', description: 'Add shared expense with partner' },
     { command: 'last', description: 'View last transactions' },
     { command: 'report', description: 'View balance' },
   ])

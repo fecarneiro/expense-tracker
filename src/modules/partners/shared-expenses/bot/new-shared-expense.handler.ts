@@ -1,91 +1,127 @@
 import { InlineKeyboard } from 'grammy'
+import { centsToString } from '../../../../utils/money.utils.js'
 import type { BotConversation, BotConversationContext } from '../../../bot/bot.context.js'
-import { transactionAmountParser } from '../../../transactions/bot/parsers/transaction-amount.parser.js'
-import type { TransactionService } from '../../../transactions/transaction.service.js'
-import type { TransactionType } from '../../../transactions/transaction.types.js'
 import type { SharedCategoryService } from '../../shared-categories/shared-category.service.js'
-import type { CreateSharedExpense } from '../shared-expense.service.js'
-import type { SplitType } from '../shared-expense.types.js'
-import { sharedExpenseAmountParser } from './parsers/shared-expense-amount.parser.js'
+import type { SharedExpenseService } from '../shared-expense.service.js'
+import { SPLIT_TYPE, type SplitType } from '../shared-expense.types.js'
+import { resolveSplitAmounts } from '../shared-expense.utils.js'
+import {
+  type SharedExpenseAmountCents,
+  sharedExpenseAmountParser,
+} from './parsers/shared-expense-amount.parser.js'
 
-export type NewSharedExpenseConversation = CreateSharedExpense & {
-  partnershipId: string
-  partnerId: string
-  sharedCategoryName: string
-}
-
-export function handleNewSharedTransactionConversation(
+export function handleNewSharedExpenseConversation(
   sharedCategoryService: SharedCategoryService,
-  transactionService: TransactionService,
+  sharedExpenseService: SharedExpenseService,
 ) {
-  return async function handleNewSharedTransaction(
+  return async function handleNewSharedExpense(
     conversation: BotConversation,
     ctx: BotConversationContext,
-    transactionType: TransactionType,
   ) {
+    const userId = await conversation.external((ctx) => ctx.userId)
     const partnership = await conversation.external((ctx) => ctx.partnership)
-    // TODO: Review this message.
-    if (!partnership) return ctx.reply('You are not part of a partnership yet.')
 
-    const { id: partnershipId, partnerId } = partnership
+    if (!partnership) {
+      return ctx.reply('You are not part of a partnership yet.')
+    }
 
     const sharedCategories = await conversation.external(() =>
-      sharedCategoryService.findPartnershipSharedCategories(partnershipId),
+      sharedCategoryService.findPartnershipSharedCategories(partnership.id),
     )
 
     if (sharedCategories.length === 0) {
-      return ctx.reply(`Create at least one shared category before adding a partner's expense.`)
+      return ctx.reply('Create at least one shared category before adding a shared expense.')
     }
 
-    // ── Amount Input ─────────────────────────────
-    let amountCents: number | null = null
-    const split: SplitType | null = null
+    // ── Amount ─────────────────────────────────────
+    let amountCents: SharedExpenseAmountCents | null = null
 
-    await ctx.reply(`How much did you spend?`)
+    await ctx.reply('How much did you spend?')
 
     do {
       const { message } = await conversation.waitFor('message:text')
       amountCents = sharedExpenseAmountParser(message.text)
 
-      if (amountCents == null) await ctx.reply('Invalid amount. Send a positive number, e.g. 12.50')
+      if (amountCents == null) {
+        await ctx.reply('Invalid amount. Send a positive number, e.g. 12.50')
+      }
     } while (amountCents == null)
 
-    // ── Category Keyboard ─────────────────────────────
+    // ── Shared category ────────────────────────────
+    const categoryKeyboard = new InlineKeyboard()
+    for (const category of sharedCategories) {
+      categoryKeyboard.text(category.name, `cat:${category.id}`).row()
+    }
+    await ctx.reply('Choose a shared category:', { reply_markup: categoryKeyboard })
 
-    const kb = new InlineKeyboard()
-    for (const c of sharedCategories) kb.text(c.name, `cat:${c.id}`).row()
-    await ctx.reply("Choose a partnership's shared category:", { reply_markup: kb })
-
-    const sharedCategoryId: string | null = null
-    const sharedCategoryName: string | null = null
+    let sharedCategoryId: string | null = null
+    let sharedCategoryName = ''
 
     do {
       const choice = await conversation.waitForCallbackQuery(/^cat:(.+)$/)
-      const sharedCategory = sharedCategories.find((c) => c.id === choice.match[1])
+      const sharedCategory = sharedCategories.find((category) => category.id === choice.match[1])
 
-      if (!category) {
+      if (!sharedCategory) {
         await choice.answerCallbackQuery({ text: 'Invalid category' })
         continue
       }
 
-      categoryId = category.id
-      categoryName = category.name
+      sharedCategoryId = sharedCategory.id
+      sharedCategoryName = sharedCategory.name
       await choice.answerCallbackQuery()
-      await choice.editMessageText(`⏳ Saving your transaction...`)
-    } while (categoryId === null)
+      await choice.editMessageText(`Category: ${sharedCategoryName}`)
+    } while (sharedCategoryId === null)
 
-    // ── Date Resolution ─────────────────────────────
-    await transactionService.create({
-      userId,
-      amountCents,
-      categoryId,
-      occurredAt: new Date(),
-      description: null,
-    })
+    // ── Split ──────────────────────────────────────
+    const halfSplit = resolveSplitAmounts(amountCents, SPLIT_TYPE.HALF)
+    const fullSplit = resolveSplitAmounts(amountCents, SPLIT_TYPE.FULL)
+    const amountLabel = centsToString(amountCents)
 
-    // ── Reply ─────────────────────────────────────
-    const amount = centsToString(amountCents)
+    const splitKeyboard = new InlineKeyboard()
+      .text(`Half ($${centsToString(halfSplit.owedAmountCents)} each)`, `split:${SPLIT_TYPE.HALF}`)
+      .row()
+      .text(
+        `Partner owes all ($${centsToString(fullSplit.owedAmountCents)})`,
+        `split:${SPLIT_TYPE.FULL}`,
+      )
 
-    return ctx.reply(`${label} added ✅\n\n` + `Amount: $${amount}\n` + `Category: ${categoryName}`)
+    await ctx.reply(`How should $${amountLabel} be split?`, { reply_markup: splitKeyboard })
+
+    let split: SplitType | null = null
+
+    do {
+      const choice = await conversation.waitForCallbackQuery(/^split:(half|full)$/)
+      const selectedSplit = choice.match[1]
+
+      if (selectedSplit !== SPLIT_TYPE.HALF && selectedSplit !== SPLIT_TYPE.FULL) {
+        await choice.answerCallbackQuery({ text: 'Invalid split' })
+        continue
+      }
+
+      split = selectedSplit
+      await choice.answerCallbackQuery()
+      await choice.editMessageText('⏳ Saving your shared expense...')
+    } while (split === null)
+
+    await conversation.external(() =>
+      sharedExpenseService.create({
+        userId,
+        totalAmountCents: amountCents,
+        sharedCategoryId,
+        split,
+      }),
+    )
+
+    const splitLabel =
+      split === SPLIT_TYPE.HALF
+        ? `Half ($${centsToString(halfSplit.owedAmountCents)} each)`
+        : `Partner owes all ($${amountLabel})`
+
+    return ctx.reply(
+      `Shared expense added ✅\n\n` +
+        `Amount: $${amountLabel}\n` +
+        `Category: ${sharedCategoryName}\n` +
+        `Split: ${splitLabel}`,
+    )
   }
 }
