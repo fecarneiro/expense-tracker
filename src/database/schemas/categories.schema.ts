@@ -23,6 +23,9 @@ export const categoriesTable = pgTable(
       table.categoryType,
       sql`lower(${table.name})`,
     ),
+    uniqueIndex('unique_category_user_system_key')
+      .on(table.userId, table.systemKey)
+      .where(sql`${table.systemKey} IS NOT NULL`),
     unique('unique_category_id_user_id').on(table.id, table.userId),
   ],
 )

@@ -27,3 +27,10 @@ export class CategoryCreationFailedError extends AppError {
     this.name = 'CategoryCreationFailedError'
   }
 }
+
+export class CategorySystemProtectedError extends AppError {
+  constructor() {
+    super('System category cannot be modified', 403)
+    this.name = 'CategorySystemProtectedError'
+  }
+}

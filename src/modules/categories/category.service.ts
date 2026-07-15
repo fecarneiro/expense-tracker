@@ -9,12 +9,12 @@ import {
 import type { CategoryRepository } from './category.repository.js'
 import type {
   Category,
-  CategorySystemDefaultsInput,
   CreateCategoryInput,
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   FindCategoryByNameAndTypeInput,
+  FindCategoryBySystemKeyInput,
   FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
@@ -68,18 +68,24 @@ export class CategoryService {
     return toCategoryResponse(category)
   }
 
+  async findBySystemKey(data: FindCategoryBySystemKeyInput): Promise<Category> {
+    const category = await this.categoryRepository.findBySystemKey(data)
+
+    if (!category) {
+      throw new CategoryNotFoundError()
+    }
+
+    return category
+  }
+
   async findByType(data: FindCategoryByTypeInput): Promise<CategoryResponse[]> {
     const categories = await this.categoryRepository.findByType(data)
     return toCategoriesResponse(categories)
   }
 
   async findByNameAndType(data: FindCategoryByNameAndTypeInput): Promise<Category | null> {
-    const category = this.categoryRepository.findByNameAndType(data)
-    if (!category) {
-      throw new CategoryNotFoundError()
-    }
-
-    return category
+    // Does not throw because it is used only by bot flows.
+    return this.categoryRepository.findByNameAndType(data)
   }
 
   async findAll(data: FindAllCategoriesInput): Promise<CategoryResponse[]> {

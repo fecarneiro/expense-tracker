@@ -1,8 +1,23 @@
-import type { CategorySystemDefaultsInput } from './category.types.js'
+import type { CategoryType } from './category.types.js'
 
 export const CATEGORY_SYSTEM_KEY = {
   UNCATEGORIZED: 'uncategorized',
 } as const
+
+export type CategorySystemKey = (typeof CATEGORY_SYSTEM_KEY)[keyof typeof CATEGORY_SYSTEM_KEY]
+
+/** Seed-only shape. `systemKey` must not appear on public Category / create / update inputs. */
+export type CategorySystemDefault = {
+  name: string
+  categoryType: CategoryType
+  systemKey?: CategorySystemKey
+}
+
+/** Internal to repository `createSystemDefaults` + seed. Not part of the service public API. */
+export type CategorySystemDefaultsInput = {
+  userId: string
+  categories: ReadonlyArray<CategorySystemDefault>
+}
 
 export const defaultCategories = [
   // Income
@@ -24,7 +39,5 @@ export const defaultCategories = [
   { name: 'Bills', categoryType: 'expense' },
   { name: 'Savings', categoryType: 'expense' },
   { name: 'Other', categoryType: 'expense' },
-
-  // ---- Special case for partnerships
   { name: 'Uncategorized', categoryType: 'expense', systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED },
-] as const satisfies CategorySystemDefaultsInput['categories']
+] as const satisfies ReadonlyArray<CategorySystemDefault>

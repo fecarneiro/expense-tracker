@@ -3,11 +3,12 @@ import { transactionsTable } from '../../database/schemas/transactions.schema.js
 import { TEST_OCCURRED_AT_DATE } from '../../tests/constants.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
-import { defaultCategories } from './category.defaults.js'
+import { CATEGORY_SYSTEM_KEY, defaultCategories } from './category.defaults.js'
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
   CategoryNotFoundError,
+  CategorySystemProtectedError,
 } from './category.error.js'
 
 describe('CategoryService', () => {
@@ -70,8 +71,19 @@ describe('CategoryService', () => {
   test('createDefaultsForUser creates default categories for a user', async ({ container, db }) => {
     const owner = await insertTestUser(db)
 
-    const categories = await container.categoryService.createDefaultsForUser({ userId: owner.id })
+    const categories = await container.categoryService.createDefaultsForUser(owner.id)
     expect(categories.length).toBe(defaultCategories.length)
+
+    const uncategorized = await container.categoryService.findBySystemKey({
+      userId: owner.id,
+      systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+    })
+    expect(uncategorized).toMatchObject({
+      userId: owner.id,
+      name: 'Uncategorized',
+      categoryType: 'expense',
+    })
+    expect(uncategorized).not.toHaveProperty('systemKey')
   })
 
   test('createDefaultsForUser fails when the default categories already exist', async ({
@@ -80,10 +92,60 @@ describe('CategoryService', () => {
   }) => {
     const owner = await insertTestUser(db)
 
-    await container.categoryService.createDefaultsForUser({ userId: owner.id })
+    await container.categoryService.createDefaultsForUser(owner.id)
+    await expect(container.categoryService.createDefaultsForUser(owner.id)).rejects.toThrow(
+      new CategoryAlreadyExistsError(),
+    )
+  })
+
+  test('update fails for the uncategorized system category', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    await container.categoryService.createDefaultsForUser(owner.id)
+
+    const uncategorized = await container.categoryService.findBySystemKey({
+      userId: owner.id,
+      systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+    })
+
     await expect(
-      container.categoryService.createDefaultsForUser({ userId: owner.id }),
-    ).rejects.toThrow(new CategoryAlreadyExistsError())
+      container.categoryService.update({
+        id: uncategorized.id,
+        userId: owner.id,
+        name: 'Renamed',
+        categoryType: 'expense',
+      }),
+    ).rejects.toThrow(CategorySystemProtectedError)
+  })
+
+  test('delete fails for the uncategorized system category', async ({ container, db }) => {
+    const owner = await insertTestUser(db)
+    await container.categoryService.createDefaultsForUser(owner.id)
+
+    const uncategorized = await container.categoryService.findBySystemKey({
+      userId: owner.id,
+      systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+    })
+
+    await expect(
+      container.categoryService.delete({
+        id: uncategorized.id,
+        userId: owner.id,
+      }),
+    ).rejects.toThrow(CategorySystemProtectedError)
+  })
+
+  test('findBySystemKey fails when the system category does not exist', async ({
+    container,
+    db,
+  }) => {
+    const owner = await insertTestUser(db)
+
+    await expect(
+      container.categoryService.findBySystemKey({
+        userId: owner.id,
+        systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+      }),
+    ).rejects.toThrow(CategoryNotFoundError)
   })
 
   test('update changes the fields of the owner category', async ({ container, db }) => {

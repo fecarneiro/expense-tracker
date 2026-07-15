@@ -1,7 +1,7 @@
 import { describe } from 'vitest'
 import { TEST_EMAIL, TEST_PASSWORD } from '../../tests/constants.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
-import { defaultCategories } from '../categories/category.defaults.js'
+import { CATEGORY_SYSTEM_KEY, defaultCategories } from '../categories/category.defaults.js'
 import { CategoryAlreadyExistsError } from '../categories/category.error.js'
 import { InvalidCredentialsError } from './auth.error.js'
 
@@ -17,14 +17,25 @@ describe('AuthService', () => {
 
       const userCategories = await container.categoryService.findAll({ userId: user.id })
       expect(userCategories).toHaveLength(defaultCategories.length)
+
+      const uncategorized = await container.categoryService.findBySystemKey({
+        userId: user.id,
+        systemKey: CATEGORY_SYSTEM_KEY.UNCATEGORIZED,
+      })
+      expect(uncategorized).toMatchObject({
+        userId: user.id,
+        name: 'Uncategorized',
+        categoryType: 'expense',
+      })
+      expect(uncategorized).not.toHaveProperty('systemKey')
     })
 
     test('fails when the default categories already exist', async ({ container, db }) => {
       const user = await container.authService.register(registerInput)
 
-      await expect(
-        container.categoryService.createDefaultsForUser({ userId: user.id }, db),
-      ).rejects.toThrow(CategoryAlreadyExistsError)
+      await expect(container.categoryService.createDefaultsForUser(user.id, db)).rejects.toThrow(
+        CategoryAlreadyExistsError,
+      )
     })
   })
 

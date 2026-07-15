@@ -31,7 +31,7 @@ export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable().meta(
   example: null,
 })
 
-export const timeZoneField = ianaTimeZoneSchema.optional().meta({
+export const timezoneField = ianaTimeZoneSchema.optional().meta({
   example: 'America/New_York',
 })
 
@@ -39,7 +39,7 @@ export const timeZoneField = ianaTimeZoneSchema.optional().meta({
 export const userCredentialsBodySchema = z.strictObject({
   email: emailField,
   password: passwordField,
-  timeZone: timeZoneField,
+  timezone: timezoneField,
   currency: currencyField,
   locale: localeField,
 })
@@ -74,7 +74,7 @@ export const userResponseSchema = z
   .object({
     id: userIdField,
     email: emailField,
-    timeZone: timeZoneField,
+    timezone: timezoneField,
     currency: currencyField,
     locale: localeField,
     lastSeenAt: lastSeenAtField,

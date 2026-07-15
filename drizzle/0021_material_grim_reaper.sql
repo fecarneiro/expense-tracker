@@ -1,0 +1,2 @@
+ALTER TABLE "categories" ADD COLUMN "system_key" varchar(50);--> statement-breakpoint
+CREATE UNIQUE INDEX "unique_category_user_system_key" ON "categories" USING btree ("user_id","system_key") WHERE "categories"."system_key" IS NOT NULL;
