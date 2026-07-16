@@ -26,6 +26,7 @@ The Bot usage documentation can be found in the [Bot](#bot) section.
 * [Authentication](#authentication)
 * [Error Format](#error-format)
 * [Bot](#bot)
+* [Partnerships](#partnerships)
 * [Architecture](#architecture)
 * [Project Structure](#project-structure)
 * [Technical Decisions](#technical-decisions)
@@ -38,13 +39,13 @@ The Bot usage documentation can be found in the [Bot](#bot) section.
 
 * User registration and authentication
 * Default income and expense categories seeded automatically on registration
-* Authenticated user profile management with time zone, currency and locale preferences
+* Authenticated user profile management with time zone, currency and locale preferences, password change and account deletion
 * Category creation, listing, update and deletion
-* Income and expense registration
-* User transaction querying
+* Income and expense registration, querying, update and deletion
 * Monthly balance reports with income, expense and balance summaries grouped by month in the user time zone
+* Optional partnerships for shared expenses, category mapping, pending balances and settlements
 * Interactive API documentation with OpenAPI and Scalar
-* Optional Bot integration with slash commands and fast text-based transaction registration
+* Optional Bot integration with slash commands, fast text-based transaction registration and partnership flows
 
 ## Stack
 
@@ -200,13 +201,7 @@ If you prefer to run the application using Docker and Docker Compose, you do not
    ```bash
    docker compose up --build
    ```
-   This will start both the PostgreSQL database (`expense-tracker-db`) and the API server (`expense-tracker-api`) in development mode.
-
-3. **Run database migrations:**
-   Since the database container starts empty, you need to apply the migrations. With the containers running, execute the following command in another terminal:
-   ```bash
-   docker compose exec api pnpm db:migrate
-   ```
+   This will start both the PostgreSQL database (`expense-tracker-db`) and the API server (`expense-tracker-api`) in development mode. Migrations run automatically when the API container starts.
 
 The API will be available at:
 
@@ -282,13 +277,17 @@ curl http://localhost:3000/health
 
 ## Main Resources
 
-| Resource        | Description                                     |
-| --------------- | ----------------------------------------------- |
-| `/auth`         | User registration, login and authentication     |
-| `/users`        | Authenticated user profile management           |
-| `/categories`   | Category creation, listing, update and deletion (defaults are seeded on registration) |
-| `/transactions` | Income and expense registration, querying and monthly balance reports |
-| `/bot`     | Optional Bot integration               |
+| Resource             | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| `/auth`              | User registration, login and authentication     |
+| `/users`             | Authenticated user profile management           |
+| `/categories`        | Category creation, listing, update and deletion (defaults are seeded on registration) |
+| `/transactions`      | Income and expense registration, querying, update, deletion and monthly balance reports |
+| `/bot`               | Bot account linking                             |
+| `/partnerships`      | Partnership invite codes, creation and current partnership |
+| `/shared-categories` | Shared category listing and user category mapping |
+| `/shared-expenses`   | Shared expense creation with `HALF` or `FULL` splits |
+| `/settlements`       | Pending partnership balance and settlements     |
 
 ## Quick Example
 
@@ -413,14 +412,23 @@ The integration is optional. If `TELEGRAM_BOT_TOKEN` is not defined, the applica
 
 ### Available commands
 
-| Command        | Description                                           |
-| -------------- | ----------------------------------------------------- |
-| `/start`       | Starts the interaction with the bot                   |
-| `/link <code>` | Links the bot account to an existing API account |
-| `/expense`     | Registers a new expense                               |
-| `/income`      | Registers a new income                                |
-| `/last`        | Lists the latest transactions                         |
-| `/report`      | Shows income, expense and balance summaries by month |
+| Command                   | Description                                              |
+| ------------------------- | -------------------------------------------------------- |
+| `/start`                  | Starts the interaction with the bot                      |
+| `/help`                   | Lists available commands                                 |
+| `/link <code>`            | Links the bot account to an existing API account         |
+| `/cancel`                 | Cancels the current conversation                         |
+| `/expense`                | Registers a new expense                                  |
+| `/income`                 | Registers a new income                                   |
+| `/last`                   | Lists the latest transactions                            |
+| `/report`                 | Shows income, expense and balance summaries by month     |
+| `/invite_partner`         | Generates a partnership invite code                      |
+| `/join_partner <code>`    | Joins a partnership with an invite code                  |
+| `/shared`                 | Registers a shared expense with the partner              |
+| `/balance`                | Shows who owes what                                      |
+| `/pending`                | Lists open shared expenses                               |
+| `/settle`                 | Settles the current partnership balance                  |
+| `/map_category`           | Maps a personal category to a shared category            |
 
 ### Fast transaction messages
 
@@ -454,12 +462,19 @@ To use the protected bot commands, the bot account must first be linked to an ex
 
 The flow works as follows:
 
-1. The user generates a linking code through the API.
+1. The user generates a linking code through `GET /bot/generate-linking-code`.
 2. In Telegram, the user sends the `/link` command with the generated code.
 3. The bot validates the code and associates the `telegramId` with the API user.
-4. After linking, the user can use commands such as `/expense`, `/income`, `/last` and `/report`, or register transactions by sending a text message in the `<amount> <category>` format.
+4. After linking, the user can use personal and partnership commands, or register transactions by sending a text message in the `<amount> <category>` format.
 
-Example:
+Generate a linking code:
+
+```bash
+curl http://localhost:3000/bot/generate-linking-code \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+Then link in Telegram:
 
 ```txt
 /link 123456
@@ -504,6 +519,44 @@ Bot user
   -> Database
 ```
 
+## Partnerships
+
+The project supports optional two-person partnerships for shared expenses.
+
+When a partnership is created, default shared categories are seeded automatically (`Eating Out`, `Grocery`, `House`, `Other`). Each partner can map personal categories to those shared categories so shared expenses can also create matching personal transactions.
+
+### API resources
+
+| Method | Endpoint                         | Description                                      |
+| ------ | -------------------------------- | ------------------------------------------------ |
+| `POST` | `/partnerships/linking-code`     | Generates a partnership invite code              |
+| `POST` | `/partnerships`                  | Creates a partnership with an invite code        |
+| `GET`  | `/partnerships/me`               | Returns the current partnership context          |
+| `GET`  | `/shared-categories`             | Lists shared categories for the partnership      |
+| `POST` | `/shared-categories/mappings`    | Maps a personal category to a shared category    |
+| `POST` | `/shared-expenses`               | Creates a shared expense (`HALF` or `FULL`)      |
+| `GET`  | `/settlements/balance`           | Returns the pending partnership balance          |
+| `POST` | `/settlements`                   | Settles the current pending balance              |
+
+`/shared-categories`, `/shared-expenses` and `/settlements` require an active partnership.
+
+### Split types
+
+Shared expenses support two split modes:
+
+* `HALF` — splits the total between both partners. On odd amounts, the remainder cent goes to the payer.
+* `FULL` — the partner owes the full amount; the payer does not record a personal share.
+
+### Flow
+
+1. One user generates an invite code through `POST /partnerships/linking-code` or `/invite_partner` in the bot.
+2. The other user joins with `POST /partnerships` and `{ "code": 123456 }`, or `/join_partner 123456` in the bot.
+3. Partners optionally map personal categories with `POST /shared-categories/mappings` or `/map_category`.
+4. Shared expenses are created with `POST /shared-expenses` or `/shared`.
+5. Pending balances can be checked with `GET /settlements/balance` or `/balance`, and settled with `POST /settlements` or `/settle`.
+
+These partnership endpoints are available through the REST API and the bot, but are not yet included in the OpenAPI document served at `/docs`.
+
 ## Architecture
 
 The application is organized by domain modules, with a separation between the HTTP layer, business rules and data access.
@@ -532,7 +585,7 @@ Each layer has a specific responsibility:
 
 Dependency composition is centralized in the application container. This avoids instantiating services and repositories directly inside routes, keeping the code more organized and easier to test and maintain.
 
-The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions` and `bot`.
+The modular structure also helps keep each domain isolated, such as `auth`, `users`, `categories`, `transactions`, `bot` and `partners`.
 
 ## Project Structure
 
@@ -545,8 +598,14 @@ src/
 ├── middlewares/     # Express middlewares
 ├── modules/         # Domain modules
 │   ├── auth/
-│   ├── categories/
 │   ├── bot/
+│   ├── categories/
+│   ├── linking-codes/
+│   ├── partners/
+│   │   ├── partnerships/
+│   │   ├── shared-categories/
+│   │   ├── shared-expenses/
+│   │   └── settlements/
 │   ├── transactions/
 │   └── users/
 ├── openapi/         # OpenAPI document composition
@@ -582,7 +641,7 @@ This allows the same API to be consumed by different clients, such as a web appl
 
 ### Modular organization
 
-The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions` and `bot`.
+The application was organized by domain modules, such as `auth`, `users`, `categories`, `transactions`, `bot` and `partners`.
 
 This choice keeps responsibilities close to the domain they belong to, avoiding a structure based only on technical file types.
 
@@ -654,7 +713,9 @@ This command runs type checking, linting and automated tests.
 
 ### Git hooks
 
-The project uses Husky to run checks before pushing changes.
+The project uses Husky to run checks before committing and pushing changes.
+
+The `pre-commit` hook runs `lint-staged`, which applies Biome checks to staged files.
 
 The `pre-push` hook runs:
 
@@ -662,7 +723,7 @@ The `pre-push` hook runs:
 pnpm typecheck && pnpm test
 ```
 
-This helps prevent pushing code with TypeScript errors or failing tests.
+This helps prevent committing unformatted code and pushing changes with TypeScript errors or failing tests.
 
 ## How to Contribute
 
