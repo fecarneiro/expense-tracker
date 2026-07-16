@@ -1,5 +1,5 @@
 import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
+import { categoriesTable } from '../../database/schemas/categories.schema.js'
 import type { CategoryType } from '../../modules/categories/category.types.js'
 
 export const DEFAULT_CATEGORY_NAME = 'Eating Out'

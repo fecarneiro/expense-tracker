@@ -1,13 +1,13 @@
 import { and, desc, eq, getTableColumns, gte, lt, sql } from 'drizzle-orm'
 
 import { isForeignKeyViolation } from '../../database/db.error.js'
-import type { Database } from '../../database/db.js'
-import { categoriesTable } from '../../database/schemas/category.schema.js'
+import type { Database, DatabaseClient } from '../../database/db.js'
+import { categoriesTable } from '../../database/schemas/categories.schema.js'
 import {
   type NewTransactionRow,
   type TransactionRow,
   transactionsTable,
-} from '../../database/schemas/transaction.schema.js'
+} from '../../database/schemas/transactions.schema.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
@@ -40,9 +40,12 @@ const expenseTotalSql = sql<number>`
 export class TransactionRepository {
   constructor(private readonly database: Database) {}
 
-  async create(data: NewTransactionRow): Promise<TransactionRow | null> {
+  async create(
+    data: NewTransactionRow,
+    client: DatabaseClient = this.database,
+  ): Promise<TransactionRow | null> {
     try {
-      const [transaction] = await this.database.insert(transactionsTable).values(data).returning()
+      const [transaction] = await client.insert(transactionsTable).values(data).returning()
 
       return transaction ?? null
     } catch (err) {

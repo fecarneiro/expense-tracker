@@ -1,5 +1,5 @@
 import { bigint, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
-import { usersTable } from './user.schema.js'
+import { usersTable } from './users.schema.js'
 
 export const botAccountsTable = pgTable('bot_accounts', {
   id: uuid().primaryKey().defaultRandom(),

@@ -6,10 +6,11 @@ export type UserResponse = z.infer<typeof userResponseSchema>
 export type UserPreferences = z.infer<typeof userPreferencesSchema>
 
 export function toUserResponse(user: User): UserResponse {
-  const { passwordHash, createdAt, ...fields } = user
+  const { passwordHash, createdAt, timeZone, lastSeenAt, ...fields } = user
   return userResponseSchema.parse({
     ...fields,
-    lastSeenAt: fields.lastSeenAt?.toISOString() ?? null,
+    timezone: timeZone,
+    lastSeenAt: lastSeenAt?.toISOString() ?? null,
   })
 }
 

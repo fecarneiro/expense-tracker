@@ -1,7 +1,10 @@
-import { sql } from 'drizzle-orm'
+import { getTableName, is, sql, Table } from 'drizzle-orm'
 import type { Database } from '../../database/db.js'
+import * as schema from '../../database/schemas/index.js'
 
-const TABLES = ['transactions', 'categories', 'bot_linking_codes', 'bot_accounts', 'users'] as const
+const TABLES = Object.values(schema)
+  .filter((value) => is(value, Table))
+  .map(getTableName)
 
 export async function cleanDbTest(db: Database) {
   await db.execute(sql.raw(`TRUNCATE ${TABLES.join(', ')} RESTART IDENTITY CASCADE`))

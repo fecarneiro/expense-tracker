@@ -12,7 +12,7 @@ import { toLoginResponse, toRegisterResponse } from './auth.mapper.js'
 const userResponse: UserResponse = {
   id: '019e8885-153c-7c82-af4a-28a31559e01e',
   email: TEST_EMAIL,
-  timeZone: DEFAULT_USER_TIME_ZONE,
+  timezone: DEFAULT_USER_TIME_ZONE,
   currency: DEFAULT_USER_CURRENCY,
   locale: DEFAULT_USER_LOCALE,
   lastSeenAt: null,

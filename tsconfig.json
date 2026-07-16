@@ -1,14 +1,10 @@
 {
-  "$schema": "https://www.schemastore.org/tsconfig",
+  "$schema": "https://json.schemastore.org/tsconfig",
 
   "compilerOptions": {
-    "target": "ES2025",
-    "lib": ["ES2025"],
-
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
-
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
@@ -16,16 +12,12 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noUncheckedSideEffectImports": true,
-
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-
     "types": ["node"],
-
     "noEmit": true
   },
 

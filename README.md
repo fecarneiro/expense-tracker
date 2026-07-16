@@ -305,7 +305,7 @@ curl -X POST http://localhost:3000/auth/register \
   }'
 ```
 
-Registration also accepts optional `timeZone` (IANA), `currency` (ISO 4217) and `locale` fields.
+Registration also accepts optional `timezone` (IANA), `currency` (ISO 4217) and `locale` fields.
 
 ### Log in
 

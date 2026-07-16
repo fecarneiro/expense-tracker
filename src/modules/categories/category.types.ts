@@ -1,17 +1,17 @@
-import type { CategoryRow } from '../../database/schemas/category.schema.js'
+import type { CategorySystemKey } from './category.defaults.js'
 
 export type CategoryType = 'income' | 'expense'
 
-export type Category = CategoryRow
-
-export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
-
-export type CreateManyCategoriesInput = {
+/** Public domain category — never includes `systemKey`. */
+export type Category = {
+  categoryType: CategoryType
+  createdAt: Date
+  id: string
+  name: string
   userId: string
-  categories: ReadonlyArray<Pick<Category, 'name' | 'categoryType'>>
 }
 
-export type CreateDefaultCategoriesInput = Pick<Category, 'userId'>
+export type CreateCategoryInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
 
 export type UpdateCategoryInput = Pick<Category, 'id' | 'userId' | 'name' | 'categoryType'>
 
@@ -20,6 +20,11 @@ export type FindCategoryByIdInput = Pick<Category, 'id' | 'userId'>
 export type FindCategoryByTypeInput = Pick<Category, 'userId' | 'categoryType'>
 
 export type FindCategoryByNameAndTypeInput = Pick<Category, 'userId' | 'name' | 'categoryType'>
+
+export type FindCategoryBySystemKeyInput = {
+  userId: string
+  systemKey: CategorySystemKey
+}
 
 export type FindAllCategoriesInput = Pick<Category, 'userId'>
 

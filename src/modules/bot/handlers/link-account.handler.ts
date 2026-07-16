@@ -1,6 +1,6 @@
+import { linkingCodeParser } from '../../linking-codes/linking-code.schemas.js'
 import type { BotContext } from '../bot.context.js'
 import type { BotService } from '../bot.service.js'
-import { linkingCodeParser } from '../parsers/link-account.parser.js'
 
 export async function handleLinkAccount(ctx: BotContext, botService: BotService) {
   const telegramId = ctx.from?.id

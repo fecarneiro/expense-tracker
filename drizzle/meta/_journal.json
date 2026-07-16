@@ -120,6 +120,62 @@
       "when": 1783438639741,
       "tag": "0016_omniscient_cerise",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783588054786,
+      "tag": "0017_tired_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783592393321,
+      "tag": "0018_serious_sinister_six",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1784055394507,
+      "tag": "0019_cultured_bloodstorm",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1784071079537,
+      "tag": "0020_crazy_dreaming_celestial",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1784110818688,
+      "tag": "0021_material_grim_reaper",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1784117757148,
+      "tag": "0022_little_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1784121469921,
+      "tag": "0023_motionless_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784146578828,
+      "tag": "0024_bitter_corsair",
+      "breakpoints": true
     }
   ]
 }

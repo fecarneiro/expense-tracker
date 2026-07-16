@@ -2,11 +2,19 @@ import type { Database } from './database/db.js'
 import { AuthService } from './modules/auth/auth.service.js'
 import { BotRepository } from './modules/bot/bot.repository.js'
 import { BotService } from './modules/bot/bot.service.js'
-import { LinkingCodeRepository } from './modules/bot/linking-code/linking-code.repository.js'
-import { LinkingCodeService } from './modules/bot/linking-code/linking-code.service.js'
-import { LinkingCodeRateLimiter } from './modules/bot/linking-code/linking-code-rate-limiter.js'
 import { CategoryRepository } from './modules/categories/category.repository.js'
 import { CategoryService } from './modules/categories/category.service.js'
+import { LinkingCodeRepository } from './modules/linking-codes/linking-code.repository.js'
+import { LinkingCodeService } from './modules/linking-codes/linking-code.service.js'
+import { PartnershipRepository } from './modules/partners/partnerships/partnership.repository.js'
+import { PartnershipService } from './modules/partners/partnerships/partnership.service.js'
+import { SettlementRepository } from './modules/partners/settlements/settlement.repository.js'
+import { SettlementService } from './modules/partners/settlements/settlement.service.js'
+import { SharedCategoryRepository } from './modules/partners/shared-categories/shared-category.repository.js'
+import { SharedCategoryService } from './modules/partners/shared-categories/shared-category.service.js'
+import { SharedExpenseRepository } from './modules/partners/shared-expenses/shared-expense.repository.js'
+import { SharedExpenseService } from './modules/partners/shared-expenses/shared-expense.service.js'
+
 import { TransactionRepository } from './modules/transactions/transaction.repository.js'
 import { TransactionService } from './modules/transactions/transaction.service.js'
 import { UserRepository } from './modules/users/user.repository.js'
@@ -23,7 +31,10 @@ export function createContainer(db: Database) {
   const transactionRepository = new TransactionRepository(db)
   const botRepository = new BotRepository(db)
   const linkingCodeRepository = new LinkingCodeRepository(db)
-  const linkingCodeRateLimiter = new LinkingCodeRateLimiter()
+  const partnershipRepository = new PartnershipRepository(db)
+  const sharedCategoryRepository = new SharedCategoryRepository(db)
+  const sharedExpenseRepository = new SharedExpenseRepository(db)
+  const settlementRepository = new SettlementRepository(db)
 
   // services
   const userService = new UserService(userRepository, passwordHasher)
@@ -35,8 +46,29 @@ export function createContainer(db: Database) {
     userRepository,
     userService,
   )
-  const linkingCodeService = new LinkingCodeService(linkingCodeRepository, linkingCodeRateLimiter)
+  const linkingCodeService = new LinkingCodeService(linkingCodeRepository)
   const botService = new BotService(botRepository, linkingCodeService)
+  const sharedCategoryService = new SharedCategoryService(sharedCategoryRepository, categoryService)
+  const partnershipService = new PartnershipService(
+    linkingCodeService,
+    partnershipRepository,
+    sharedCategoryService,
+    db,
+  )
+  const sharedExpenseService = new SharedExpenseService(
+    sharedExpenseRepository,
+    partnershipRepository,
+    sharedCategoryRepository,
+    categoryRepository,
+    transactionRepository,
+    db,
+  )
+  const settlementService = new SettlementService(
+    settlementRepository,
+    sharedExpenseRepository,
+    partnershipRepository,
+    db,
+  )
 
   return {
     authService,
@@ -44,6 +76,10 @@ export function createContainer(db: Database) {
     categoryService,
     transactionService,
     botService,
+    partnershipService,
+    sharedCategoryService,
+    sharedExpenseService,
+    settlementService,
   }
 }
 

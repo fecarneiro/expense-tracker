@@ -10,11 +10,11 @@ import type { CategoryRepository } from './category.repository.js'
 import type {
   Category,
   CreateCategoryInput,
-  CreateDefaultCategoriesInput,
   DeleteCategoryInput,
   FindAllCategoriesInput,
   FindCategoryByIdInput,
   FindCategoryByNameAndTypeInput,
+  FindCategoryBySystemKeyInput,
   FindCategoryByTypeInput,
   UpdateCategoryInput,
 } from './category.types.js'
@@ -32,13 +32,10 @@ export class CategoryService {
     return toCategoryResponse(category)
   }
 
-  async createDefaultsForUser(
-    data: CreateDefaultCategoriesInput,
-    dbClient?: DatabaseClient,
-  ): Promise<Category[]> {
-    const categories = await this.categoryRepository.createMany(
+  async createDefaultsForUser(userId: string, dbClient?: DatabaseClient): Promise<Category[]> {
+    const categories = await this.categoryRepository.createSystemDefaults(
       {
-        userId: data.userId,
+        userId,
         categories: defaultCategories,
       },
       dbClient,
@@ -69,6 +66,16 @@ export class CategoryService {
     }
 
     return toCategoryResponse(category)
+  }
+
+  async findBySystemKey(data: FindCategoryBySystemKeyInput): Promise<Category> {
+    const category = await this.categoryRepository.findBySystemKey(data)
+
+    if (!category) {
+      throw new CategoryNotFoundError()
+    }
+
+    return category
   }
 
   async findByType(data: FindCategoryByTypeInput): Promise<CategoryResponse[]> {

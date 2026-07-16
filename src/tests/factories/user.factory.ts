@@ -1,7 +1,7 @@
 // node -e "import('bcrypt').then(b => b.hash('12345678', 10).then(console.log))"
 
 import type { Database } from '../../database/db.js'
-import { usersTable } from '../../database/schemas/user.schema.js'
+import { usersTable } from '../../database/schemas/users.schema.js'
 import {
   DEFAULT_USER_CURRENCY,
   DEFAULT_USER_LOCALE,

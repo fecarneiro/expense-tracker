@@ -2,7 +2,7 @@
 
 FROM node:26-bookworm-slim
 
-RUN npm install -g pnpm@11.8.0
+RUN npm install -g pnpm@11.9.0
 
 WORKDIR /app
 
@@ -12,4 +12,4 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev:docker"]
+CMD ["pnpm", "exec", "tsx", "watch", "src/server.ts"]

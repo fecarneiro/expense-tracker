@@ -3,7 +3,7 @@ import { env } from './src/config/app.config.js'
 
 export default defineConfig({
   out: './drizzle',
-  schema: './src/database/schemas/*.schema.ts',
+  schema: './src/database/schemas/**/*.schema.ts',
   dialect: 'postgresql',
   casing: 'snake_case',
   dbCredentials: {

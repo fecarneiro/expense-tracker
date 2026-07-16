@@ -1,18 +1,45 @@
 import { eq } from 'drizzle-orm'
 import { describe } from 'vitest'
-import { botLinkingCodesTable } from '../../database/schemas/bot-codes.schema.js'
+import { linkingCodesTable } from '../../database/schemas/linking-codes.schema.js'
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
+import { LINKING_CODE_PURPOSE } from '../linking-codes/linking-code.constants.js'
 import { BotAccountAlreadyExistsError } from './bot.error.js'
 
 describe('BotService', () => {
   describe('findAccountByTelegramId', () => {
     test('returns null when no account is linked to the telegram id', async ({ container }) => {
-      const result = await container.botService.findAccountByTelegramId({
-        telegramId: 1234567832131319,
-      })
+      const telegramId = 1234567832131319
+
+      const result = await container.botService.findAccountByTelegramId(telegramId)
 
       expect(result).toBeNull()
+    })
+  })
+
+  describe('findTelegramIdByUserId', () => {
+    test('returns null when the user has no linked bot account', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+
+      const result = await container.botService.findTelegramIdByUserId(user.id)
+
+      expect(result).toBeNull()
+    })
+
+    test('returns the telegram id when the user is linked', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+      const telegramId = 1234567890
+
+      const { code } = await container.botService.createLinkingCode({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
+      })
+
+      await container.botService.verifyAndLinkAccount({ telegramId, code })
+
+      const result = await container.botService.findTelegramIdByUserId(user.id)
+
+      expect(result).toBe(telegramId)
     })
   })
 
@@ -21,13 +48,17 @@ describe('BotService', () => {
       const user = await insertTestUser(db)
       const telegramId = 1234567890
 
-      const { code } = await container.botService.createLinkingCode({ userId: user.id })
-
-      await container.botService.verifyAndLinkAccount({ telegramId, code })
-
-      const botAccount = await container.botService.findAccountByTelegramId({
-        telegramId,
+      const { code } = await container.botService.createLinkingCode({
+        userId: user.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
       })
+
+      await container.botService.verifyAndLinkAccount({
+        telegramId,
+        code,
+      })
+
+      const botAccount = await container.botService.findAccountByTelegramId(telegramId)
 
       expect(botAccount).toStrictEqual({
         id: expect.any(String),
@@ -38,8 +69,8 @@ describe('BotService', () => {
 
       const persistedLinkingCodes = await db
         .select()
-        .from(botLinkingCodesTable)
-        .where(eq(botLinkingCodesTable.userId, user.id))
+        .from(linkingCodesTable)
+        .where(eq(linkingCodesTable.userId, user.id))
 
       expect(persistedLinkingCodes).toHaveLength(0)
     })
@@ -54,16 +85,24 @@ describe('BotService', () => {
 
       const { code: user1Code } = await container.botService.createLinkingCode({
         userId: user1.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
       })
 
-      await container.botService.verifyAndLinkAccount({ telegramId, code: user1Code })
+      await container.botService.verifyAndLinkAccount({
+        telegramId,
+        code: user1Code,
+      })
 
       const { code: user2Code } = await container.botService.createLinkingCode({
         userId: user2.id,
+        purpose: LINKING_CODE_PURPOSE.BOT_LINK,
       })
 
       await expect(
-        container.botService.verifyAndLinkAccount({ telegramId, code: user2Code }),
+        container.botService.verifyAndLinkAccount({
+          telegramId,
+          code: user2Code,
+        }),
       ).rejects.toThrow(new BotAccountAlreadyExistsError())
     })
   })
