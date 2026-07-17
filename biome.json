@@ -10,16 +10,24 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
-      "src/**/*.ts",
+      "apps/**/*.ts",
+      "apps/**/*.vue",
+      "apps/**/*.css",
+
+      "packages/**/*.ts",
+
       "*.ts",
       "*.json",
       "*.jsonc",
+
       ".vscode/**/*.json",
+
       "!!**/dist",
       "!!**/build",
       "!!**/coverage"
     ]
   },
+
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
@@ -28,17 +36,33 @@
     "lineEnding": "lf",
     "lineWidth": 100
   },
+
   "linter": {
     "rules": {
       "preset": "recommended"
     }
   },
+
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded"
     }
   },
+
+  "html": {
+    "experimentalFullSupportEnabled": true,
+    "formatter": {
+      "enabled": true
+    }
+  },
+
+  "css": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+
   "assist": {
     "enabled": true,
     "actions": {
