@@ -1,23 +1,13 @@
 import { z } from 'zod'
 
-export const sharedExpensePersonSchema = z.object({
-  id: z.uuid(),
-  email: z.email(),
-})
-
-export const sharedExpenseCategorySchema = z.object({
-  id: z.uuid(),
-  name: z.string(),
-})
-
 export const sharedExpenseReportItemSchema = z.object({
   id: z.uuid(),
   occurredAt: z.iso.datetime({ offset: true }),
 
-  category: sharedExpenseCategorySchema,
+  categoryName: z.string(),
 
-  payer: sharedExpensePersonSchema,
-  owed: sharedExpensePersonSchema,
+  payerUserId: z.uuid(),
+  owedUserId: z.uuid(),
 
   totalAmountCents: z.number().int(),
   owedAmountCents: z.number().int(),

@@ -1,3 +1,4 @@
+import type { SharedExpenseReportItem } from '@expense-tracker/contracts'
 import type { Database } from '../../../database/db.js'
 import { CATEGORY_SYSTEM_KEY } from '../../categories/category.defaults.js'
 import { CategoryNotFoundError } from '../../categories/category.error.js'
@@ -110,6 +111,25 @@ export class SharedExpenseService {
 
       return sharedExpense
     })
+  }
+  async listReport(partnershipId: string): Promise<SharedExpenseReportItem[]> {
+    const rows = await this.sharedExpenseRepository.findReportByPartnership(partnershipId)
+
+    return rows.map((row) => ({
+      id: row.id,
+      occurredAt: row.occurredAt.toISOString(),
+
+      payerUserId: row.payerUserId,
+      owedUserId: row.owedUserId,
+
+      totalAmountCents: row.totalAmountCents,
+      owedAmountCents: row.owedAmountCents,
+
+      categoryName: row.categoryName,
+      description: row.description,
+
+      status: row.settlementId ? 'settled' : 'pending',
+    }))
   }
 
   private async resolveMappedCategory(userId: string, sharedCategoryId: string): Promise<Category> {

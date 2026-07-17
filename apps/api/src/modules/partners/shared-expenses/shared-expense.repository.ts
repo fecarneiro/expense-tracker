@@ -1,5 +1,6 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm'
 import type { Database, DatabaseClient } from '../../../database/db.js'
+import { sharedCategoriesTable } from '../../../database/schemas/index.js'
 import {
   type NewSharedExpenseRow,
   sharedExpensesTable,
@@ -49,5 +50,29 @@ export class SharedExpenseRepository {
       .update(sharedExpensesTable)
       .set({ settlementId })
       .where(inArray(sharedExpensesTable.id, expenseIds))
+  }
+
+  // Front
+  async findReportByPartnership(partnershipId: string, client: DatabaseClient = this.db) {
+    return client
+      .select({
+        id: sharedExpensesTable.id,
+        occurredAt: sharedExpensesTable.occurredAt,
+        payerUserId: sharedExpensesTable.payerUserId,
+        owedUserId: sharedExpensesTable.owedUserId,
+        totalAmountCents: sharedExpensesTable.totalAmountCents,
+        owedAmountCents: sharedExpensesTable.owedAmountCents,
+        description: sharedExpensesTable.description,
+        settlementId: sharedExpensesTable.settlementId,
+
+        categoryName: sharedCategoriesTable.name,
+      })
+      .from(sharedExpensesTable)
+      .innerJoin(
+        sharedCategoriesTable,
+        eq(sharedExpensesTable.sharedCategoryId, sharedCategoriesTable.id),
+      )
+      .where(eq(sharedExpensesTable.partnershipId, partnershipId))
+      .orderBy(desc(sharedExpensesTable.occurredAt))
   }
 }

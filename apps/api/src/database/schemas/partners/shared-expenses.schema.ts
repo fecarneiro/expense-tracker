@@ -26,6 +26,11 @@ export const sharedExpensesTable = pgTable(
       .references(() => sharedCategoriesTable.id),
     settlementId: uuid().references(() => settlementsTable.id),
     description: varchar({ length: 70 }),
+    occurredAt: timestamp('occurred_at', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
