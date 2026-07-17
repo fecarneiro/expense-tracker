@@ -17,14 +17,14 @@ const loginCredentials = {
 } as const satisfies LoginBodyInput
 
 async function registerUser(app: HttpTestApp, credentials = registerCredentials) {
-  return request(app).post('/auth/register').send(credentials).expect(201)
+  return request(app).post('/api/auth/register').send(credentials).expect(201)
 }
 
 async function loginUser(app: HttpTestApp, credentials = loginCredentials) {
-  return request(app).post('/auth/login').send(credentials).expect(200)
+  return request(app).post('/api/auth/login').send(credentials).expect(200)
 }
 
-describe('POST /auth/register', () => {
+describe('POST /api/auth/register', () => {
   test('returns 201 without sensitive fields', async ({ app }) => {
     const res = await registerUser(app)
 
@@ -38,7 +38,7 @@ describe('POST /auth/register', () => {
   test('returns 409 when email is already in use', async ({ app }) => {
     await registerUser(app)
 
-    await request(app).post('/auth/register').send(registerCredentials).expect(409)
+    await request(app).post('/api/auth/register').send(registerCredentials).expect(409)
   })
 
   test.for([
@@ -46,11 +46,11 @@ describe('POST /auth/register', () => {
     ['short password', { email: TEST_EMAIL, password: '123456' }],
     ['extra field (strictObject)', { ...registerCredentials, hacker: true }],
   ])('returns 400 when %s', async ([_label, body], { app }) => {
-    await request(app).post('/auth/register').send(body).expect(400)
+    await request(app).post('/api/auth/register').send(body).expect(400)
   })
 })
 
-describe('POST /auth/login', () => {
+describe('POST /api/auth/login', () => {
   test('returns 200 with access token', async ({ app }) => {
     await registerUser(app)
 
@@ -68,14 +68,14 @@ describe('POST /auth/login', () => {
   })
 
   test('returns 401 with unknown email', async ({ app }) => {
-    await request(app).post('/auth/login').send(loginCredentials).expect(401)
+    await request(app).post('/api/auth/login').send(loginCredentials).expect(401)
   })
 
   test('returns 401 with wrong password', async ({ app }) => {
     await registerUser(app)
 
     await request(app)
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ ...loginCredentials, password: 'wrong-password' })
       .expect(401)
   })
@@ -84,7 +84,7 @@ describe('POST /auth/login', () => {
     ['invalid email', { email: 'invalid-email', password: TEST_PASSWORD }],
     ['empty password', { email: TEST_EMAIL, password: '' }],
   ])('returns 400 when %s', async ([_label, body], { app }) => {
-    await request(app).post('/auth/login').send(body).expect(400)
+    await request(app).post('/api/auth/login').send(body).expect(400)
   })
 })
 
@@ -94,7 +94,7 @@ describe('JWT middleware', () => {
     ['invalid authorization scheme', 'Basic token'],
     ['invalid bearer token', 'Bearer invalid-token'],
   ] as const)('rejects %s', async ([_label, authorization], { app }) => {
-    await request(app).get('/users/me').set('Authorization', authorization).expect(401)
+    await request(app).get('/api/users/me').set('Authorization', authorization).expect(401)
   })
 
   test('accepts a valid bearer token', async ({ app }) => {
@@ -103,7 +103,7 @@ describe('JWT middleware', () => {
     const { body } = await loginUser(app)
 
     await request(app)
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', `Bearer ${body.access_token}`)
       .expect(200)
   })
@@ -114,7 +114,7 @@ describe('JWT middleware', () => {
     const { body } = await loginUser(app)
 
     await request(app)
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', `bearer ${body.access_token}`)
       .expect(200)
   })

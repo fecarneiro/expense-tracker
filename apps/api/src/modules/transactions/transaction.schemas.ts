@@ -1,22 +1,13 @@
 import { z } from 'zod'
 import { categoryIdField, categoryNameField } from '../categories/category.schemas.js'
-import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
 
-export const transactionIdField = z.uuid().meta({
-  example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
-})
+export const transactionIdField = z.uuid()
 
-export const transactionAmountCentsField = z.number().int().positive().meta({
-  example: 10000,
-})
+export const transactionAmountCentsField = z.number().int().positive()
 
-export const transactionAmountCentsNonNegativeField = z.number().int().nonnegative().meta({
-  example: 10000,
-})
+export const transactionAmountCentsNonNegativeField = z.number().int().nonnegative()
 
-export const transactionTypeField = z.enum(['income', 'expense']).meta({
-  example: 'expense',
-})
+export const transactionTypeField = z.enum(['income', 'expense'])
 
 export const transactionDescriptionField = z
   .string()
@@ -26,30 +17,18 @@ export const transactionDescriptionField = z
   .transform((val) => (val == null || val === '' ? null : val))
 
 export const transactionQueryParamsSchema = z.strictObject({
-  limit: z.coerce.number().int().min(1).max(100).optional().meta({ default: LIST_DEFAULT_LIMIT }),
-  offset: z.coerce.number().int().min(0).optional().meta({ default: LIST_DEFAULT_OFFSET }),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
 })
 
 // REQUEST
-export const occurredAtQueryField = z.iso.datetime({ offset: true }).meta({
-  example: '2026-01-01T00:00:00+00:00',
-})
+export const occurredAtQueryField = z.iso.datetime({ offset: true })
 
 export const occurredAtRequestField = occurredAtQueryField.transform((value) => new Date(value))
 
 const transactionsByRangeQueryFieldsSchema = z.strictObject({
-  from: occurredAtQueryField.optional().meta({
-    description: 'Lower bound (inclusive). Omit for no start limit.',
-  }),
-  until: occurredAtQueryField.optional().meta({
-    description: 'Upper bound (exclusive). Omit for no end limit.',
-  }),
-})
-
-export const transactionsByRangeQueryOpenApiSchema = transactionsByRangeQueryFieldsSchema.meta({
-  id: 'TransactionsByRangeQuery',
-  description:
-    'Optional date range filter. Omit both to aggregate all transactions. When both are set, from must be before until.',
+  from: occurredAtQueryField.optional(),
+  until: occurredAtQueryField.optional(),
 })
 
 export const transactionsByRangeQuerySchema = transactionsByRangeQueryFieldsSchema.transform(
@@ -70,9 +49,7 @@ export const transactionIdParamsSchema = z.strictObject({
   id: transactionIdField,
 })
 
-export const createTransactionBodySchema = z
-  .strictObject(transactionBodyFields)
-  .meta({ id: 'CreateTransactionBody' })
+export const createTransactionBodySchema = z.strictObject(transactionBodyFields)
 
 export const updateTransactionBodySchema = z
   .strictObject(transactionBodyFields)
@@ -80,54 +57,40 @@ export const updateTransactionBodySchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: 'Inform at least 1 field to update',
   })
-  .meta({ id: 'UpdateTransactionBody' })
 
 // RESPONSE
 export const occurredAtResponseField = z.iso.datetime({ offset: true })
 
 export const transactionDescriptionResponseField = z.string().max(70).nullable()
 
-export const transactionCategoryResponseSchema = z
-  .object({
-    id: categoryIdField,
-    name: categoryNameField,
-  })
-  .meta({ id: 'TransactionCategory' })
+export const transactionCategoryResponseSchema = z.object({
+  id: categoryIdField,
+  name: categoryNameField,
+})
 
-export const transactionResponseSchema = z
-  .object({
-    id: transactionIdField,
-    occurredAt: occurredAtResponseField,
-    transactionType: transactionTypeField,
-    amountCents: transactionAmountCentsField,
-    description: transactionDescriptionResponseField,
-    category: transactionCategoryResponseSchema,
-  })
-  .meta({ id: 'Transaction' })
+export const transactionResponseSchema = z.object({
+  id: transactionIdField,
+  occurredAt: occurredAtResponseField,
+  transactionType: transactionTypeField,
+  amountCents: transactionAmountCentsField,
+  description: transactionDescriptionResponseField,
+  category: transactionCategoryResponseSchema,
+})
 
-export const transactionsResponseSchema = z
-  .array(transactionResponseSchema)
-  .meta({ id: 'TransactionList' })
+export const transactionsResponseSchema = z.array(transactionResponseSchema)
 
-export const monthlyBalanceMonthField = z
-  .string()
-  .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-  .meta({ example: '2026-03' })
+export const monthlyBalanceMonthField = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
 
-export const monthlyBalanceRowSchema = z
-  .object({
-    month: monthlyBalanceMonthField,
-    incomeTotal: transactionAmountCentsNonNegativeField,
-    expenseTotal: transactionAmountCentsNonNegativeField,
-    balance: z.number().int().meta({ example: 180000 }),
-  })
-  .meta({ id: 'MonthlyBalanceRow' })
+export const monthlyBalanceRowSchema = z.object({
+  month: monthlyBalanceMonthField,
+  incomeTotal: transactionAmountCentsNonNegativeField,
+  expenseTotal: transactionAmountCentsNonNegativeField,
+  balance: z.number().int(),
+})
 
-export const monthlyBalanceResponseSchema = z
-  .array(monthlyBalanceRowSchema)
-  .meta({ id: 'MonthlyBalanceList' })
+export const monthlyBalanceResponseSchema = z.array(monthlyBalanceRowSchema)
 
 export type CreateTransactionBodyInput = z.input<typeof createTransactionBodySchema>
 export type UpdateTransactionBodyInput = z.input<typeof updateTransactionBodySchema>
 export type TransactionQueryInput = z.input<typeof transactionQueryParamsSchema>
-export type MonthlyBalanceQueryInput = z.input<typeof transactionsByRangeQueryOpenApiSchema>
+export type MonthlyBalanceQueryInput = z.input<typeof transactionsByRangeQueryFieldsSchema>

@@ -10,30 +10,19 @@ const ianaTimeZoneSchema = z
 const localeSchema = z.string().trim().max(10)
 const currencySchema = z.string().length(3)
 
-export const userIdField = z.uuid().meta({
-  example: 'b3e1c9a2-7a7a-4f5a-9e0d-15b2d4c1a001',
-})
+export const userIdField = z.uuid()
 
-export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email()).meta({
-  example: '{{$randomEmail}}',
-})
+export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email())
 
-export const passwordField = z.string().min(8).max(72).meta({
-  description: 'Must be between 8 and 72 characters.',
-  example: 'password123',
-})
+export const passwordField = z.string().min(8).max(72)
 
-export const localeField = localeSchema.optional().meta({ example: 'en-US' })
+export const localeField = localeSchema.optional()
 
-export const currencyField = currencySchema.toUpperCase().optional().meta({ example: 'USD' })
+export const currencyField = currencySchema.toUpperCase().optional()
 
-export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable().meta({
-  example: null,
-})
+export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable()
 
-export const timezoneField = ianaTimeZoneSchema.optional().meta({
-  example: 'America/New_York',
-})
+export const timezoneField = ianaTimeZoneSchema.optional()
 
 // -- Body schemas --
 export const userCredentialsBodySchema = z.strictObject({
@@ -44,44 +33,26 @@ export const userCredentialsBodySchema = z.strictObject({
   locale: localeField,
 })
 
-export const createUserBodySchema = userCredentialsBodySchema.meta({
-  id: 'CreateUserBody',
+export const createUserBodySchema = userCredentialsBodySchema
+
+export const changePasswordBodySchema = z.strictObject({
+  currentPassword: z.string().min(1),
+  newPassword: passwordField,
 })
 
-export const changePasswordBodySchema = z
-  .strictObject({
-    currentPassword: z.string().min(1).meta({
-      example: 'OldPassword123!',
-    }),
-    newPassword: passwordField,
-  })
-  .meta({
-    id: 'ChangePasswordBody',
-  })
-
-export const deleteUserBodySchema = z
-  .strictObject({
-    password: z.string().min(1).meta({
-      example: 'OldPassword123!',
-    }),
-  })
-  .meta({
-    id: 'DeleteUserBody',
-  })
+export const deleteUserBodySchema = z.strictObject({
+  password: z.string().min(1),
+})
 
 // -- Response schemas --
-export const userResponseSchema = z
-  .object({
-    id: userIdField,
-    email: emailField,
-    timezone: timezoneField,
-    currency: currencyField,
-    locale: localeField,
-    lastSeenAt: lastSeenAtField,
-  })
-  .meta({
-    id: 'User',
-  })
+export const userResponseSchema = z.object({
+  id: userIdField,
+  email: emailField,
+  timezone: timezoneField,
+  currency: currencyField,
+  locale: localeField,
+  lastSeenAt: lastSeenAtField,
+})
 
 export const userPreferencesSchema = z.object({
   timeZone: ianaTimeZoneSchema,

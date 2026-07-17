@@ -18,9 +18,9 @@ const DEFAULT_DELETE_BODY = {
 
 describe('authorization', () => {
   test.for([
-    ['GET /users/me', 'get', '/users/me'],
-    ['PATCH /users/me/password', 'patch', '/users/me/password', DEFAULT_CHANGE_PASSWORD],
-    ['DELETE /users/me', 'delete', '/users/me', DEFAULT_DELETE_BODY],
+    ['GET /api/users/me', 'get', '/api/users/me'],
+    ['PATCH /api/users/me/password', 'patch', '/api/users/me/password', DEFAULT_CHANGE_PASSWORD],
+    ['DELETE /api/users/me', 'delete', '/api/users/me', DEFAULT_DELETE_BODY],
   ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
     app,
   }) => {
@@ -28,12 +28,12 @@ describe('authorization', () => {
   })
 })
 
-describe('GET /users/me', () => {
+describe('GET /api/users/me', () => {
   test('returns 200 with authenticated user', async ({ app, authenticateWithPassword }) => {
     const { token, user } = await authenticateWithPassword()
 
     const res = await request(app)
-      .get('/users/me')
+      .get('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
@@ -45,12 +45,12 @@ describe('GET /users/me', () => {
   })
 })
 
-describe('PATCH /users/me/password', () => {
+describe('PATCH /api/users/me/password', () => {
   test('returns 204 when password is changed', async ({ app, authenticateWithPassword }) => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .patch('/users/me/password')
+      .patch('/api/users/me/password')
       .set('Authorization', `Bearer ${token}`)
       .send(DEFAULT_CHANGE_PASSWORD)
       .expect(204)
@@ -60,7 +60,7 @@ describe('PATCH /users/me/password', () => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .patch('/users/me/password')
+      .patch('/api/users/me/password')
       .set('Authorization', `Bearer ${token}`)
       .send({
         currentPassword: 'wrongPassword',
@@ -76,19 +76,19 @@ describe('PATCH /users/me/password', () => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .patch('/users/me/password')
+      .patch('/api/users/me/password')
       .set('Authorization', `Bearer ${token}`)
       .send(body)
       .expect(400)
   })
 })
 
-describe('DELETE /users/me', () => {
+describe('DELETE /api/users/me', () => {
   test('returns 204 when user is deleted', async ({ app, authenticateWithPassword }) => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .delete('/users/me')
+      .delete('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .send(DEFAULT_DELETE_BODY)
       .expect(204)
@@ -98,7 +98,7 @@ describe('DELETE /users/me', () => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .delete('/users/me')
+      .delete('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: 'wrongPassword' })
       .expect(401)
@@ -108,7 +108,7 @@ describe('DELETE /users/me', () => {
     const { token } = await authenticateWithPassword()
 
     await request(app)
-      .delete('/users/me')
+      .delete('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
       .send({ password: '' })
       .expect(400)

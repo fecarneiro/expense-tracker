@@ -5,19 +5,19 @@ import { sendUnauthorized } from '../../../tests/helpers/http-request.helpers.js
 import { LINKING_CODE } from '../../linking-codes/linking-code.constants.js'
 
 describe('authorization', () => {
-  test('GET /bot/generate-linking-code returns 401 without authorization header', async ({
+  test('GET /api/bot/generate-linking-code returns 401 without authorization header', async ({
     app,
   }) => {
-    await sendUnauthorized(app, 'get', '/bot/generate-linking-code').expect(401)
+    await sendUnauthorized(app, 'get', '/api/bot/generate-linking-code').expect(401)
   })
 })
 
-describe('GET /bot/generate-linking-code', () => {
+describe('GET /api/bot/generate-linking-code', () => {
   test('returns 201 with linking code', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     const res = await request(app)
-      .get('/bot/generate-linking-code')
+      .get('/api/bot/generate-linking-code')
       .set('Authorization', `Bearer ${token}`)
       .expect(201)
 

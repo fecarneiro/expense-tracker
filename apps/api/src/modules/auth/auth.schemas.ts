@@ -4,13 +4,9 @@ import { userCredentialsBodySchema, userResponseSchema } from '../users/user.sch
 
 export const accessTokenPayloadSchema = z.object({ userId: z.uuid() })
 
-export const registerBodySchema = userCredentialsBodySchema.meta({
-  id: 'RegisterBody',
-})
+export const registerBodySchema = userCredentialsBodySchema
 
-export const loginBodySchema = loginRequestSchema.meta({
-  id: 'LoginBody',
-})
+export const loginBodySchema = loginRequestSchema
 
 export { loginResponseSchema }
 

@@ -20,7 +20,7 @@ async function postCategory(
   overrides?: Partial<CreateCategoryBodyInput>,
 ) {
   const res = await request(app)
-    .post('/categories')
+    .post('/api/categories')
     .set('Authorization', `Bearer ${token}`)
     .send(validCreateBody(overrides))
     .expect(201)
@@ -30,11 +30,11 @@ async function postCategory(
 
 describe('authorization', () => {
   test.for([
-    ['POST /categories', 'post', '/categories', DEFAULT_HTTP_CREATE],
-    ['GET /categories', 'get', '/categories'],
-    ['GET /categories/:id', 'get', `/categories/${UNKNOWN_UUID}`],
-    ['PATCH /categories/:id', 'patch', `/categories/${UNKNOWN_UUID}`, DEFAULT_HTTP_CREATE],
-    ['DELETE /categories/:id', 'delete', `/categories/${UNKNOWN_UUID}`],
+    ['POST /api/categories', 'post', '/api/categories', DEFAULT_HTTP_CREATE],
+    ['GET /api/categories', 'get', '/api/categories'],
+    ['GET /api/categories/:id', 'get', `/api/categories/${UNKNOWN_UUID}`],
+    ['PATCH /api/categories/:id', 'patch', `/api/categories/${UNKNOWN_UUID}`, DEFAULT_HTTP_CREATE],
+    ['DELETE /api/categories/:id', 'delete', `/api/categories/${UNKNOWN_UUID}`],
   ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
     app,
   }) => {
@@ -42,12 +42,12 @@ describe('authorization', () => {
   })
 })
 
-describe('POST /categories', () => {
+describe('POST /api/categories', () => {
   test('returns 201 with created category', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     const res = await request(app)
-      .post('/categories')
+      .post('/api/categories')
       .set('Authorization', `Bearer ${token}`)
       .send(validCreateBody())
       .expect(201)
@@ -69,19 +69,19 @@ describe('POST /categories', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .post('/categories')
+      .post('/api/categories')
       .set('Authorization', `Bearer ${token}`)
       .send(body)
       .expect(400)
   })
 })
 
-describe('GET /categories', () => {
+describe('GET /api/categories', () => {
   test('returns 200 with an empty list', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     const res = await request(app)
-      .get('/categories')
+      .get('/api/categories')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
@@ -92,30 +92,30 @@ describe('GET /categories', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .get('/categories?categoryType=invalid')
+      .get('/api/categories?categoryType=invalid')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })
 })
 
-describe('GET /categories/:id', () => {
+describe('GET /api/categories/:id', () => {
   test('returns 400 with invalid id', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     await request(app)
-      .get('/categories/invalid-uuid')
+      .get('/api/categories/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })
 })
 
-describe('PATCH /categories/:id', () => {
+describe('PATCH /api/categories/:id', () => {
   test('returns 200 with updated category', async ({ app, authenticate }) => {
     const { token } = await authenticate()
     const { id } = await postCategory(app, token)
 
     const res = await request(app)
-      .patch(`/categories/${id}`)
+      .patch(`/api/categories/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Updated', categoryType: 'income' } satisfies UpdateCategoryBodyInput)
       .expect(200)
@@ -131,7 +131,7 @@ describe('PATCH /categories/:id', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .patch('/categories/invalid-uuid')
+      .patch('/api/categories/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .send(validCreateBody())
       .expect(400)
@@ -146,20 +146,20 @@ describe('PATCH /categories/:id', () => {
     const { id } = await postCategory(app, token)
 
     await request(app)
-      .patch(`/categories/${id}`)
+      .patch(`/api/categories/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .send(body)
       .expect(400)
   })
 })
 
-describe('DELETE /categories/:id', () => {
+describe('DELETE /api/categories/:id', () => {
   test('returns 204 when category is deleted', async ({ app, authenticate }) => {
     const { token } = await authenticate()
     const { id } = await postCategory(app, token)
 
     await request(app)
-      .delete(`/categories/${id}`)
+      .delete(`/api/categories/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(204)
   })
@@ -168,7 +168,7 @@ describe('DELETE /categories/:id', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .delete('/categories/invalid-uuid')
+      .delete('/api/categories/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })

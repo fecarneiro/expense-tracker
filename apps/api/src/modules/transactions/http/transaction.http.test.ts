@@ -26,7 +26,7 @@ function validCreateBody(categoryId: string): CreateTransactionBodyInput {
 
 async function postTransaction(app: HttpTestApp, token: string, categoryId: string) {
   const res = await request(app)
-    .post('/transactions')
+    .post('/api/transactions')
     .set('Authorization', `Bearer ${token}`)
     .send(validCreateBody(categoryId))
     .expect(201)
@@ -36,12 +36,17 @@ async function postTransaction(app: HttpTestApp, token: string, categoryId: stri
 
 describe('authorization', () => {
   test.for([
-    ['POST /transactions', 'post', '/transactions', validCreateBody(UNKNOWN_UUID)],
-    ['GET /transactions', 'get', '/transactions'],
-    ['GET /transactions/:id', 'get', `/transactions/${UNKNOWN_UUID}`],
-    ['PATCH /transactions/:id', 'patch', `/transactions/${UNKNOWN_UUID}`, { amountCents: 100 }],
-    ['DELETE /transactions/:id', 'delete', `/transactions/${UNKNOWN_UUID}`],
-    ['GET /transactions/monthly-balance', 'get', '/transactions/monthly-balance'],
+    ['POST /api/transactions', 'post', '/api/transactions', validCreateBody(UNKNOWN_UUID)],
+    ['GET /api/transactions', 'get', '/api/transactions'],
+    ['GET /api/transactions/:id', 'get', `/api/transactions/${UNKNOWN_UUID}`],
+    [
+      'PATCH /api/transactions/:id',
+      'patch',
+      `/api/transactions/${UNKNOWN_UUID}`,
+      { amountCents: 100 },
+    ],
+    ['DELETE /api/transactions/:id', 'delete', `/api/transactions/${UNKNOWN_UUID}`],
+    ['GET /api/transactions/monthly-balance', 'get', '/api/transactions/monthly-balance'],
   ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
     app,
   }) => {
@@ -49,12 +54,12 @@ describe('authorization', () => {
   })
 })
 
-describe('POST /transactions', () => {
+describe('POST /api/transactions', () => {
   test('returns 201 with created transaction', async ({ app, db, authenticate }) => {
     const { user, token } = await authenticate()
     const category = await insertTestCategory(db, { userId: user.id })
     const res = await request(app)
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', `Bearer ${token}`)
       .send(validCreateBody(category.id))
       .expect(201)
@@ -87,19 +92,19 @@ describe('POST /transactions', () => {
   ])('returns 400 when %s', async ([_label, body], { app, authenticate }) => {
     const { token } = await authenticate()
     await request(app)
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', `Bearer ${token}`)
       .send(body)
       .expect(400)
   })
 })
 
-describe('GET /transactions', () => {
+describe('GET /api/transactions', () => {
   test('returns 200 with an empty list', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     const res = await request(app)
-      .get('/transactions')
+      .get('/api/transactions')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
@@ -110,31 +115,31 @@ describe('GET /transactions', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .get('/transactions?limit=0')
+      .get('/api/transactions?limit=0')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })
 })
 
-describe('GET /transactions/:id', () => {
+describe('GET /api/transactions/:id', () => {
   test('returns 400 with invalid id', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     await request(app)
-      .get('/transactions/invalid-uuid')
+      .get('/api/transactions/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })
 })
 
-describe('PATCH /transactions/:id', () => {
+describe('PATCH /api/transactions/:id', () => {
   test('returns 400 with empty body', async ({ app, db, authenticate }) => {
     const { user, token } = await authenticate()
     const category = await insertTestCategory(db, { userId: user.id })
     const { id } = await postTransaction(app, token, category.id)
 
     await request(app)
-      .patch(`/transactions/${id}`)
+      .patch(`/api/transactions/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(400)
@@ -144,7 +149,7 @@ describe('PATCH /transactions/:id', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .patch('/transactions/invalid-uuid')
+      .patch('/api/transactions/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .send({ amountCents: 100 })
       .expect(400)
@@ -156,21 +161,21 @@ describe('PATCH /transactions/:id', () => {
     const { id } = await postTransaction(app, token, category.id)
 
     await request(app)
-      .patch(`/transactions/${id}`)
+      .patch(`/api/transactions/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ amountCents: -1 })
       .expect(400)
   })
 })
 
-describe('DELETE /transactions/:id', () => {
+describe('DELETE /api/transactions/:id', () => {
   test('returns 204 when transaction is deleted', async ({ app, db, authenticate }) => {
     const { user, token } = await authenticate()
     const category = await insertTestCategory(db, { userId: user.id })
     const { id } = await postTransaction(app, token, category.id)
 
     await request(app)
-      .delete(`/transactions/${id}`)
+      .delete(`/api/transactions/${id}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(204)
   })
@@ -179,18 +184,18 @@ describe('DELETE /transactions/:id', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .delete('/transactions/invalid-uuid')
+      .delete('/api/transactions/invalid-uuid')
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })
 })
 
-describe('GET /transactions/monthly-balance', () => {
+describe('GET /api/transactions/monthly-balance', () => {
   test('returns 200 with monthly balance rows', async ({ app, authenticate }) => {
     const { token } = await authenticate()
 
     const res = await request(app)
-      .get('/transactions/monthly-balance')
+      .get('/api/transactions/monthly-balance')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
@@ -204,7 +209,7 @@ describe('GET /transactions/monthly-balance', () => {
     const { token } = await authenticate()
 
     await request(app)
-      .get(`/transactions/monthly-balance${query}`)
+      .get(`/api/transactions/monthly-balance${query}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })

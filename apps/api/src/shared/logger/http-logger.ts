@@ -63,11 +63,7 @@ export const httpLogger = pinoHttp({
 
   autoLogging: {
     ignore: (req) => {
-      return (
-        req.url === '/health' ||
-        req.url === '/openapi.json' ||
-        req.url?.startsWith('/docs') === true
-      )
+      return req.url === '/health'
     },
   },
 })
