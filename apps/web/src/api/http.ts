@@ -18,7 +18,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
 
   if (requestOptions.body) {
-    headers.set('Content-Type', 'applications/json')
+    headers.set('Content-Type', 'application/json')
   }
 
   const response = await fetch(`/api${path}`, {
