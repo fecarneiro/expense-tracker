@@ -3,7 +3,7 @@ import { isProduction } from './config/app.config.js'
 import type { Container } from './container.js'
 import { createApiRouter } from './http/api.router.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
-import { httpLogger } from './shared/logger/http-logger.js'
+import { httpLogger } from './middlewares/logger.middleware.js'
 
 export function createApp(container: Container) {
   const app = express()

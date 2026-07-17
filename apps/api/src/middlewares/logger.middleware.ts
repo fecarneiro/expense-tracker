@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import { pinoHttp } from 'pino-http'
-import { logger } from './logger.js'
+import { logger } from '../shared/logger/logger.js'
 
 type AuthenticatedIncomingMessage = IncomingMessage & {
   ip?: string
@@ -13,6 +13,7 @@ type AuthenticatedIncomingMessage = IncomingMessage & {
 export const httpLogger = pinoHttp({
   logger,
 
+  // Todo: idempotency key
   genReqId: (req, res) => {
     const headerRequestId = req.headers['x-request-id']
     const requestId = Array.isArray(headerRequestId) ? headerRequestId[0] : headerRequestId
