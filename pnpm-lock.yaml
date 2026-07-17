@@ -105,6 +105,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@expense-tracker/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       vue:
         specifier: ^3.5.38
         version: 3.5.40(typescript@6.0.3)

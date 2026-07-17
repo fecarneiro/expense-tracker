@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "typecheck": "vue-tsc --build",
+    "build": "pnpm typecheck && vite build",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@expense-tracker/contracts": "workspace:*",
     "vue": "^3.5.38",
     "vue-router": "^5.1.0"
   },
