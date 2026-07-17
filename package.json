@@ -7,11 +7,12 @@
   },
   "scripts": {
     "dev": "pnpm dev:api",
-    "dev:api": "pnpm build:contracts && pnpm --filter @expense-tracker/api dev",
+    "dev:api": "pnpm --filter @expense-tracker/api dev",
+    "dev:web": "pnpm --filter @expense-tracker/web dev",
 
     "build:contracts": "pnpm --filter @expense-tracker/contracts build",
 
-    "typecheck": "pnpm build:contracts && pnpm --filter @expense-tracker/api typecheck",
+    "typecheck": "pnpm --filter @expense-tracker/api typecheck",
     "build": "pnpm build:contracts && pnpm --filter @expense-tracker/api build",
     "start": "pnpm --filter @expense-tracker/api start",
 
@@ -20,14 +21,14 @@
     "db:migrate:deploy": "pnpm --filter @expense-tracker/api db:migrate:deploy",
     "db:studio": "pnpm --filter @expense-tracker/api db:studio",
 
-    "test": "pnpm build:contracts && pnpm --filter @expense-tracker/api test",
-    "test:watch": "pnpm build:contracts && pnpm --filter @expense-tracker/api test:watch",
+    "test": "pnpm --filter @expense-tracker/api test",
+    "test:watch": "pnpm --filter @expense-tracker/api test:watch",
 
     "check": "pnpm exec biome check .",
     "check:fix": "pnpm exec biome check --write .",
     "check:fix:unsafe": "biome check --write --unsafe .",
 
-    "validate": "pnpm build:contracts && pnpm --filter @expense-tracker/api typecheck && pnpm check && pnpm --filter @expense-tracker/api test",
+    "validate": "pnpm --filter @expense-tracker/api typecheck && pnpm check && pnpm --filter @expense-tracker/api test",
 
     "prepare": "husky || true"
   },
