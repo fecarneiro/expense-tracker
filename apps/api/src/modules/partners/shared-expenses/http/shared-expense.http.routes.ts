@@ -5,6 +5,7 @@ export function sharedExpenseHttpRouter(controller: SharedExpenseHttpController)
   const router = Router()
 
   router.post('/', (req, res) => controller.create(req, res))
+  router.get('/', (req, res) => controller.list(req, res))
 
   return router
 }
