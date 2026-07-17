@@ -176,6 +176,13 @@
       "when": 1784146578828,
       "tag": "0024_bitter_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1784295533540,
+      "tag": "0025_lush_vermin",
+      "breakpoints": true
     }
   ]
 }
