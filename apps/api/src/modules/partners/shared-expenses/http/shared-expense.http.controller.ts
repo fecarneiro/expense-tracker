@@ -1,4 +1,3 @@
-import type { SharedExpenseReportItem } from '@expense-tracker/contracts'
 import type { Request, Response } from 'express'
 import { ActivePartnershipNotFoundError } from '../shared-expense.errors.js'
 import { createSharedExpenseBodySchema } from '../shared-expense.schemas.js'
@@ -26,7 +25,7 @@ export class SharedExpenseHttpController {
   async list(req: Request, res: Response) {
     if (!req.partnership) throw new ActivePartnershipNotFoundError()
 
-    const items = await this.sharedExpenseService.listReport(req.partnership.id)
-    res.status(200).json({ items })
+    const data = await this.sharedExpenseService.listReport(req.partnership.id)
+    res.status(200).json({ data })
   }
 }

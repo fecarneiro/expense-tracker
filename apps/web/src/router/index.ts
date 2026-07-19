@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { hasSession } from '@/auth/auth.session'
 import AppLayout from '@/layouts/AppLayout.vue'
-import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
+import SharedExpensesView from '@/views/SharedExpensesView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,8 +20,8 @@ const router = createRouter({
       children: [
         {
           path: '',
-          name: 'home',
-          component: HomeView,
+          name: 'shared-expenses',
+          component: SharedExpensesView,
         },
       ],
     },

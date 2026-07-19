@@ -16,10 +16,10 @@ export const sharedExpenseReportItemSchema = z.object({
   status: z.enum(['pending', 'settled']),
 })
 
-export const sharedExpensesReportResponseSchema = z.object({
-  items: z.array(sharedExpenseReportItemSchema),
+export const sharedExpenseReportResponseSchema = z.object({
+  data: z.array(sharedExpenseReportItemSchema),
 })
 
 export type SharedExpenseReportItem = z.infer<typeof sharedExpenseReportItemSchema>
 
-export type SharedExpensesReportResponse = z.infer<typeof sharedExpensesReportResponseSchema>
+export type SharedExpenseReportResponse = z.infer<typeof sharedExpenseReportResponseSchema>
