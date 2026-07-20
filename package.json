@@ -19,6 +19,7 @@
     "db:generate": "pnpm --filter @expense-tracker/api db:generate",
     "db:migrate": "pnpm --filter @expense-tracker/api db:migrate",
     "db:migrate:deploy": "pnpm --filter @expense-tracker/api db:migrate:deploy",
+    "db:seed": "pnpm --filter @expense-tracker/api db:seed",
     "db:studio": "pnpm --filter @expense-tracker/api db:studio",
 
     "test": "pnpm --filter @expense-tracker/api test",
