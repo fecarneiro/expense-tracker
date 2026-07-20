@@ -27,6 +27,12 @@ const statusFilterOptions: SelectOption[] = [
   { label: 'Settled', value: 'settled' },
 ]
 
+const user = getAuthUser()
+const currentUserId = user?.id ?? ''
+
+const partnerUserId = ref('')
+const partnershipLoaded = ref(false)
+
 const owedByFilterOptions = computed<SelectOption[]>(() => {
   const options: SelectOption[] = [
     { label: 'All', value: '' },
@@ -56,17 +62,10 @@ const data = ref<SharedExpenseReportResponse | null>(null)
 const createModal = ref<SharedExpenseCreateModalInstance | null>(null)
 const balance = ref<SharedExpensesBalanceInstance | null>(null)
 
-const user = getAuthUser()
-const currentUserId = user?.id ?? ''
-
-const partnerUserId = ref('')
-const partnershipLoaded = ref(false)
-
 const loading = ref(true)
 const errorMessage = ref<string | null>(null)
 
 const status = ref('pending')
-const payerUserId = ref('')
 const owedUserId = ref('')
 
 const pageSize = 20
@@ -96,7 +95,6 @@ async function loadReport() {
     query.set('limit', String(pageSize))
     query.set('offset', String(offset.value))
     if (status.value) query.set('status', status.value)
-    if (payerUserId.value) query.set('payerUserId', payerUserId.value)
     if (owedUserId.value) query.set('owedUserId', owedUserId.value)
     data.value = await apiRequest<SharedExpenseReportResponse>(
       `/shared-expenses?${query.toString()}`,
@@ -165,20 +163,13 @@ const columns = [
     header: 'Category',
     cell: (info) => formatText(info.getValue()),
   }),
-  columnHelper.accessor('totalAmountCents', {
-    header: 'Total',
-    cell: (info) => formatMoney(info.getValue(), user?.currency, user?.locale),
-  }),
-  columnHelper.accessor('payerUserId', {
-    header: 'Payer',
-    cell: (info) => formatParticipant(info.getValue(), currentUserId),
-  }),
+
   columnHelper.accessor('owedUserId', {
-    header: 'Owed By',
+    header: 'Needs to pay',
     cell: (info) => formatParticipant(info.getValue(), currentUserId),
   }),
   columnHelper.accessor('owedAmountCents', {
-    header: 'Pending',
+    header: 'Amount owed',
     cell: (info) => formatMoney(info.getValue(), user?.currency, user?.locale),
   }),
   columnHelper.accessor('status', {
@@ -200,104 +191,116 @@ const table = useVueTable({
   <div class="shared-expenses-page">
     <SharedExpensesBalance ref="balance" v-if="hasPartner" @settled="loadReport" />
 
-    <div class="table-card">
-      <div class="table-toolbar">
-        <Select
-          v-model="status"
-          :options="statusFilterOptions"
-          option-label="label"
-          option-value="value"
-          placeholder="Status"
-          @change="onFilterChange"
-        />
+    <Card>
+      <template #title> Shared expenses </template>
 
-        <Select
-          v-model="owedUserId"
-          :options="owedByFilterOptions"
-          option-label="label"
-          option-value="value"
-          placeholder="Owed By"
-          @change="onFilterChange"
-        />
+      <template #content>
+        <Toolbar>
+          <template #start>
+            <div class="expense-filter-wrapper">
+              <Select
+                v-model="status"
+                :options="statusFilterOptions"
+                class="expense-filter"
+                option-label="label"
+                option-value="value"
+                placeholder="Status"
+                @change="onFilterChange"
+              />
 
-        <Button
-          label="Add expense"
-          :disabled="!partnershipLoaded || !hasPartner"
-          @click="openCreateModal"
-        />
-      </div>
+              <Select
+                v-model="owedUserId"
+                :options="owedByFilterOptions"
+                class="expense-filter"
+                option-label="label"
+                option-value="value"
+                placeholder="Owed By"
+                @change="onFilterChange"
+              />
+            </div>
+          </template>
 
-      <p v-if="partnershipLoaded && !hasPartner" class="table-state">No active partnership.</p>
-      <p v-else-if="errorMessage" class="table-state">{{ errorMessage }}</p>
-      <p v-else-if="loading" class="table-state">Loading...</p>
-      <p v-else-if="isEmpty" class="table-state">No shared expenses found.</p>
+          <template #end>
+            <Button
+              label="Add expense"
+              :disabled="!partnershipLoaded || !hasPartner"
+              @click="openCreateModal"
+            />
+          </template>
+        </Toolbar>
 
-      <template v-else>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                <th
-                  v-for="header in headerGroup.headers"
-                  :key="header.id"
-                  :data-column="header.column.id"
-                >
-                  <FlexRender
-                    :render="header.column.columnDef.header"
-                    :props="header.getContext()"
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in table.getRowModel().rows" :key="row.id">
-                <td
-                  v-for="cell in row.getVisibleCells()"
-                  :key="cell.id"
-                  :data-column="cell.column.id"
-                  :data-status="cell.column.id === 'status' ? cell.getValue() : undefined"
-                  :class="{
+        <p v-if="partnershipLoaded && !hasPartner" class="table-state">No active partnership.</p>
+        <p v-else-if="errorMessage" class="table-state">{{ errorMessage }}</p>
+        <p v-else-if="loading" class="table-state">Loading...</p>
+        <p v-else-if="isEmpty" class="table-state">No shared expenses found.</p>
+
+        <template v-else>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                  <th
+                    v-for="header in headerGroup.headers"
+                    :key="header.id"
+                    :data-column="header.column.id"
+                  >
+                    <FlexRender
+                      :render="header.column.columnDef.header"
+                      :props="header.getContext()"
+                    />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in table.getRowModel().rows" :key="row.id">
+                  <td
+                    v-for="cell in row.getVisibleCells()"
+                    :key="cell.id"
+                    :data-column="cell.column.id"
+                    :data-status="cell.column.id === 'status' ? cell.getValue() : undefined"
+                    :class="{
                     'table-cell--empty':
                       cell.column.id === 'description' && isEmptyText(cell.getValue()),
                   }"
-                >
-                  <div class="table-cell-content">
-                    <template
-                      v-if="cell.column.id === 'description' && isEmptyText(cell.getValue())"
-                    >
-                      —
-                    </template>
-                    <FlexRender
-                      v-else
-                      :render="cell.column.columnDef.cell"
-                      :props="cell.getContext()"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div v-if="showPagination" class="pagination">
-          <span class="pagination-info">
-            Page <strong>{{ page + 1 }}</strong> of {{ totalPages }}
-          </span>
-          <div class="pagination-actions">
-            <button class="pagination-button" type="button" :disabled="!canPrev" @click="goPrev">
-              ←
-            </button>
-            <button class="pagination-button" type="button" :disabled="!canNext" @click="goNext">
-              →
-            </button>
+                  >
+                    <div class="table-cell-content">
+                      <template
+                        v-if="cell.column.id === 'description' && isEmptyText(cell.getValue())"
+                      >
+                        —
+                      </template>
+                      <FlexRender
+                        v-else
+                        :render="cell.column.columnDef.cell"
+                        :props="cell.getContext()"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-      </template>
-    </div>
 
+          <div v-if="showPagination" class="pagination">
+            <span class="pagination-info">
+              Page <strong>{{ page + 1 }}</strong> of {{ totalPages }}
+            </span>
+            <div class="pagination-actions">
+              <button class="pagination-button" type="button" :disabled="!canPrev" @click="goPrev">
+                ←
+              </button>
+              <button class="pagination-button" type="button" :disabled="!canNext" @click="goNext">
+                →
+              </button>
+            </div>
+          </div>
+        </template>
+      </template>
+    </Card>
     <SharedExpenseCreateModal ref="createModal" @created="onExpensesCreated" />
   </div>
 </template>
+
 <style scoped>
 .shared-expenses-page {
   display: flex;
@@ -307,38 +310,14 @@ const table = useVueTable({
   min-height: 0;
 }
 
-.table-card {
-  flex: 0 0 auto;
-  overflow: hidden;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.table-toolbar {
+.expense-filter-wrapper {
   display: flex;
-  flex: 0 0 auto;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
+  gap: 0.75rem;
 }
 
-.table-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.create-button span {
-  font-size: 1.125rem;
-  line-height: 1;
+.expense-filter {
+  min-width: 10rem;
 }
 
 .table-state {
@@ -411,8 +390,6 @@ td[data-column="occurredAt"] {
 
 th[data-column="occurredAt"],
 td[data-column="occurredAt"],
-th[data-column="payerUserId"],
-td[data-column="payerUserId"],
 th[data-column="owedUserId"],
 td[data-column="owedUserId"],
 th[data-column="status"],
@@ -421,13 +398,10 @@ td[data-column="status"] {
 }
 
 td[data-column="occurredAt"],
-td[data-column="totalAmountCents"],
 td[data-column="owedAmountCents"] {
   font-variant-numeric: tabular-nums;
 }
 
-th[data-column="totalAmountCents"],
-td[data-column="totalAmountCents"],
 th[data-column="owedAmountCents"],
 td[data-column="owedAmountCents"] {
   text-align: center;
@@ -501,13 +475,12 @@ td[data-status="settled"] .table-cell-content {
 }
 
 @media (max-width: 48rem) {
-  .table-toolbar label {
-    flex: 1 1 12rem;
+  .expense-filter-wrapper {
+    width: 100%;
   }
 
-  .create-button {
-    width: 100%;
-    margin-left: 0;
+  .expense-filter {
+    flex: 1 1 100%;
   }
 }
 </style>
