@@ -6,6 +6,10 @@
   --color-border: #dbe2ea;
   --color-primary: #2563eb;
   --color-danger: #dc2626;
+  --color-warning-surface: #fef3c7;
+  --color-warning-text: #92400e;
+  --color-success-surface: #dcfce7;
+  --color-success-text: #166534;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;

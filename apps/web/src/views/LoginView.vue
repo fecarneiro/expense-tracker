@@ -75,11 +75,61 @@ async function submit(): Promise<void> {
 .login-page {
   display: grid;
   min-height: 100vh;
+  padding: var(--space-4);
   place-items: center;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
+
+  width: 100%;
+  max-width: 24rem;
+  padding: var(--space-8);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.login-form h1,
+.login-form p {
+  margin: 0;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.login-form input {
+  width: 100%;
+  padding: var(--space-3);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+}
+
+.login-form input:focus {
+  border-color: var(--color-primary);
+}
+
+.login-form button {
+  padding: var(--space-3) var(--space-4);
+
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: white;
+  font-weight: 600;
+}
+
+.login-form [role="alert"] {
+  color: var(--color-danger);
 }
 </style>

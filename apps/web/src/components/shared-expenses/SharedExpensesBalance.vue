@@ -69,25 +69,117 @@ onMounted(() => {
 
 <template>
   <div class="balance">
-    <p v-if="loading">Loading balance...</p>
-    <p v-else-if="errorMessage">{{ errorMessage }}</p>
+    <p v-if="loading" class="balance-message">Loading balance...</p>
+    <p v-else-if="errorMessage" class="balance-message balance-message--error">
+      {{ errorMessage }}
+    </p>
     <template v-else>
-      <div>
-        <span>Open balance</span>
+      <div class="balance-amount">
+        <span class="balance-label">Open balance</span>
         <strong>{{ amountLabel }}</strong>
       </div>
-      <div>
-        <span>{{ summary }}</span>
+      <div class="balance-actions">
+        <span class="balance-summary">{{ summary }}</span>
         <template v-if="canSettle">
-          <button v-if="!confirming" type="button" @click="confirming = true">Settle</button>
+          <button
+            v-if="!confirming"
+            class="balance-button balance-button--primary"
+            type="button"
+            @click="confirming = true"
+          >
+            Settle
+          </button>
           <template v-else>
-            <button type="button" :disabled="settling" @click="settle">
+            <button
+              class="balance-button balance-button--primary"
+              type="button"
+              :disabled="settling"
+              @click="settle"
+            >
               Confirm ({{ amountLabel }})
             </button>
-            <button type="button" :disabled="settling" @click="confirming = false">Cancel</button>
+            <button
+              class="balance-button balance-button--secondary"
+              type="button"
+              :disabled="settling"
+              @click="confirming = false"
+            >
+              Cancel
+            </button>
           </template>
         </template>
       </div>
     </template>
   </div>
 </template>
+
+<style scoped>
+.balance {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-self: flex-start;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 24rem;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.balance-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.balance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.balance-label,
+.balance-summary,
+.balance-message {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.balance-amount strong {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.balance-message {
+  margin: 0;
+}
+
+.balance-message--error {
+  color: var(--color-danger);
+}
+
+.balance-button {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.balance-button--primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.balance-button--secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+</style>

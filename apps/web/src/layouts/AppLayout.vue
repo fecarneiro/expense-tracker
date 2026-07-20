@@ -34,14 +34,18 @@ async function logout(): Promise<void> {
 .app-layout {
   display: grid;
   grid-template-columns: 15rem minmax(0, 1fr);
-  min-height: 100vh;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  min-height: 0;
   padding: var(--space-6);
+  overflow-y: auto;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
 }
@@ -51,21 +55,29 @@ async function logout(): Promise<void> {
 }
 
 .page-content {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: var(--content-width);
   min-width: 0;
+  min-height: 0;
   margin-inline: auto;
   padding: var(--space-8);
+  overflow: hidden;
 }
 
 @media (max-width: 48rem) {
   .app-layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .sidebar {
     flex-direction: row;
     align-items: center;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
     border-right: 0;
     border-bottom: 1px solid var(--color-border);
   }
