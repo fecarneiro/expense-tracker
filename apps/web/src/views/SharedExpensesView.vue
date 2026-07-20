@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SharedExpensesTable from '@/features/shared-expenses/components/SharedExpensesTable.vue'
+import SharedExpensesTable from '@/components/shared-expenses/SharedExpensesTable.vue'
 </script>
 
 <template>
