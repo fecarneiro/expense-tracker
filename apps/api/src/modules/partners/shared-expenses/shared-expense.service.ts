@@ -1,4 +1,8 @@
-import type { SharedExpenseReportResponse } from '@expense-tracker/contracts'
+import {
+  type SharedExpenseReportResponse,
+  type SharedExpenseStatus,
+  sharedExpenseStatusSchema,
+} from '@expense-tracker/contracts'
 import type { Database } from '../../../database/db.js'
 import { CATEGORY_SYSTEM_KEY } from '../../categories/category.defaults.js'
 import { CategoryNotFoundError } from '../../categories/category.error.js'
@@ -28,6 +32,9 @@ export type ListSharedExpenseReportInput = {
   partnershipId: string
   limit?: number | undefined
   offset?: number | undefined
+  status?: SharedExpenseStatus | undefined
+  payerUserId?: string | undefined
+  owedUserId?: string | undefined
 }
 
 export class SharedExpenseService {
@@ -123,10 +130,20 @@ export class SharedExpenseService {
     const limit = input.limit ?? LIST_DEFAULT_LIMIT
     const offset = input.offset ?? LIST_DEFAULT_OFFSET
 
+    const settled =
+      input.status === sharedExpenseStatusSchema.enum.settled
+        ? true
+        : input.status === sharedExpenseStatusSchema.enum.pending
+          ? false
+          : undefined
+
     const { rows, total } = await this.sharedExpenseRepository.findReportByPartnership({
       partnershipId: input.partnershipId,
       limit,
       offset,
+      payerUserId: input.payerUserId,
+      owedUserId: input.owedUserId,
+      settled,
     })
 
     return {
@@ -143,7 +160,9 @@ export class SharedExpenseService {
         categoryName: row.categoryName,
         description: row.description,
 
-        status: row.settlementId ? 'settled' : 'pending',
+        status: row.settlementId
+          ? sharedExpenseStatusSchema.enum.settled
+          : sharedExpenseStatusSchema.enum.pending,
       })),
       meta: {
         total,

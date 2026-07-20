@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm'
 import type { Database, DatabaseClient } from '../../../database/db.js'
 import { sharedCategoriesTable } from '../../../database/schemas/index.js'
 import {
@@ -12,6 +12,9 @@ export type FindReportByPartnershipInput = {
   partnershipId: string
   limit: number
   offset: number
+  payerUserId?: string | undefined
+  owedUserId?: string | undefined
+  settled?: boolean | undefined
 }
 
 export class SharedExpenseRepository {
@@ -63,7 +66,22 @@ export class SharedExpenseRepository {
     data: FindReportByPartnershipInput,
     client: DatabaseClient = this.db,
   ) {
-    const where = eq(sharedExpensesTable.partnershipId, data.partnershipId)
+    const conditions = [eq(sharedExpensesTable.partnershipId, data.partnershipId)]
+
+    if (data.payerUserId) {
+      conditions.push(eq(sharedExpensesTable.payerUserId, data.payerUserId))
+    }
+    if (data.owedUserId) {
+      conditions.push(eq(sharedExpensesTable.owedUserId, data.owedUserId))
+    }
+    if (data.settled === false) {
+      conditions.push(isNull(sharedExpensesTable.settlementId))
+    }
+    if (data.settled === true) {
+      conditions.push(isNotNull(sharedExpensesTable.settlementId))
+    }
+
+    const where = and(...conditions)
 
     const [countRow] = await client
       .select({ total: count().mapWith(Number) })

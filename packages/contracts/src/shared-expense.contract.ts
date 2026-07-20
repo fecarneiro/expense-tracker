@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export const sharedExpenseStatusSchema = z.enum(['pending', 'settled'])
+export type SharedExpenseStatus = z.infer<typeof sharedExpenseStatusSchema>
+
 export const sharedExpenseReportItemSchema = z.object({
   id: z.uuid(),
   occurredAt: z.iso.datetime({ offset: true }),
@@ -13,7 +16,7 @@ export const sharedExpenseReportItemSchema = z.object({
   owedAmountCents: z.number().int(),
 
   description: z.string().nullable(),
-  status: z.enum(['pending', 'settled']),
+  status: sharedExpenseStatusSchema,
 })
 
 export const sharedExpenseReportMetaSchema = z.object({

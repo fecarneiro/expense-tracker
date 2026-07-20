@@ -29,12 +29,17 @@ export class SharedExpenseHttpController {
   async list(req: Request, res: Response) {
     if (!req.partnership) throw new ActivePartnershipNotFoundError()
 
-    const { limit, offset } = sharedExpenseReportQuerySchema.parse(req.query)
+    const { limit, offset, status, payerUserId, owedUserId } = sharedExpenseReportQuerySchema.parse(
+      req.query,
+    )
 
     const report = await this.sharedExpenseService.listReport({
       partnershipId: req.partnership.id,
       limit,
       offset,
+      status,
+      payerUserId,
+      owedUserId,
     })
 
     res.status(200).json(report)

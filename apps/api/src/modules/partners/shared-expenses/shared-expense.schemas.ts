@@ -1,3 +1,4 @@
+import { sharedExpenseStatusSchema } from '@expense-tracker/contracts'
 import { z } from 'zod'
 import { SPLIT_TYPE } from './shared-expense.types.js'
 
@@ -16,4 +17,7 @@ export const createSharedExpenseBodySchema = z.object({
 export const sharedExpenseReportQuerySchema = z.strictObject({
   limit: z.coerce.number().int().min(1).max(100).optional(),
   offset: z.coerce.number().int().min(0).optional(),
+  status: sharedExpenseStatusSchema.optional(),
+  payerUserId: z.uuid().optional(),
+  owedUserId: z.uuid().optional(),
 })
