@@ -190,13 +190,24 @@ If you prefer to run the application using Docker and Docker Compose, you do not
    ```bash
    docker compose up --build
    ```
-   This will start both the PostgreSQL database (`expense-tracker-db`) and the API server (`expense-tracker-api`) in development mode. Migrations run automatically when the API container starts.
+   This starts PostgreSQL (`expense-tracker-db`), the shared contracts compiler
+   (`expense-tracker-contracts`), the API (`expense-tracker-api`) and the Vue
+   frontend (`expense-tracker-web`) in development mode. Migrations run
+   automatically when the API container starts.
 
-The API will be available at:
+   The contracts container performs an initial build before the API and frontend
+   start, then keeps TypeScript running in watch mode. Changes under
+   `packages/contracts/src` are compiled automatically.
+
+The application will be available at:
 
 ```txt
-http://localhost:3000
+Frontend: http://localhost:5173
+API:      http://localhost:3000
 ```
+
+The Vite development server proxies frontend requests from `/api` to the API
+container.
 
 #### Running commands inside Docker
 
@@ -218,6 +229,18 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
   ```bash
   docker compose exec api pnpm check:fix
   ```
+* **Type-check the frontend:**
+  ```bash
+  docker compose exec web pnpm typecheck
+  ```
+* **Build the frontend:**
+  ```bash
+  docker compose exec web pnpm build
+  ```
+* **Type-check the shared contracts:**
+  ```bash
+  docker compose exec contracts pnpm typecheck
+  ```
 
 ## Useful Commands
 
@@ -236,7 +259,7 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
 | `pnpm db:migrate:deploy` | Runs migrations using the compiled production script |
 | `pnpm db:generate`       | Generates a new Drizzle migration                    |
 | `pnpm db:studio`         | Opens Drizzle Studio                                 |
-| `docker compose up`      | Starts the API and database in Docker containers     |
+| `docker compose up`      | Starts the database, contracts, API and frontend containers |
 | `docker compose down`    | Stops and removes Docker Compose containers          |
 | `docker compose exec api pnpm db:migrate` | Runs database migrations inside the API container |
 

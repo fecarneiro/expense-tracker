@@ -16,6 +16,30 @@ services:
       timeout: 2s
       retries: 5
 
+  contracts:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    command: >
+      sh -c "pnpm build &&
+             exec ./node_modules/.bin/tsc -p tsconfig.json --watch --preserveWatchOutput"
+
+    container_name: expense-tracker-contracts
+    init: true
+    working_dir: /app/packages/contracts
+
+    volumes:
+      - .:/app
+      - root_node_modules:/app/node_modules
+      - contracts_node_modules:/app/packages/contracts/node_modules
+
+    healthcheck:
+      test: ["CMD-SHELL", "test -f dist/index.js"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+
   api:
     build:
       context: .
@@ -23,9 +47,11 @@ services:
 
     command: >
       sh -c "pnpm db:migrate &&
-             pnpm dev:api"
+             exec ./node_modules/.bin/tsx watch --env-file=.env src/server.ts"
 
     container_name: expense-tracker-api
+    init: true
+    working_dir: /app/apps/api
 
     ports:
       - "3000:3000"
@@ -48,9 +74,40 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      contracts:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    command: pnpm dev --host 0.0.0.0
+
+    container_name: expense-tracker-web
+    working_dir: /app/apps/web
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - .:/app
+      - root_node_modules:/app/node_modules
+      - web_node_modules:/app/apps/web/node_modules
+      - contracts_node_modules:/app/packages/contracts/node_modules
+
+    environment:
+      API_PROXY_TARGET: http://api:3000
+
+    depends_on:
+      api:
+        condition: service_started
+      contracts:
+        condition: service_healthy
 
 volumes:
   postgres_data:
   root_node_modules:
   api_node_modules:
+  web_node_modules:
   contracts_node_modules:
