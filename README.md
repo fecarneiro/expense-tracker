@@ -10,8 +10,6 @@ Expense Tracker is an **API-first** backend project for personal finance managem
 
 The application was built as a REST API designed to be consumed by frontend clients, such as web or mobile applications. Besides the API, I also implemented a personal bot integration, allowing users to interact with some features through a bot.
 
-The interactive API documentation is available at [expenses.fecarneiro.dev/docs](https://expenses.fecarneiro.dev/docs).
-
 The Bot usage documentation can be found in the [Bot](#bot) section.
 
 ## Table of Contents
@@ -20,7 +18,6 @@ The Bot usage documentation can be found in the [Bot](#bot) section.
 * [Stack](#stack)
 * [Getting Started](#getting-started)
 * [Useful Commands](#useful-commands)
-* [API Documentation](#api-documentation)
 * [Main Resources](#main-resources)
 * [Quick Example](#quick-example)
 * [Authentication](#authentication)
@@ -44,7 +41,6 @@ The Bot usage documentation can be found in the [Bot](#bot) section.
 * Income and expense registration, querying, update and deletion
 * Monthly balance reports with income, expense and balance summaries grouped by month in the user time zone
 * Optional partnerships for shared expenses, category mapping, pending balances and settlements
-* Interactive API documentation with OpenAPI and Scalar
 * Optional Bot integration with slash commands, fast text-based transaction registration and partnership flows
 
 ## Stack
@@ -56,7 +52,6 @@ The Bot usage documentation can be found in the [Bot](#bot) section.
 * **Drizzle ORM**
 * **Zod**
 * **JWT with JOSE**
-* **OpenAPI + Scalar**
 * **Vitest + Supertest**
 * **Biome**
 * **Pino**, for structured logging
@@ -181,12 +176,6 @@ The API will be available at:
 http://localhost:3000
 ```
 
-The local documentation can be accessed at:
-
-```txt
-http://localhost:3000/docs
-```
-
 ### Running with Docker
 
 If you prefer to run the application using Docker and Docker Compose, you do not need to install Node.js, pnpm, or PostgreSQL locally. The environment is pre-configured with hot-reloading and an integrated PostgreSQL database.
@@ -201,19 +190,24 @@ If you prefer to run the application using Docker and Docker Compose, you do not
    ```bash
    docker compose up --build
    ```
-   This will start both the PostgreSQL database (`expense-tracker-db`) and the API server (`expense-tracker-api`) in development mode. Migrations run automatically when the API container starts.
+   This starts PostgreSQL (`expense-tracker-db`), the shared contracts compiler
+   (`expense-tracker-contracts`), the API (`expense-tracker-api`) and the Vue
+   frontend (`expense-tracker-web`) in development mode. Migrations run
+   automatically when the API container starts.
 
-The API will be available at:
+   The contracts container performs an initial build before the API and frontend
+   start, then keeps TypeScript running in watch mode. Changes under
+   `packages/contracts/src` are compiled automatically.
+
+The application will be available at:
 
 ```txt
-http://localhost:3000
+Frontend: http://localhost:5173
+API:      http://localhost:3000
 ```
 
-The local documentation can be accessed at:
-
-```txt
-http://localhost:3000/docs
-```
+The Vite development server proxies frontend requests from `/api` to the API
+container.
 
 #### Running commands inside Docker
 
@@ -235,6 +229,18 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
   ```bash
   docker compose exec api pnpm check:fix
   ```
+* **Type-check the frontend:**
+  ```bash
+  docker compose exec web pnpm typecheck
+  ```
+* **Build the frontend:**
+  ```bash
+  docker compose exec web pnpm build
+  ```
+* **Type-check the shared contracts:**
+  ```bash
+  docker compose exec contracts pnpm typecheck
+  ```
 
 ## Useful Commands
 
@@ -253,41 +259,23 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
 | `pnpm db:migrate:deploy` | Runs migrations using the compiled production script |
 | `pnpm db:generate`       | Generates a new Drizzle migration                    |
 | `pnpm db:studio`         | Opens Drizzle Studio                                 |
-| `docker compose up`      | Starts the API and database in Docker containers     |
+| `docker compose up`      | Starts the database, contracts, API and frontend containers |
 | `docker compose down`    | Stops and removes Docker Compose containers          |
 | `docker compose exec api pnpm db:migrate` | Runs database migrations inside the API container |
-
-## API Documentation
-
-The API provides interactive documentation generated from the OpenAPI contract.
-
-| Resource             | URL                                          |
-| -------------------- | -------------------------------------------- |
-| Hosted documentation | https://expenses.fecarneiro.dev/docs         |
-| Hosted OpenAPI JSON  | https://expenses.fecarneiro.dev/openapi.json |
-| Local documentation  | http://localhost:3000/docs                   |
-| Local OpenAPI JSON   | http://localhost:3000/openapi.json           |
-| Local health check   | http://localhost:3000/health                 |
-
-The health check endpoint can be used to verify that the application is responding:
-
-```bash
-curl http://localhost:3000/health
-```
 
 ## Main Resources
 
 | Resource             | Description                                     |
 | -------------------- | ----------------------------------------------- |
-| `/auth`              | User registration, login and authentication     |
-| `/users`             | Authenticated user profile management           |
-| `/categories`        | Category creation, listing, update and deletion (defaults are seeded on registration) |
-| `/transactions`      | Income and expense registration, querying, update, deletion and monthly balance reports |
-| `/bot`               | Bot account linking                             |
-| `/partnerships`      | Partnership invite codes, creation and current partnership |
-| `/shared-categories` | Shared category listing and user category mapping |
-| `/shared-expenses`   | Shared expense creation with `HALF` or `FULL` splits |
-| `/settlements`       | Pending partnership balance and settlements     |
+| `/api/auth`              | User registration, login and authentication     |
+| `/api/users`             | Authenticated user profile management           |
+| `/api/categories`        | Category creation, listing, update and deletion (defaults are seeded on registration) |
+| `/api/transactions`      | Income and expense registration, querying, update, deletion and monthly balance reports |
+| `/api/bot`               | Bot account linking                             |
+| `/api/partnerships`      | Partnership invite codes, creation and current partnership |
+| `/api/shared-categories` | Shared category listing and user category mapping |
+| `/api/shared-expenses`   | Shared expense creation with `HALF` or `FULL` splits |
+| `/api/settlements`       | Pending partnership balance and settlements     |
 
 ## Quick Example
 
@@ -296,7 +284,7 @@ Below is a minimal flow to test the API using `curl`.
 ### Create a user
 
 ```bash
-curl -X POST http://localhost:3000/auth/register \
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john@example.com",
@@ -309,7 +297,7 @@ Registration also accepts optional `timezone` (IANA), `currency` (ISO 4217) and 
 ### Log in
 
 ```bash
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john@example.com",
@@ -326,14 +314,14 @@ ACCESS_TOKEN="<access_token>"
 ### List categories
 
 ```bash
-curl http://localhost:3000/categories \
+curl http://localhost:3000/api/categories \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 New accounts already include default categories such as Salary, Groceries, Transport and Bills. You can create additional custom categories when needed:
 
 ```bash
-curl -X POST http://localhost:3000/categories \
+curl -X POST http://localhost:3000/api/categories \
   -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -345,7 +333,7 @@ curl -X POST http://localhost:3000/categories \
 ### Monthly balance
 
 ```bash
-curl "http://localhost:3000/transactions/monthly-balance" \
+curl "http://localhost:3000/api/transactions/monthly-balance" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
@@ -355,7 +343,7 @@ Optional `from` and `until` query parameters filter by `occurredAt` as ISO datet
 
 The API uses JWT-based authentication.
 
-After logging in through `/auth/login`, the API returns an `accessToken`. This token must be sent in the `Authorization` header to access protected routes.
+After logging in through `/api/auth/login`, the API returns an `accessToken`. This token must be sent in the `Authorization` header to access protected routes.
 
 Header format:
 
@@ -366,7 +354,7 @@ Authorization: Bearer <access_token>
 Example:
 
 ```bash
-curl http://localhost:3000/users/me \
+curl http://localhost:3000/api/users/me \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
@@ -470,7 +458,7 @@ The flow works as follows:
 Generate a linking code:
 
 ```bash
-curl http://localhost:3000/bot/generate-linking-code \
+curl http://localhost:3000/api/bot/generate-linking-code \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
@@ -527,18 +515,18 @@ When a partnership is created, default shared categories are seeded automaticall
 
 ### API resources
 
-| Method | Endpoint                         | Description                                      |
-| ------ | -------------------------------- | ------------------------------------------------ |
-| `POST` | `/partnerships/linking-code`     | Generates a partnership invite code              |
-| `POST` | `/partnerships`                  | Creates a partnership with an invite code        |
-| `GET`  | `/partnerships/me`               | Returns the current partnership context          |
-| `GET`  | `/shared-categories`             | Lists shared categories for the partnership      |
-| `POST` | `/shared-categories/mappings`    | Maps a personal category to a shared category    |
-| `POST` | `/shared-expenses`               | Creates a shared expense (`HALF` or `FULL`)      |
-| `GET`  | `/settlements/balance`           | Returns the pending partnership balance          |
-| `POST` | `/settlements`                   | Settles the current pending balance              |
+| Method | Endpoint                              | Description                                      |
+| ------ | ------------------------------------- | ------------------------------------------------ |
+| `POST` | `/api/partnerships/linking-code`      | Generates a partnership invite code              |
+| `POST` | `/api/partnerships`                   | Creates a partnership with an invite code        |
+| `GET`  | `/api/partnerships/me`                | Returns the current partnership context          |
+| `GET`  | `/api/shared-categories`              | Lists shared categories for the partnership      |
+| `POST` | `/api/shared-categories/mappings`     | Maps a personal category to a shared category    |
+| `POST` | `/api/shared-expenses`                | Creates a shared expense (`HALF` or `FULL`)      |
+| `GET`  | `/api/settlements/balance`            | Returns the pending partnership balance          |
+| `POST` | `/api/settlements`                    | Settles the current pending balance              |
 
-`/shared-categories`, `/shared-expenses` and `/settlements` require an active partnership.
+`/api/shared-categories`, `/api/shared-expenses` and `/api/settlements` require an active partnership.
 
 ### Split types
 
@@ -555,7 +543,7 @@ Shared expenses support two split modes:
 4. Shared expenses are created with `POST /shared-expenses` or `/shared`.
 5. Pending balances can be checked with `GET /settlements/balance` or `/balance`, and settled with `POST /settlements` or `/settle`.
 
-These partnership endpoints are available through the REST API and the bot, but are not yet included in the OpenAPI document served at `/docs`.
+These partnership endpoints are available through the REST API and the bot.
 
 ## Architecture
 
@@ -581,7 +569,6 @@ Each layer has a specific responsibility:
 | Service            | Contains the application business rules                           |
 | Repository / Query | Encapsulates database access                                      |
 | Middleware         | Handles authentication, rate limiting, parsing and errors         |
-| OpenAPI            | Documents the API HTTP contracts                                  |
 
 Dependency composition is centralized in the application container. This avoids instantiating services and repositories directly inside routes, keeping the code more organized and easier to test and maintain.
 
@@ -608,7 +595,6 @@ src/
 │   │   └── settlements/
 │   ├── transactions/
 │   └── users/
-├── openapi/         # OpenAPI document composition
 ├── shared/          # Shared utilities and helpers
 ├── app.ts           # Express application factory
 ├── container.ts     # Dependency composition
@@ -662,12 +648,6 @@ I used Drizzle ORM to work with schemas and versioned migrations while keeping t
 API inputs are validated with Zod before reaching the business rules.
 
 This centralizes input validation, improves consistency in error responses and reduces the chance of invalid data reaching the services.
-
-### OpenAPI and Scalar
-
-The API documentation is exposed with OpenAPI and visualized with Scalar.
-
-This decision makes it easier to test endpoints, understand API contracts and use the backend independently from a specific frontend.
 
 ### JWT authentication
 
