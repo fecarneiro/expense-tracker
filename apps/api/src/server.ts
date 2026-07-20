@@ -7,6 +7,20 @@ import { createBot } from './modules/bot/bot.js'
 import { parseBotEnv } from './modules/bot/config/bot.config.js'
 import { logger } from './shared/logger/logger.js'
 
+pool.on('error', (err) => {
+  logger.error(
+    {
+      err,
+      pool: {
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount,
+      },
+    },
+    'database.pool.idle_client_error',
+  )
+})
+
 const container = createContainer(db)
 const app = createApp(container)
 
