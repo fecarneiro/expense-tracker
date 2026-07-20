@@ -1,4 +1,4 @@
-import { clearSession, getAccessToken } from '@/auth/auth.session'
+import { clearSession, getAccessToken } from '@/shared/auth/auth.session'
 
 type ApiRequestOptions = RequestInit & {
   authenticated?: boolean

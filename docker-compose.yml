@@ -69,7 +69,7 @@ services:
       CI: "true"
       NODE_ENV: development
       DATABASE_URL: postgresql://user:password@db:5432/expense_tracker
-      LOG_LEVEL: debug
+      LOG_LEVEL: info
 
     depends_on:
       db:

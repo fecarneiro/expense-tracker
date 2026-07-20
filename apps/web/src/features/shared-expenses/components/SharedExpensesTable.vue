@@ -4,15 +4,39 @@ import type {
   SharedExpenseReportResponse,
 } from '@expense-tracker/contracts'
 import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Select from 'primevue/select'
+import Toolbar from 'primevue/toolbar'
 import { computed, onMounted, ref } from 'vue'
 import { apiRequest } from '@/api/http'
-import { getAuthUser } from '@/auth/auth.session'
-import SharedExpenseCreateModal from '@/components/shared-expenses/SharedExpenseCreateModal.vue'
-import SharedExpensesBalance from '@/components/shared-expenses/SharedExpensesBalance.vue'
+import { getAuthUser } from '@/shared/auth/auth.session'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
 import { formatParticipant } from '@/utils/format-partner'
 import { formatText } from '@/utils/format-text'
+
+type SelectOption = {
+  label: string
+  value: string
+}
+
+const statusFilterOptions: SelectOption[] = [
+  { label: 'All', value: '' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Settled', value: 'settled' },
+]
+
+const owedByFilterOptions = computed<SelectOption[]>(() => {
+  const options: SelectOption[] = [
+    { label: 'All', value: '' },
+    { label: 'You', value: currentUserId },
+  ]
+  if (partnerUserId.value) {
+    options.push({ label: 'Partner', value: partnerUserId.value })
+  }
+  return options
+})
 
 const emptyRows: SharedExpenseReportItem[] = []
 
@@ -178,42 +202,29 @@ const table = useVueTable({
 
     <div class="table-card">
       <div class="table-toolbar">
-        <label>
-          Status
-          <select v-model="status" @change="onFilterChange">
-            <option value="">All</option>
-            <option value="pending">Pending</option>
-            <option value="settled">Settled</option>
-          </select>
-        </label>
+        <Select
+          v-model="status"
+          :options="statusFilterOptions"
+          option-label="label"
+          option-value="value"
+          placeholder="Status"
+          @change="onFilterChange"
+        />
 
-        <label>
-          Payer
-          <select v-model="payerUserId" @change="onFilterChange">
-            <option value="">All</option>
-            <option :value="currentUserId">You</option>
-            <option v-if="hasPartner" :value="partnerUserId">Partner</option>
-          </select>
-        </label>
+        <Select
+          v-model="owedUserId"
+          :options="owedByFilterOptions"
+          option-label="label"
+          option-value="value"
+          placeholder="Owed By"
+          @change="onFilterChange"
+        />
 
-        <label>
-          Owed By
-          <select v-model="owedUserId" @change="onFilterChange">
-            <option value="">All</option>
-            <option :value="currentUserId">You</option>
-            <option v-if="hasPartner" :value="partnerUserId">Partner</option>
-          </select>
-        </label>
-
-        <button
-          class="create-button"
-          type="button"
+        <Button
+          label="Add expense"
           :disabled="!partnershipLoaded || !hasPartner"
           @click="openCreateModal"
-        >
-          <span aria-hidden="true">+</span>
-          Add expense
-        </button>
+        />
       </div>
 
       <p v-if="partnershipLoaded && !hasPartner" class="table-state">No active partnership.</p>
@@ -321,37 +332,6 @@ const table = useVueTable({
   gap: var(--space-2);
 
   color: var(--color-text-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.table-toolbar select {
-  width: auto;
-  min-width: 8rem;
-  padding: var(--space-2) var(--space-3);
-
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
-  font-weight: 400;
-}
-
-.table-toolbar select:focus {
-  border-color: var(--color-primary);
-}
-
-.create-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  margin-left: auto;
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  color: white;
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -523,11 +503,6 @@ td[data-status="settled"] .table-cell-content {
 @media (max-width: 48rem) {
   .table-toolbar label {
     flex: 1 1 12rem;
-  }
-
-  .table-toolbar select {
-    flex: 1;
-    min-width: 0;
   }
 
   .create-button {

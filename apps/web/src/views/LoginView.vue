@@ -3,7 +3,7 @@ import type { LoginRequest, LoginResponse } from '@expense-tracker/contracts'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiRequest } from '@/api/http'
-import { saveSession } from '@/auth/auth.session'
+import { saveSession } from '@/shared/auth/auth.session'
 
 const router = useRouter()
 const route = useRoute()

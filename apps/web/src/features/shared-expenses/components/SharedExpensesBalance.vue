@@ -2,7 +2,7 @@
 import type { PendingBalance } from '@expense-tracker/contracts'
 import { computed, onMounted, ref } from 'vue'
 import { apiRequest } from '@/api/http'
-import { getAuthUser } from '@/auth/auth.session'
+import { getAuthUser } from '@/shared/auth/auth.session'
 import { formatMoney } from '@/utils/format-money'
 
 const emit = defineEmits<{
