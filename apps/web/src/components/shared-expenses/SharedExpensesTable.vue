@@ -7,6 +7,7 @@ import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable } from '@t
 import { computed, onMounted, ref } from 'vue'
 import { apiRequest } from '@/api/http'
 import { getAuthUser } from '@/auth/auth.session'
+import SharedExpensesBalance from '@/components/shared-expenses/SharedExpensesBalance.vue'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
 import { formatParticipant } from '@/utils/format-partner'
@@ -149,6 +150,8 @@ const table = useVueTable({
 
 <template>
   <main class="shared-expenses-page">
+    <SharedExpensesBalance v-if="hasPartner" @settled="loadReport" />
+
     <div class="filters">
       <label>
         Status
