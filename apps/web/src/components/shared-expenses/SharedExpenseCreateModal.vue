@@ -64,7 +64,7 @@ function newExpense(): SharedExpenseDraft {
     clientId: crypto.randomUUID(),
     amount: '',
     sharedCategoryId: '',
-    split: 'half',
+    split: 'full',
     description: '',
     errors: {},
   }
@@ -344,16 +344,6 @@ defineExpose({ open })
               <fieldset class="split-field">
                 <legend>Split</legend>
                 <div class="split-options">
-                  <label :class="{ 'split-option--selected': expense.split === 'half' }">
-                    <input
-                      v-model="expense.split"
-                      type="radio"
-                      :name="`split-${expense.clientId}`"
-                      value="half"
-                      :disabled="submitting"
-                    >
-                    Split equally
-                  </label>
                   <label :class="{ 'split-option--selected': expense.split === 'full' }">
                     <input
                       v-model="expense.split"
@@ -363,6 +353,16 @@ defineExpose({ open })
                       :disabled="submitting"
                     >
                     Partner owes full amount
+                  </label>
+                  <label :class="{ 'split-option--selected': expense.split === 'half' }">
+                    <input
+                      v-model="expense.split"
+                      type="radio"
+                      :name="`split-${expense.clientId}`"
+                      value="half"
+                      :disabled="submitting"
+                    >
+                    Split equally
                   </label>
                 </div>
                 <small class="split-summary">
