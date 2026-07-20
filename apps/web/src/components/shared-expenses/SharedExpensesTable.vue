@@ -5,12 +5,17 @@ import type {
 } from '@expense-tracker/contracts'
 import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { apiRequest } from '@/api/http'
-
-const router = useRouter()
+import { getAuthUser } from '@/auth/auth.session'
+import { formatDate } from '@/utils/format-date'
+import { formatMoney } from '@/utils/format-money'
+import { formatParticipant } from '@/utils/format-partner'
+import { formatSentenceCase } from '@/utils/format-text'
 
 const data = ref<SharedExpenseReportResponse | null>(null)
+
+const user = getAuthUser()
+const currentUserId = user?.id ?? ''
 
 const loading = ref(true)
 const errorMessage = ref<string | null>(null)
@@ -30,14 +35,38 @@ onMounted(async () => {
 const columnHelper = createColumnHelper<SharedExpenseReportItem>()
 
 const columns = [
-  columnHelper.accessor('occurredAt', { header: 'Date' }),
-  columnHelper.accessor('categoryName', { header: 'Category' }),
-  columnHelper.accessor('totalAmountCents', { header: 'Total' }),
-  columnHelper.accessor('payerUserId', { header: 'Payer' }),
-  columnHelper.accessor('owedUserId', { header: 'Owed By' }),
-  columnHelper.accessor('owedAmountCents', { header: 'Pending' }),
-  columnHelper.accessor('description', { header: 'Description' }),
-  columnHelper.accessor('status', { header: 'Status' }),
+  columnHelper.accessor('occurredAt', {
+    header: 'Date',
+    cell: (info) => formatDate(info.getValue(), user?.locale ?? 'en-US', user?.timezone ?? 'UTC'),
+  }),
+  columnHelper.accessor('description', {
+    header: 'Description',
+    cell: (info) => formatSentenceCase(info.getValue()),
+  }),
+  columnHelper.accessor('categoryName', {
+    header: 'Category',
+    cell: (info) => formatSentenceCase(info.getValue()),
+  }),
+  columnHelper.accessor('totalAmountCents', {
+    header: 'Total',
+    cell: (info) => formatMoney(info.getValue(), user?.currency ?? 'USD', user?.locale ?? 'en-US'),
+  }),
+  columnHelper.accessor('payerUserId', {
+    header: 'Payer',
+    cell: (info) => formatParticipant(info.getValue(), currentUserId),
+  }),
+  columnHelper.accessor('owedUserId', {
+    header: 'Owed By',
+    cell: (info) => formatParticipant(info.getValue(), currentUserId),
+  }),
+  columnHelper.accessor('owedAmountCents', {
+    header: 'Pending',
+    cell: (info) => formatMoney(info.getValue(), user?.currency ?? 'USD', user?.locale ?? 'en-US'),
+  }),
+  columnHelper.accessor('status', {
+    header: 'Status',
+    cell: (info) => formatSentenceCase(info.getValue()),
+  }),
 ]
 
 const table = useVueTable({

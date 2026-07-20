@@ -15,6 +15,7 @@ export class SharedExpenseHttpController {
       totalAmountCents: body.totalAmountCents,
       sharedCategoryId: body.sharedCategoryId,
       split: body.split,
+      description: body.description,
     })
 
     // TODO: remove users ID from response
