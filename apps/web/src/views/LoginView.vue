@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { LoginRequest, LoginResponse } from '@expense-tracker/contracts'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { apiRequest } from '@/api/http'
 import { saveSession } from '@/auth/auth.session'
 
 const router = useRouter()
+const route = useRoute()
+
+const sessionExpired = route.query.reason === 'session-expired'
 
 const email = ref('')
 const password = ref('')
@@ -44,15 +47,16 @@ async function submit(): Promise<void> {
   <main class="login-page">
     <form class="login-form" @submit.prevent="submit">
       <h1>Expense Tracker</h1>
+
+      <p v-if="sessionExpired">Your session has expired. Please log in again.</p>
+
       <label>
         E-mail
-
         <input v-model.trim="email" type="email" autocomplete="email" required>
       </label>
 
       <label>
         Password
-
         <input v-model="password" type="password" autocomplete="current-password" required>
       </label>
 

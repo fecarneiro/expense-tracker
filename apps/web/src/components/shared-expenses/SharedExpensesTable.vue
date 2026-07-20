@@ -4,32 +4,68 @@ import type {
   SharedExpenseReportResponse,
 } from '@expense-tracker/contracts'
 import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable } from '@tanstack/vue-table'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { apiRequest } from '@/api/http'
 import { getAuthUser } from '@/auth/auth.session'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
 import { formatParticipant } from '@/utils/format-partner'
-import { formatSentenceCase } from '@/utils/format-text'
+import { formatText } from '@/utils/format-text'
+
+const emptyRows: SharedExpenseReportItem[] = []
 
 const data = ref<SharedExpenseReportResponse | null>(null)
 
 const user = getAuthUser()
 const currentUserId = user?.id ?? ''
 
+const partnerUserId = ref('')
+const partnershipLoaded = ref(false)
+
 const loading = ref(true)
 const errorMessage = ref<string | null>(null)
 
-onMounted(async () => {
+const status = ref('')
+const payerUserId = ref('')
+const owedUserId = ref('')
+
+const rows = computed(() => data.value?.data ?? emptyRows)
+const hasPartner = computed(() => partnerUserId.value !== '')
+const isEmpty = computed(() => !loading.value && rows.value.length === 0)
+
+async function loadReport() {
   loading.value = true
   errorMessage.value = null
   try {
-    data.value = await apiRequest<SharedExpenseReportResponse>('/shared-expenses')
+    const query = new URLSearchParams()
+    if (status.value) query.set('status', status.value)
+    if (payerUserId.value) query.set('payerUserId', payerUserId.value)
+    if (owedUserId.value) query.set('owedUserId', owedUserId.value)
+    const qs = query.toString()
+    data.value = await apiRequest<SharedExpenseReportResponse>(
+      `/shared-expenses${qs ? `?${qs}` : ''}`,
+    )
   } catch {
     errorMessage.value = 'Unable to load shared expenses.'
   } finally {
     loading.value = false
   }
+}
+
+async function loadPartnership() {
+  try {
+    const partnership = await apiRequest<{ partnerId: string } | null>('/partnerships/me')
+    partnerUserId.value = partnership?.partnerId ?? ''
+  } catch {
+    partnerUserId.value = ''
+  } finally {
+    partnershipLoaded.value = true
+  }
+}
+
+onMounted(() => {
+  void loadPartnership()
+  void loadReport()
 })
 
 const columnHelper = createColumnHelper<SharedExpenseReportItem>()
@@ -41,11 +77,11 @@ const columns = [
   }),
   columnHelper.accessor('description', {
     header: 'Description',
-    cell: (info) => formatSentenceCase(info.getValue()),
+    cell: (info) => formatText(info.getValue()),
   }),
   columnHelper.accessor('categoryName', {
     header: 'Category',
-    cell: (info) => formatSentenceCase(info.getValue()),
+    cell: (info) => formatText(info.getValue()),
   }),
   columnHelper.accessor('totalAmountCents', {
     header: 'Total',
@@ -65,13 +101,13 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     header: 'Status',
-    cell: (info) => formatSentenceCase(info.getValue()),
+    cell: (info) => formatText(info.getValue()),
   }),
 ]
 
 const table = useVueTable({
   get data() {
-    return data.value?.data ?? []
+    return rows.value
   },
   columns,
   getCoreRowModel: getCoreRowModel(),
@@ -79,11 +115,42 @@ const table = useVueTable({
 </script>
 
 <template>
-  <main class="login-page">
-    <p v-if="errorMessage">
-      {{ errorMessage }}
-    </p>
-    <table>
+  <main class="shared-expenses-page">
+    <div class="filters">
+      <label>
+        Status
+        <select v-model="status" @change="loadReport">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="settled">Settled</option>
+        </select>
+      </label>
+
+      <label>
+        Payer
+        <select v-model="payerUserId" @change="loadReport">
+          <option value="">All</option>
+          <option :value="currentUserId">You</option>
+          <option v-if="hasPartner" :value="partnerUserId">Partner</option>
+        </select>
+      </label>
+
+      <label>
+        Owed By
+        <select v-model="owedUserId" @change="loadReport">
+          <option value="">All</option>
+          <option :value="currentUserId">You</option>
+          <option v-if="hasPartner" :value="partnerUserId">Partner</option>
+        </select>
+      </label>
+    </div>
+
+    <p v-if="partnershipLoaded && !hasPartner">No active partnership.</p>
+    <p v-else-if="errorMessage">{{ errorMessage }}</p>
+    <p v-else-if="loading">Loading...</p>
+    <p v-else-if="isEmpty">No shared expenses found.</p>
+
+    <table v-else>
       <thead>
         <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
           <th v-for="header in headerGroup.headers" :key="header.id">
@@ -99,6 +166,5 @@ const table = useVueTable({
         </tr>
       </tbody>
     </table>
-    <!-- TODO: implement case for data.value = [] -->
   </main>
 </template>

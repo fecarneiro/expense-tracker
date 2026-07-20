@@ -1,4 +1,4 @@
-export function formatSentenceCase(value: string | null): string {
+export function formatText(value: string | null): string {
   if (value == null) return ''
 
   const trimmed = value.trim()

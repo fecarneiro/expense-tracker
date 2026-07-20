@@ -1,4 +1,4 @@
-import { getAccessToken } from '@/auth/auth.session'
+import { clearSession, getAccessToken } from '@/auth/auth.session'
 
 type ApiRequestOptions = RequestInit & {
   authenticated?: boolean
@@ -25,6 +25,12 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     ...requestOptions,
     headers,
   })
+
+  if (response.status === 401 && authenticated) {
+    clearSession()
+    window.location.assign('/login?reason=session-expired')
+    throw new Error('Unauthorized')
+  }
 
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`)
