@@ -29,27 +29,60 @@ const status = ref('')
 const payerUserId = ref('')
 const owedUserId = ref('')
 
+const pageSize = 20
+const page = ref(0)
+const offset = computed(() => page.value * pageSize)
+const meta = computed(() => data.value?.meta)
+const totalPages = computed(() =>
+  meta.value ? Math.max(1, Math.ceil(meta.value.total / meta.value.limit)) : 1,
+)
+const canPrev = computed(() => page.value > 0)
+const canNext = computed(() =>
+  meta.value ? offset.value + meta.value.limit < meta.value.total : false,
+)
+
 const rows = computed(() => data.value?.data ?? emptyRows)
 const hasPartner = computed(() => partnerUserId.value !== '')
 const isEmpty = computed(() => !loading.value && rows.value.length === 0)
+const showPagination = computed(
+  () => !loading.value && !errorMessage.value && (meta.value?.total ?? 0) > 0,
+)
 
 async function loadReport() {
   loading.value = true
   errorMessage.value = null
   try {
     const query = new URLSearchParams()
+    query.set('limit', String(pageSize))
+    query.set('offset', String(offset.value))
     if (status.value) query.set('status', status.value)
     if (payerUserId.value) query.set('payerUserId', payerUserId.value)
     if (owedUserId.value) query.set('owedUserId', owedUserId.value)
-    const qs = query.toString()
     data.value = await apiRequest<SharedExpenseReportResponse>(
-      `/shared-expenses${qs ? `?${qs}` : ''}`,
+      `/shared-expenses?${query.toString()}`,
     )
   } catch {
     errorMessage.value = 'Unable to load shared expenses.'
   } finally {
     loading.value = false
   }
+}
+
+function onFilterChange() {
+  page.value = 0
+  void loadReport()
+}
+
+function goPrev() {
+  if (!canPrev.value) return
+  page.value -= 1
+  void loadReport()
+}
+
+function goNext() {
+  if (!canNext.value) return
+  page.value += 1
+  void loadReport()
 }
 
 async function loadPartnership() {
@@ -119,7 +152,7 @@ const table = useVueTable({
     <div class="filters">
       <label>
         Status
-        <select v-model="status" @change="loadReport">
+        <select v-model="status" @change="onFilterChange">
           <option value="">All</option>
           <option value="pending">Pending</option>
           <option value="settled">Settled</option>
@@ -128,7 +161,7 @@ const table = useVueTable({
 
       <label>
         Payer
-        <select v-model="payerUserId" @change="loadReport">
+        <select v-model="payerUserId" @change="onFilterChange">
           <option value="">All</option>
           <option :value="currentUserId">You</option>
           <option v-if="hasPartner" :value="partnerUserId">Partner</option>
@@ -137,7 +170,7 @@ const table = useVueTable({
 
       <label>
         Owed By
-        <select v-model="owedUserId" @change="loadReport">
+        <select v-model="owedUserId" @change="onFilterChange">
           <option value="">All</option>
           <option :value="currentUserId">You</option>
           <option v-if="hasPartner" :value="partnerUserId">Partner</option>
@@ -150,21 +183,29 @@ const table = useVueTable({
     <p v-else-if="loading">Loading...</p>
     <p v-else-if="isEmpty">No shared expenses found.</p>
 
-    <table v-else>
-      <thead>
-        <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-          <th v-for="header in headerGroup.headers" :key="header.id">
-            <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in table.getRowModel().rows" :key="row.id">
-          <td v-for="cell in row.getVisibleCells()" :key="cell.id">
-            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <template v-else>
+      <table>
+        <thead>
+          <tr v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+            <th v-for="header in headerGroup.headers" :key="header.id">
+              <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in table.getRowModel().rows" :key="row.id">
+            <td v-for="cell in row.getVisibleCells()" :key="cell.id">
+              <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div v-if="showPagination" class="pagination">
+        <button type="button" :disabled="!canPrev" @click="goPrev">←</button>
+        <span>{{ page + 1 }} / {{ totalPages }}</span>
+        <button type="button" :disabled="!canNext" @click="goNext">→</button>
+      </div>
+    </template>
   </main>
 </template>
