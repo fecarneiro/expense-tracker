@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm'
 import type { Database, DatabaseClient } from '../../../database/db.js'
 import { sharedCategoriesTable } from '../../../database/schemas/index.js'
 import {
@@ -7,6 +7,12 @@ import {
 } from '../../../database/schemas/partners/shared-expenses.schema.js'
 import { SharedExpenseCreationError } from './shared-expense.errors.js'
 import type { SharedExpense } from './shared-expense.types.js'
+
+export type FindReportByPartnershipInput = {
+  partnershipId: string
+  limit: number
+  offset: number
+}
 
 export class SharedExpenseRepository {
   constructor(private readonly db: Database) {}
@@ -53,8 +59,18 @@ export class SharedExpenseRepository {
   }
 
   // Front
-  async findReportByPartnership(partnershipId: string, client: DatabaseClient = this.db) {
-    return client
+  async findReportByPartnership(
+    data: FindReportByPartnershipInput,
+    client: DatabaseClient = this.db,
+  ) {
+    const where = eq(sharedExpensesTable.partnershipId, data.partnershipId)
+
+    const [countRow] = await client
+      .select({ total: count().mapWith(Number) })
+      .from(sharedExpensesTable)
+      .where(where)
+
+    const rows = await client
       .select({
         id: sharedExpensesTable.id,
         occurredAt: sharedExpensesTable.occurredAt,
@@ -72,7 +88,14 @@ export class SharedExpenseRepository {
         sharedCategoriesTable,
         eq(sharedExpensesTable.sharedCategoryId, sharedCategoriesTable.id),
       )
-      .where(eq(sharedExpensesTable.partnershipId, partnershipId))
+      .where(where)
       .orderBy(desc(sharedExpensesTable.occurredAt))
+      .limit(data.limit)
+      .offset(data.offset)
+
+    return {
+      rows,
+      total: countRow?.total ?? 0,
+    }
   }
 }

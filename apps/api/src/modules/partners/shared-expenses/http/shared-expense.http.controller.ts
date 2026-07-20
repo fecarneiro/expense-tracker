@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express'
 import { ActivePartnershipNotFoundError } from '../shared-expense.errors.js'
-import { createSharedExpenseBodySchema } from '../shared-expense.schemas.js'
+import {
+  createSharedExpenseBodySchema,
+  sharedExpenseReportQuerySchema,
+} from '../shared-expense.schemas.js'
 import type { SharedExpenseService } from '../shared-expense.service.js'
 
 export class SharedExpenseHttpController {
@@ -26,7 +29,14 @@ export class SharedExpenseHttpController {
   async list(req: Request, res: Response) {
     if (!req.partnership) throw new ActivePartnershipNotFoundError()
 
-    const data = await this.sharedExpenseService.listReport(req.partnership.id)
-    res.status(200).json({ data })
+    const { limit, offset } = sharedExpenseReportQuerySchema.parse(req.query)
+
+    const report = await this.sharedExpenseService.listReport({
+      partnershipId: req.partnership.id,
+      limit,
+      offset,
+    })
+
+    res.status(200).json(report)
   }
 }

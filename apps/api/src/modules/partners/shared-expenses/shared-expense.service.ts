@@ -1,4 +1,4 @@
-import type { SharedExpenseReportItem } from '@expense-tracker/contracts'
+import type { SharedExpenseReportResponse } from '@expense-tracker/contracts'
 import type { Database } from '../../../database/db.js'
 import { CATEGORY_SYSTEM_KEY } from '../../categories/category.defaults.js'
 import { CategoryNotFoundError } from '../../categories/category.error.js'
@@ -10,6 +10,7 @@ import type { PartnershipRepository } from '../partnerships/partnership.reposito
 import { partnerOf } from '../partnerships/partnership.utils.js'
 import { SharedCategoryNotFoundError } from '../shared-categories/shared-category.errors.js'
 import type { SharedCategoryRepository } from '../shared-categories/shared-category.repository.js'
+import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './shared-expense.constants.js'
 import { ActivePartnershipNotFoundError } from './shared-expense.errors.js'
 import type { SharedExpenseRepository } from './shared-expense.repository.js'
 import { type SharedExpense, SPLIT_TYPE, type SplitType } from './shared-expense.types.js'
@@ -21,6 +22,12 @@ export type CreateSharedExpense = {
   sharedCategoryId: string
   split: SplitType
   description?: string | null
+}
+
+export type ListSharedExpenseReportInput = {
+  partnershipId: string
+  limit?: number | undefined
+  offset?: number | undefined
 }
 
 export class SharedExpenseService {
@@ -112,24 +119,38 @@ export class SharedExpenseService {
       return sharedExpense
     })
   }
-  async listReport(partnershipId: string): Promise<SharedExpenseReportItem[]> {
-    const rows = await this.sharedExpenseRepository.findReportByPartnership(partnershipId)
+  async listReport(input: ListSharedExpenseReportInput): Promise<SharedExpenseReportResponse> {
+    const limit = input.limit ?? LIST_DEFAULT_LIMIT
+    const offset = input.offset ?? LIST_DEFAULT_OFFSET
 
-    return rows.map((row) => ({
-      id: row.id,
-      occurredAt: row.occurredAt.toISOString(),
+    const { rows, total } = await this.sharedExpenseRepository.findReportByPartnership({
+      partnershipId: input.partnershipId,
+      limit,
+      offset,
+    })
 
-      payerUserId: row.payerUserId,
-      owedUserId: row.owedUserId,
+    return {
+      data: rows.map((row) => ({
+        id: row.id,
+        occurredAt: row.occurredAt.toISOString(),
 
-      totalAmountCents: row.totalAmountCents,
-      owedAmountCents: row.owedAmountCents,
+        payerUserId: row.payerUserId,
+        owedUserId: row.owedUserId,
 
-      categoryName: row.categoryName,
-      description: row.description,
+        totalAmountCents: row.totalAmountCents,
+        owedAmountCents: row.owedAmountCents,
 
-      status: row.settlementId ? 'settled' : 'pending',
-    }))
+        categoryName: row.categoryName,
+        description: row.description,
+
+        status: row.settlementId ? 'settled' : 'pending',
+      })),
+      meta: {
+        total,
+        limit,
+        offset,
+      },
+    }
   }
 
   private async resolveMappedCategory(userId: string, sharedCategoryId: string): Promise<Category> {

@@ -16,8 +16,15 @@ export const sharedExpenseReportItemSchema = z.object({
   status: z.enum(['pending', 'settled']),
 })
 
+export const sharedExpenseReportMetaSchema = z.object({
+  total: z.number().int().nonnegative(),
+  limit: z.number().int().positive(),
+  offset: z.number().int().nonnegative(),
+})
+
 export const sharedExpenseReportResponseSchema = z.object({
   data: z.array(sharedExpenseReportItemSchema),
+  meta: sharedExpenseReportMetaSchema,
 })
 
 export type SharedExpenseReportItem = z.infer<typeof sharedExpenseReportItemSchema>
