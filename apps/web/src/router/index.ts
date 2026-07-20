@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
+import { hasSession } from '@/auth/auth.session'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { hasSession } from '@/shared/auth/auth.session'
 import LoginView from '@/views/LoginView.vue'
 import SharedExpensesView from '@/views/SharedExpensesView.vue'
 

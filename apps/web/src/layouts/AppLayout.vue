@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
-import { clearSession } from '@/shared/auth/auth.session'
+import { clearSession } from '@/auth/auth.session'
 
 const router = useRouter()
 
