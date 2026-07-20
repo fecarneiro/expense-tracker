@@ -1,12 +1,5 @@
 import { AppError } from '../../../shared/app-error.js'
 
-export class NoPendingExpensesError extends AppError {
-  constructor() {
-    super('There are no pending expenses', 400)
-    this.name = 'NoPendingExpensesError'
-  }
-}
-
 export class NothingToSettleError extends AppError {
   constructor() {
     super('Nothing to settle', 400)

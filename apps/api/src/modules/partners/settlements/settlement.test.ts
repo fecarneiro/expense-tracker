@@ -7,7 +7,7 @@ import { insertTestUser } from '../../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
 import { ActivePartnershipNotFoundError } from '../shared-expenses/shared-expense.errors.js'
 import { SPLIT_TYPE } from '../shared-expenses/shared-expense.types.js'
-import { NoPendingExpensesError, NothingToSettleError } from './settlement.errors.js'
+import { NothingToSettleError } from './settlement.errors.js'
 
 describe('SettlementService', () => {
   describe('getPendingBalance', () => {
@@ -49,14 +49,25 @@ describe('SettlementService', () => {
       expect(balance.pendingExpenses).toHaveLength(2)
     })
 
-    test('fails when there are no pending expenses', async ({ container, db }) => {
-      const { inviter: alice } = await createTestPartnership(container, db, {
+    test('returns zero totals when there are no pending expenses', async ({ container, db }) => {
+      const {
+        inviter: alice,
+        invitee: bob,
+        partnership,
+      } = await createTestPartnership(container, db, {
         withUserCategoryDefaults: true,
       })
 
-      await expect(container.settlementService.getPendingBalance(alice.id)).rejects.toThrow(
-        NoPendingExpensesError,
-      )
+      const balance = await container.settlementService.getPendingBalance(alice.id)
+
+      expect(balance).toMatchObject({
+        partnershipId: partnership.id,
+        partnerId: bob.id,
+        userTotals: 0,
+        partnerTotals: 0,
+        totalAmountCents: 0,
+        pendingExpenses: [],
+      })
     })
 
     test('fails when user has no active partnership', async ({ container, db }) => {
@@ -126,9 +137,13 @@ describe('SettlementService', () => {
         .where(isNull(sharedExpensesTable.settlementId))
       expect(pending).toHaveLength(0)
 
-      await expect(container.settlementService.getPendingBalance(alice.id)).rejects.toThrow(
-        NoPendingExpensesError,
-      )
+      const cleared = await container.settlementService.getPendingBalance(alice.id)
+      expect(cleared).toMatchObject({
+        userTotals: 0,
+        partnerTotals: 0,
+        totalAmountCents: 0,
+        pendingExpenses: [],
+      })
     })
 
     test('fails when the user does not owe the partner', async ({ container, db }) => {

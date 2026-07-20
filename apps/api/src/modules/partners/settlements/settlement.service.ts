@@ -3,7 +3,7 @@ import type { PartnershipRepository } from '../partnerships/partnership.reposito
 import { partnerOf } from '../partnerships/partnership.utils.js'
 import { ActivePartnershipNotFoundError } from '../shared-expenses/shared-expense.errors.js'
 import type { SharedExpenseRepository } from '../shared-expenses/shared-expense.repository.js'
-import { NoPendingExpensesError, NothingToSettleError } from './settlement.errors.js'
+import { NothingToSettleError } from './settlement.errors.js'
 import type { SettlementRepository } from './settlement.repository.js'
 import type { PendingBalance, Settlement } from './settlement.types.js'
 
@@ -23,8 +23,6 @@ export class SettlementService {
     const pendingExpenses = await this.sharedExpenseRepository.findPendingByPartnership(
       partnership.id,
     )
-
-    if (pendingExpenses.length === 0) throw new NoPendingExpensesError()
 
     const userTotals = pendingExpenses
       .filter((expense) => expense.owedUserId === userId)
