@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+export const DEFAULT_USER_TIME_ZONE = 'UTC'
+export const DEFAULT_USER_CURRENCY = 'USD'
+export const DEFAULT_USER_LOCALE = 'en-US'
+
 export const authUserSchema = z.object({
   id: z.uuid(),
   email: z.email(),

@@ -33,17 +33,29 @@ async function logout(): Promise<void> {
 <style scoped>
 .app-layout {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 15rem minmax(0, 1fr);
   min-height: 100vh;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar nav {
+  flex: 1;
 }
 
 .page-content {
+  width: 100%;
+  max-width: var(--content-width);
   min-width: 0;
+  margin-inline: auto;
+  padding: var(--space-8);
 }
 
 @media (max-width: 48rem) {
@@ -53,6 +65,17 @@ async function logout(): Promise<void> {
 
   .sidebar {
     flex-direction: row;
+    align-items: center;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sidebar nav {
+    flex: 1;
+  }
+
+  .page-content {
+    padding: var(--space-4);
   }
 }
 </style>

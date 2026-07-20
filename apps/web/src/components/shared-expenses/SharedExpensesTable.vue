@@ -107,7 +107,7 @@ const columnHelper = createColumnHelper<SharedExpenseReportItem>()
 const columns = [
   columnHelper.accessor('occurredAt', {
     header: 'Date',
-    cell: (info) => formatDate(info.getValue(), user?.locale ?? 'en-US', user?.timezone ?? 'UTC'),
+    cell: (info) => formatDate(info.getValue(), user?.locale, user?.timezone),
   }),
   columnHelper.accessor('description', {
     header: 'Description',
@@ -119,7 +119,7 @@ const columns = [
   }),
   columnHelper.accessor('totalAmountCents', {
     header: 'Total',
-    cell: (info) => formatMoney(info.getValue(), user?.currency ?? 'USD', user?.locale ?? 'en-US'),
+    cell: (info) => formatMoney(info.getValue(), user?.currency, user?.locale),
   }),
   columnHelper.accessor('payerUserId', {
     header: 'Payer',
@@ -131,7 +131,7 @@ const columns = [
   }),
   columnHelper.accessor('owedAmountCents', {
     header: 'Pending',
-    cell: (info) => formatMoney(info.getValue(), user?.currency ?? 'USD', user?.locale ?? 'en-US'),
+    cell: (info) => formatMoney(info.getValue(), user?.currency, user?.locale),
   }),
   columnHelper.accessor('status', {
     header: 'Status',
@@ -149,7 +149,7 @@ const table = useVueTable({
 </script>
 
 <template>
-  <main class="shared-expenses-page">
+  <div class="shared-expenses-page">
     <SharedExpensesBalance v-if="hasPartner" @settled="loadReport" />
 
     <div class="filters">
@@ -210,5 +210,5 @@ const table = useVueTable({
         <button type="button" :disabled="!canNext" @click="goNext">→</button>
       </div>
     </template>
-  </main>
+  </div>
 </template>

@@ -20,7 +20,7 @@ const errorMessage = ref<string | null>(null)
 const totalAmountCents = computed(() => balance.value?.totalAmountCents ?? 0)
 
 const amountLabel = computed(() =>
-  formatMoney(Math.abs(totalAmountCents.value), user?.currency ?? 'USD', user?.locale ?? 'en-US'),
+  formatMoney(Math.abs(totalAmountCents.value), user?.currency, user?.locale),
 )
 
 const summary = computed(() => {
