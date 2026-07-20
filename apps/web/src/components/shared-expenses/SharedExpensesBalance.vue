@@ -65,6 +65,8 @@ async function settle() {
 onMounted(() => {
   void loadBalance()
 })
+
+defineExpose({ reload: loadBalance })
 </script>
 
 <template>

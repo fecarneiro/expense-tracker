@@ -14,6 +14,10 @@ export const createSharedExpenseBodySchema = z.object({
     .transform((val) => (val == null || val === '' ? null : val)),
 })
 
+export const createSharedExpensesBodySchema = z.object({
+  expenses: z.array(createSharedExpenseBodySchema).min(1).max(20),
+})
+
 export const sharedExpenseReportQuerySchema = z.strictObject({
   limit: z.coerce.number().int().min(1).max(100).optional(),
   offset: z.coerce.number().int().min(0).optional(),

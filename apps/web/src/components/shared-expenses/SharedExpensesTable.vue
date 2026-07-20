@@ -7,6 +7,7 @@ import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable } from '@t
 import { computed, onMounted, ref } from 'vue'
 import { apiRequest } from '@/api/http'
 import { getAuthUser } from '@/auth/auth.session'
+import SharedExpenseCreateModal from '@/components/shared-expenses/SharedExpenseCreateModal.vue'
 import SharedExpensesBalance from '@/components/shared-expenses/SharedExpensesBalance.vue'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
@@ -15,11 +16,21 @@ import { formatText } from '@/utils/format-text'
 
 const emptyRows: SharedExpenseReportItem[] = []
 
+type SharedExpenseCreateModalInstance = {
+  open: () => void
+}
+
+type SharedExpensesBalanceInstance = {
+  reload: () => Promise<void>
+}
+
 function isEmptyText(value: unknown): boolean {
   return typeof value !== 'string' || value.trim().length === 0
 }
 
 const data = ref<SharedExpenseReportResponse | null>(null)
+const createModal = ref<SharedExpenseCreateModalInstance | null>(null)
+const balance = ref<SharedExpensesBalanceInstance | null>(null)
 
 const user = getAuthUser()
 const currentUserId = user?.id ?? ''
@@ -90,6 +101,15 @@ function goNext() {
   void loadReport()
 }
 
+function openCreateModal() {
+  createModal.value?.open()
+}
+
+async function onExpensesCreated() {
+  page.value = 0
+  await Promise.all([loadReport(), balance.value?.reload()])
+}
+
 async function loadPartnership() {
   try {
     const partnership = await apiRequest<{ partnerId: string } | null>('/partnerships/me')
@@ -154,7 +174,7 @@ const table = useVueTable({
 
 <template>
   <div class="shared-expenses-page">
-    <SharedExpensesBalance v-if="hasPartner" @settled="loadReport" />
+    <SharedExpensesBalance ref="balance" v-if="hasPartner" @settled="loadReport" />
 
     <div class="table-card">
       <div class="table-toolbar">
@@ -184,6 +204,16 @@ const table = useVueTable({
             <option v-if="hasPartner" :value="partnerUserId">Partner</option>
           </select>
         </label>
+
+        <button
+          class="create-button"
+          type="button"
+          :disabled="!partnershipLoaded || !hasPartner"
+          @click="openCreateModal"
+        >
+          <span aria-hidden="true">+</span>
+          Add expense
+        </button>
       </div>
 
       <p v-if="partnershipLoaded && !hasPartner" class="table-state">No active partnership.</p>
@@ -253,6 +283,8 @@ const table = useVueTable({
         </div>
       </template>
     </div>
+
+    <SharedExpenseCreateModal ref="createModal" @created="onExpensesCreated" />
   </div>
 </template>
 <style scoped>
@@ -307,6 +339,26 @@ const table = useVueTable({
 
 .table-toolbar select:focus {
   border-color: var(--color-primary);
+}
+
+.create-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.create-button span {
+  font-size: 1.125rem;
+  line-height: 1;
 }
 
 .table-state {
@@ -476,6 +528,11 @@ td[data-status="settled"] .table-cell-content {
   .table-toolbar select {
     flex: 1;
     min-width: 0;
+  }
+
+  .create-button {
+    width: 100%;
+    margin-left: 0;
   }
 }
 </style>

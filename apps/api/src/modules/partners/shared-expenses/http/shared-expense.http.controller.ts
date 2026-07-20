@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import { ActivePartnershipNotFoundError } from '../shared-expense.errors.js'
 import {
   createSharedExpenseBodySchema,
+  createSharedExpensesBodySchema,
   sharedExpenseReportQuerySchema,
 } from '../shared-expense.schemas.js'
 import type { SharedExpenseService } from '../shared-expense.service.js'
@@ -23,6 +24,18 @@ export class SharedExpenseHttpController {
 
     // TODO: remove users ID from response
     res.status(201).json(sharedExpense)
+  }
+
+  async createMany(req: Request, res: Response) {
+    if (!req.partnership) throw new ActivePartnershipNotFoundError()
+
+    const { expenses } = createSharedExpensesBodySchema.parse(req.body)
+    const sharedExpenses = await this.sharedExpenseService.createMany({
+      userId: req.auth.userId,
+      expenses,
+    })
+
+    res.status(201).json(sharedExpenses)
   }
 
   // Front
