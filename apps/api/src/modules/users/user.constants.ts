@@ -1,3 +1,5 @@
-export const DEFAULT_USER_TIME_ZONE = 'UTC'
-export const DEFAULT_USER_CURRENCY = 'USD'
-export const DEFAULT_USER_LOCALE = 'en-US'
+export {
+  DEFAULT_USER_CURRENCY,
+  DEFAULT_USER_LOCALE,
+  DEFAULT_USER_TIME_ZONE,
+} from '@expense-tracker/contracts'
