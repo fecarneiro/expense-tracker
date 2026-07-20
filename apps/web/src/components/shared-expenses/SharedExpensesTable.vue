@@ -265,10 +265,7 @@ const table = useVueTable({
 }
 
 .table-card {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
+  flex: 0 0 auto;
   overflow: hidden;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -314,7 +311,6 @@ const table = useVueTable({
 
 .table-state {
   display: grid;
-  flex: 1;
   place-items: center;
   margin: 0;
   padding: var(--space-8) var(--space-4);
@@ -323,8 +319,6 @@ const table = useVueTable({
 }
 
 .table-container {
-  flex: 1;
-  min-height: 0;
   overflow: auto;
 }
 
@@ -354,7 +348,6 @@ th {
   color: var(--color-text-muted);
   font-size: 0.875rem;
   font-weight: 600;
-  text-align: center;
 }
 
 tbody tr:last-child td {
@@ -378,20 +371,19 @@ td[data-column="description"] .table-cell-content {
 
 td[data-column="description"].table-cell--empty {
   color: var(--color-text-muted);
-  text-align: center;
-}
-
-td[data-column="description"].table-cell--empty .table-cell-content {
-  margin-inline: auto;
 }
 
 td[data-column="occurredAt"] {
   color: var(--color-text-muted);
 }
 
+th[data-column="occurredAt"],
 td[data-column="occurredAt"],
+th[data-column="payerUserId"],
 td[data-column="payerUserId"],
+th[data-column="owedUserId"],
 td[data-column="owedUserId"],
+th[data-column="status"],
 td[data-column="status"] {
   text-align: center;
 }
@@ -402,9 +394,11 @@ td[data-column="owedAmountCents"] {
   font-variant-numeric: tabular-nums;
 }
 
+th[data-column="totalAmountCents"],
 td[data-column="totalAmountCents"],
+th[data-column="owedAmountCents"],
 td[data-column="owedAmountCents"] {
-  text-align: right;
+  text-align: center;
 }
 
 td[data-column="status"] .table-cell-content {

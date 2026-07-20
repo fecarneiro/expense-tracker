@@ -63,7 +63,8 @@ async function logout(): Promise<void> {
   min-height: 0;
   margin-inline: auto;
   padding: var(--space-8);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 @media (max-width: 48rem) {
