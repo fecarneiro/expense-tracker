@@ -39,7 +39,7 @@ router.beforeEach((to) => {
 
   if (isAuthenticated && to.name === 'login') {
     return {
-      name: 'home',
+      name: 'shared-expenses',
     }
   }
 })
