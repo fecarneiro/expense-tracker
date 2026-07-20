@@ -28,6 +28,13 @@ export type CreateSharedExpense = {
   description?: string | null
 }
 
+type CreateSharedExpenseItem = Omit<CreateSharedExpense, 'userId'>
+
+export type CreateSharedExpenses = {
+  userId: string
+  expenses: CreateSharedExpenseItem[]
+}
+
 export type ListSharedExpenseReportInput = {
   partnershipId: string
   limit?: number | undefined
@@ -126,6 +133,94 @@ export class SharedExpenseService {
       return sharedExpense
     })
   }
+
+  async createMany(input: CreateSharedExpenses): Promise<SharedExpense[]> {
+    const { userId, expenses } = input
+    const partnership = await this.partnershipRepository.findUserActivePartnership(userId)
+    if (!partnership) throw new ActivePartnershipNotFoundError()
+
+    const partnerId = partnerOf(partnership, userId)
+    const categoryContextById = new Map<
+      string,
+      { userCategory: Category; partnerCategory: Category }
+    >()
+
+    for (const { sharedCategoryId } of expenses) {
+      if (categoryContextById.has(sharedCategoryId)) continue
+
+      const sharedCategory = await this.sharedCategoryRepository.findSharedCategory({
+        partnershipId: partnership.id,
+        sharedCategoryId,
+      })
+      if (!sharedCategory) throw new SharedCategoryNotFoundError()
+
+      categoryContextById.set(sharedCategoryId, {
+        userCategory: await this.resolveMappedCategory(userId, sharedCategoryId),
+        partnerCategory: await this.resolveMappedCategory(partnerId, sharedCategoryId),
+      })
+    }
+
+    const occurredAt = new Date()
+
+    return await this.db.transaction(async (tx) => {
+      const createdExpenses: SharedExpense[] = []
+
+      for (const expense of expenses) {
+        const { sharedCategoryId, totalAmountCents, split, description = null } = expense
+        const categoryContext = categoryContextById.get(sharedCategoryId)
+        if (!categoryContext) throw new SharedCategoryNotFoundError()
+
+        const { userCategory, partnerCategory } = categoryContext
+        const { payerAmountCents, owedAmountCents } = resolveSplitAmounts(totalAmountCents, split)
+        const sharedExpense = await this.sharedExpenseRepository.create(
+          {
+            partnershipId: partnership.id,
+            sharedCategoryId,
+            payerUserId: userId,
+            owedUserId: partnerId,
+            totalAmountCents,
+            owedAmountCents,
+            settlementId: null,
+            description,
+          },
+          tx,
+        )
+
+        if (split === SPLIT_TYPE.HALF) {
+          await this.transactionRepository.create(
+            {
+              userId,
+              amountCents: payerAmountCents,
+              categoryId: userCategory.id,
+              createdByUserId: userId,
+              transactionType: userCategory.categoryType,
+              occurredAt,
+              description,
+            },
+            tx,
+          )
+        }
+
+        await this.transactionRepository.create(
+          {
+            userId: partnerId,
+            amountCents: owedAmountCents,
+            categoryId: partnerCategory.id,
+            createdByUserId: userId,
+            transactionType: partnerCategory.categoryType,
+            occurredAt,
+            description,
+          },
+          tx,
+        )
+
+        createdExpenses.push(sharedExpense)
+      }
+
+      return createdExpenses
+    })
+  }
+
   async listReport(input: ListSharedExpenseReportInput): Promise<SharedExpenseReportResponse> {
     const limit = input.limit ?? LIST_DEFAULT_LIMIT
     const offset = input.offset ?? LIST_DEFAULT_OFFSET

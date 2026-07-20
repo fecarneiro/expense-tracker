@@ -208,4 +208,49 @@ describe('SharedExpenseService', () => {
       )
     })
   })
+
+  describe('createMany', () => {
+    test('creates all shared expenses and transactions in one batch', async ({ container, db }) => {
+      const {
+        inviter: payer,
+        invitee: partner,
+        sharedCategory,
+      } = await createTestPartnership(container, db, { withUserCategoryDefaults: true })
+
+      const sharedExpenses = await container.sharedExpenseService.createMany({
+        userId: payer.id,
+        expenses: [
+          {
+            totalAmountCents: 1000,
+            sharedCategoryId: sharedCategory.id,
+            split: SPLIT_TYPE.HALF,
+            description: 'Dinner',
+          },
+          {
+            totalAmountCents: 2500,
+            sharedCategoryId: sharedCategory.id,
+            split: SPLIT_TYPE.FULL,
+            description: 'Groceries',
+          },
+        ],
+      })
+
+      expect(sharedExpenses).toHaveLength(2)
+      expect(sharedExpenses).toEqual([
+        expect.objectContaining({
+          totalAmountCents: 1000,
+          owedAmountCents: 500,
+          description: 'Dinner',
+        }),
+        expect.objectContaining({
+          totalAmountCents: 2500,
+          owedAmountCents: 2500,
+          description: 'Groceries',
+        }),
+      ])
+
+      const transactions = await listTransactionsForUsers(db, [payer.id, partner.id])
+      expect(transactions).toHaveLength(3)
+    })
+  })
 })
