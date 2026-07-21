@@ -1,6 +1,5 @@
 import crypto from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
-import type { NextFunction, Request, Response } from 'express'
 import { pinoHttp } from 'pino-http'
 import { logger, verbose } from '../shared/logger/logger.js'
 
@@ -69,12 +68,3 @@ export const httpLogger = pinoHttp({
     },
   },
 })
-
-export function debugHttpPayloadLogger(req: Request, res: Response, next: NextFunction) {
-  req.log.debug({ body: req.body, query: req.query }, 'http.request.payload')
-  const json = res.json.bind(res)
-  res.json = ((body: unknown) => (
-    req.log.debug({ body }, 'http.response.payload'), json(body)
-  )) as typeof res.json
-  next()
-}

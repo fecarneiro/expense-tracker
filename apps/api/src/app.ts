@@ -4,8 +4,7 @@ import { isProduction } from './config/app.config.js'
 import type { Container } from './container.js'
 import { createApiRouter } from './http/api.router.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
-import { debugHttpPayloadLogger, httpLogger } from './middlewares/logger.middleware.js'
-import { verbose } from './shared/logger/logger.js'
+import { httpLogger } from './middlewares/logger.middleware.js'
 
 const webDistPath = fileURLToPath(new URL('../../web/dist', import.meta.url))
 const backendPathPrefixes = ['/api', '/webhooks']
@@ -21,9 +20,6 @@ export function createApp(container: Container) {
 
   app.use(httpLogger)
   app.use(express.json())
-  if (verbose) {
-    app.use(debugHttpPayloadLogger)
-  }
 
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' })
