@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import type { LoginRequest, LoginResponse } from '@expense-tracker/contracts'
+import {
+  type LoginRequest,
+  type LoginResponse,
+  loginRequestSchema,
+} from '@expense-tracker/contracts'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
+import Password from 'primevue/password'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiRequest } from '@/api/http'
@@ -9,6 +19,14 @@ const router = useRouter()
 const route = useRoute()
 
 const sessionExpired = route.query.reason === 'session-expired'
+//
+const initialValues: LoginRequest = {
+  email: '',
+  password: '',
+}
+
+const resolver = zodResolver(loginRequestSchema)
+//
 
 const email = ref('')
 const password = ref('')
@@ -45,29 +63,22 @@ async function submit(): Promise<void> {
 
 <template>
   <main class="login-page">
-    <form class="login-form" @submit.prevent="submit">
-      <h1>Expense Tracker</h1>
+    <h1>Expense Tracker</h1>
 
-      <p v-if="sessionExpired">Your session has expired. Please log in again.</p>
+    <p v-if="sessionExpired">Your session has expired. Please log in again.</p>
 
-      <label>
-        E-mail
-        <input v-model.trim="email" type="email" autocomplete="email" required>
-      </label>
-
-      <label>
-        Password
-        <input v-model="password" type="password" autocomplete="current-password" required>
-      </label>
-
-      <p v-if="errorMessage" role="alert">
-        {{ errorMessage }}
-      </p>
-
-      <button type="submit" :disabled="loading">
-        {{ loading? 'Loading...' : 'Sign in' }}
-      </button>
-    </form>
+    <Form
+      v-slot="$form"
+      class="login-form"
+      :initial-values="initialValues"
+      :resolver="resolver"
+      @submit="onSubmit"
+    >
+      <div class="form-field">
+        <InputText name="email" type="email" placeholder="E-mail" fluid />
+        <InputText name="password" type="password" placeholder="Password" fluid />
+      </div>
+    </Form>
   </main>
 </template>
 
