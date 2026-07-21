@@ -85,7 +85,7 @@ async function submit(event: FormSubmitEvent): Promise<void> {
 .login-page {
   display: grid;
   min-height: 100vh;
-  padding: 1rem;
+  padding: var(--space-4);
   place-items: center;
 }
 
@@ -97,7 +97,7 @@ async function submit(event: FormSubmitEvent): Promise<void> {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   width: 100%;
   max-width: 24rem;
 }

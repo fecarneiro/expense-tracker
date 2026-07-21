@@ -1,22 +1,22 @@
 .app-page {
-  width: min(100% - 2rem, 90rem);
+  width: min(100% - var(--space-8), 90rem);
   margin-inline: auto;
-  padding-block: 1.5rem;
+  padding-block: var(--space-6);
 }
 
 .page-stack {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--space-6);
 }
 
 .content-stack {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 @media (max-width: 640px) {
   .app-page {
-    width: min(100% - 1rem, 90rem);
-    padding-block: 1rem;
+    width: min(100% - var(--space-4), 90rem);
+    padding-block: var(--space-4);
   }
 }

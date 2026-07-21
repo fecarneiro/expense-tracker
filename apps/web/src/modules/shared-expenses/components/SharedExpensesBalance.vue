@@ -123,8 +123,8 @@ defineExpose({
 
     <template #content>
       <div v-if="loading" class="balance-loading">
-        <Skeleton width="8rem" height="2rem" />
-        <Skeleton width="12rem" />
+        <Skeleton width="10rem" height="2rem" />
+        <Skeleton width="8rem" />
       </div>
 
       <Message v-else-if="errorMessage" severity="error" :closable="false">
@@ -132,13 +132,11 @@ defineExpose({
       </Message>
 
       <div v-else class="balance-content">
-        <div class="balance-details">
-          <Tag :value="summary" :severity="balanceSeverity" />
+        <p class="balance-amount">
+          {{ amountLabel }}
+        </p>
 
-          <p class="balance-amount">
-            {{ amountLabel }}
-          </p>
-        </div>
+        <Tag :value="summary" :severity="balanceSeverity" />
 
         <Button
           v-if="canSettle"
@@ -156,21 +154,16 @@ defineExpose({
 <style scoped>
 .balance-card {
   align-self: flex-start;
-  width: 100%;
-  max-width: 24rem;
+  width: fit-content;
+  min-width: 16rem;
+  max-width: 100%;
 }
 
-.balance-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.balance-details,
+.balance-content,
 .balance-loading {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  justify-items: start;
 }
 
 .balance-amount {
@@ -181,14 +174,13 @@ defineExpose({
   line-height: 1.2;
 }
 
+.balance-settle-button {
+  margin-top: 0.25rem;
+}
+
 @media (max-width: 640px) {
   .balance-card {
-    max-width: none;
-  }
-
-  .balance-content {
-    align-items: stretch;
-    flex-direction: column;
+    width: 100%;
   }
 
   .balance-settle-button {

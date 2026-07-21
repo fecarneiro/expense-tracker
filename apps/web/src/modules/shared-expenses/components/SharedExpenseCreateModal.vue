@@ -186,7 +186,7 @@ defineExpose({
     :dismissable-mask="false"
     :style="{ width: '32rem' }"
     :breakpoints="{
-      '640px': 'calc(100vw - 2rem)',
+      '640px': 'calc(100vw - var(--space-8))',
     }"
   >
     <form id="shared-expense-create-form" class="create-form" @submit.prevent="submit">
@@ -298,7 +298,7 @@ defineExpose({
 <style scoped>
 .create-form {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .form-field {

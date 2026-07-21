@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import type {
-  SharedExpenseReportItem,
-  SharedExpenseReportResponse,
-} from '@expense-tracker/contracts'
+import type { SharedExpenseReportItem } from '@expense-tracker/contracts'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Column from 'primevue/column'
@@ -11,12 +8,12 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
-import { computed, onMounted, ref } from 'vue'
-import { getAuthUser } from '@/modules/auth/auth.session.ts'
+import { computed, ref } from 'vue'
+import { getAuthUser } from '@/modules/auth/auth.session'
 import {
-  getCurrentPartnership,
-  listSharedExpenses,
-} from '@/modules/shared-expenses/api/shared-expenses.api'
+  usePartnershipQuery,
+  useSharedExpensesQuery,
+} from '@/modules/shared-expenses/api/shared-expenses.queries'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
 import { formatParticipant } from '@/utils/format-partner'
@@ -47,24 +44,32 @@ const pageSize = 20
 const user = getAuthUser()
 const currentUserId = user?.id ?? ''
 
-const data = ref<SharedExpenseReportResponse | null>(null)
 const createModal = ref<SharedExpenseCreateModalInstance | null>(null)
 const balance = ref<SharedExpensesBalanceInstance | null>(null)
-
-const partnerUserId = ref('')
-const partnershipLoaded = ref(false)
-
-const loading = ref(true)
-const errorMessage = ref<string | null>(null)
 
 const status = ref('pending')
 const owedUserId = ref('')
 const first = ref(0)
 
-const rows = computed<SharedExpenseReportItem[]>(() => data.value?.data ?? [])
+const listParams = computed(() => ({
+  limit: pageSize,
+  offset: first.value,
+  status: status.value || undefined,
+  owedUserId: owedUserId.value || undefined,
+}))
 
-const meta = computed(() => data.value?.meta)
+const expensesQuery = useSharedExpensesQuery(listParams)
+const partnershipQuery = usePartnershipQuery()
 
+const rows = computed<SharedExpenseReportItem[]>(() => expensesQuery.data.value?.data ?? [])
+const meta = computed(() => expensesQuery.data.value?.meta)
+const loading = computed(() => expensesQuery.isPending.value)
+const errorMessage = computed(() =>
+  expensesQuery.isError.value ? 'Unable to load shared expenses.' : null,
+)
+
+const partnerUserId = computed(() => partnershipQuery.data.value?.partnerId ?? '')
+const partnershipLoaded = computed(() => !partnershipQuery.isPending.value)
 const hasPartner = computed(() => partnerUserId.value !== '')
 
 const owedByFilterOptions = computed<SelectOption[]>(() => {
@@ -83,51 +88,20 @@ const owedByFilterOptions = computed<SelectOption[]>(() => {
   return options
 })
 
-async function loadReport() {
-  loading.value = true
-  errorMessage.value = null
-
-  try {
-    data.value = await listSharedExpenses({
-      limit: pageSize,
-      offset: first.value,
-      status: status.value || undefined,
-      owedUserId: owedUserId.value || undefined,
-    })
-  } catch {
-    data.value = null
-    errorMessage.value = 'Unable to load shared expenses.'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadPartnership() {
-  partnershipLoaded.value = false
-
-  try {
-    const partnership = await getCurrentPartnership()
-
-    partnerUserId.value = partnership?.partnerId ?? ''
-  } catch {
-    partnerUserId.value = ''
-  } finally {
-    partnershipLoaded.value = true
-  }
-}
-
 function onFilterChange() {
   first.value = 0
-  void loadReport()
 }
 
 function onPage(event: DataTablePageEvent) {
   first.value = event.first
-  void loadReport()
 }
 
 function openCreateModal() {
   createModal.value?.open()
+}
+
+function loadReport() {
+  return expensesQuery.refetch()
 }
 
 async function onExpensesCreated() {
@@ -135,11 +109,6 @@ async function onExpensesCreated() {
 
   await Promise.all([loadReport(), balance.value?.reload()])
 }
-
-onMounted(() => {
-  void loadPartnership()
-  void loadReport()
-})
 </script>
 
 <template>
@@ -147,7 +116,7 @@ onMounted(() => {
     <SharedExpensesBalance v-if="hasPartner" ref="balance" @settled="loadReport" />
 
     <Card>
-      <template #title> Shared expenses </template>
+      <template #title>Shared expenses</template>
 
       <template #content>
         <div class="card-content">
@@ -209,15 +178,11 @@ onMounted(() => {
             table-style="min-width: 64rem"
             @page="onPage"
           >
-            <template #empty> No shared expenses found. </template>
+            <template #empty>No shared expenses found.</template>
 
             <Column field="occurredAt" header="Date">
               <template #body="{ data: expense }">
-                {{ formatDate(
-                    expense.occurredAt,
-                    user?.locale,
-                    user?.timezone,
-                  ) }}
+                {{ formatDate(expense.occurredAt, user?.locale, user?.timezone) }}
               </template>
             </Column>
 
@@ -231,20 +196,13 @@ onMounted(() => {
 
             <Column field="owedUserId" header="Owed by">
               <template #body="{ data: expense }">
-                {{ formatParticipant(
-                    expense.owedUserId,
-                    currentUserId,
-                  ) }}
+                {{ formatParticipant(expense.owedUserId, currentUserId) }}
               </template>
             </Column>
 
             <Column field="owedAmountCents" header="Pending">
               <template #body="{ data: expense }">
-                {{ formatMoney(
-                    expense.owedAmountCents,
-                    user?.currency,
-                    user?.locale,
-                  ) }}
+                {{ formatMoney(expense.owedAmountCents, user?.currency, user?.locale) }}
               </template>
             </Column>
 
@@ -252,11 +210,7 @@ onMounted(() => {
               <template #body="{ data: expense }">
                 <Tag
                   :value="expense.status"
-                  :severity="
-                    expense.status === 'pending'
-                      ? 'warn'
-                      : 'success'
-                  "
+                  :severity="expense.status === 'pending' ? 'warn' : 'success'"
                 />
               </template>
             </Column>
@@ -280,7 +234,7 @@ onMounted(() => {
 
 .card-content {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .expense-filter-wrapper {
