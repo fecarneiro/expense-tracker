@@ -1,28 +1,24 @@
 <script setup lang="ts">
+import {
+  type CreateSharedExpenseFormValues,
+  createSharedExpenseFormSchema,
+  type SharedExpenseSplit,
+} from '@expense-tracker/contracts'
+import { Form, type FormSubmitEvent } from '@primevue/forms'
+import { zodResolver } from '@primevue/forms/resolvers/zod'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref } from 'vue'
 import { getAuthUser } from '@/modules/auth/auth.session'
 import {
-  type CreateSharedExpensePayload,
-  createSharedExpense,
-  listSharedCategories,
-  type SharedCategory,
-  type SharedExpenseSplit,
-} from '@/modules/shared-expenses/api/shared-expenses.api'
-
-type FormErrors = {
-  amount?: string
-  category?: string
-}
-
-const emit = defineEmits<{
-  created: []
-}>()
+  useCreateSharedExpensesMutation,
+  useSharedCategoriesQuery,
+} from '@/modules/shared-expenses/api/shared-expenses.queries'
 
 const splitOptions: Array<{
   label: string
@@ -41,118 +37,70 @@ const splitOptions: Array<{
 const user = getAuthUser()
 
 const visible = ref(false)
-const categories = ref<SharedCategory[]>([])
+const formKey = ref(0)
 
-const amount = ref<number | null>(null)
-const sharedCategoryId = ref('')
-const split = ref<SharedExpenseSplit>('full')
+const emit = defineEmits<{
+  created: []
+}>()
 
-const errors = ref<FormErrors>({})
+const initialValues = {
+  amount: null,
+  sharedCategoryId: '',
+  split: 'full' as SharedExpenseSplit,
+  description: '',
+}
 
-const loadingCategories = ref(false)
-const categoriesLoadFailed = ref(false)
-const categoriesError = ref<string | null>(null)
+const resolver = zodResolver(createSharedExpenseFormSchema)
 
-const submitting = ref(false)
-const submitError = ref<string | null>(null)
+const categoriesQuery = useSharedCategoriesQuery(visible)
+const createMutation = useCreateSharedExpensesMutation()
+
+const categories = computed(() => categoriesQuery.data.value ?? [])
+
+const categoriesError = computed(() => {
+  if (categoriesQuery.isError.value) {
+    return 'Unable to load shared categories.'
+  }
+
+  if (categoriesQuery.isSuccess.value && categories.value.length === 0) {
+    return 'Create a shared category before adding an expense.'
+  }
+
+  return null
+})
 
 const canSubmit = computed(
-  () => !loadingCategories.value && !submitting.value && categories.value.length > 0,
+  () =>
+    !categoriesQuery.isPending.value &&
+    !createMutation.isPending.value &&
+    categories.value.length > 0,
 )
 
-function resetForm() {
-  amount.value = null
-  sharedCategoryId.value = ''
-  split.value = 'full'
-
-  errors.value = {}
-  submitError.value = null
-}
-
-function clearError(field: keyof FormErrors) {
-  delete errors.value[field]
-  submitError.value = null
-}
-
-function validate(): CreateSharedExpensePayload | null {
-  const nextErrors: FormErrors = {}
-
-  const totalAmountCents = amount.value == null ? null : Math.round(amount.value * 100)
-
-  if (
-    totalAmountCents == null ||
-    !Number.isSafeInteger(totalAmountCents) ||
-    totalAmountCents <= 0
-  ) {
-    nextErrors.amount = 'Enter an amount greater than zero.'
-  }
-
-  if (!sharedCategoryId.value) {
-    nextErrors.category = 'Choose a category.'
-  }
-
-  errors.value = nextErrors
-
-  if (Object.keys(nextErrors).length > 0 || totalAmountCents == null) {
-    return null
-  }
-
-  return {
-    totalAmountCents,
-    sharedCategoryId: sharedCategoryId.value,
-    split: split.value,
-  }
-}
-
-async function loadCategories() {
-  loadingCategories.value = true
-  categoriesLoadFailed.value = false
-  categoriesError.value = null
-
-  try {
-    categories.value = await listSharedCategories()
-
-    if (categories.value.length === 0) {
-      categoriesError.value = 'Create a shared category before adding an expense.'
-    }
-  } catch {
-    categories.value = []
-    categoriesLoadFailed.value = true
-    categoriesError.value = 'Unable to load shared categories.'
-  } finally {
-    loadingCategories.value = false
-  }
-}
-
-async function submit() {
-  if (submitting.value) {
+async function submit(event: FormSubmitEvent): Promise<void> {
+  if (!event.valid) {
     return
   }
 
-  submitError.value = null
-
-  const expense = validate()
-
-  if (!expense) {
-    return
-  }
-
-  submitting.value = true
+  const values = event.values as CreateSharedExpenseFormValues
+  const totalAmountCents = Math.round(values.amount * 100)
 
   try {
-    await createSharedExpense(expense)
+    await createMutation.mutateAsync({
+      totalAmountCents,
+      sharedCategoryId: values.sharedCategoryId,
+      split: values.split,
+      description: values.description,
+    })
 
     visible.value = false
     emit('created')
   } catch {
-    submitError.value = 'Unable to add expense.'
-  } finally {
-    submitting.value = false
+    // error surfaced via createMutation.isError
   }
 }
 
 function close() {
-  if (submitting.value) {
+  if (createMutation.isPending.value) {
     return
   }
 
@@ -160,15 +108,9 @@ function close() {
 }
 
 function open() {
-  resetForm()
-
-  categories.value = []
-  categoriesError.value = null
-  categoriesLoadFailed.value = false
-
+  formKey.value += 1
+  createMutation.reset()
   visible.value = true
-
-  void loadCategories()
 }
 
 defineExpose({
@@ -181,35 +123,44 @@ defineExpose({
     v-model:visible="visible"
     header="Add shared expense"
     modal
-    :closable="!submitting"
-    :close-on-escape="!submitting"
+    :closable="!createMutation.isPending.value"
+    :close-on-escape="!createMutation.isPending.value"
     :dismissable-mask="false"
     :style="{ width: '32rem' }"
     :breakpoints="{
       '640px': 'calc(100vw - var(--space-8))',
     }"
   >
-    <form id="shared-expense-create-form" class="create-form" @submit.prevent="submit">
+    <Form
+      :key="formKey"
+      id="shared-expense-create-form"
+      v-slot="$form"
+      class="create-form"
+      :initial-values="initialValues"
+      :resolver="resolver"
+      :validate-on-value-update="false"
+      @submit="submit"
+    >
       <Message v-if="categoriesError" severity="error" :closable="false">
         {{ categoriesError }}
       </Message>
 
       <Button
-        v-if="categoriesLoadFailed"
+        v-if="categoriesQuery.isError.value"
         type="button"
         label="Try again"
         icon="pi pi-refresh"
         severity="secondary"
         variant="outlined"
-        @click="loadCategories"
+        @click="categoriesQuery.refetch()"
       />
 
       <template v-if="!categoriesError">
         <div class="form-field">
-          <span id="shared-expense-amount-label" class="field-label"> Amount </span>
+          <span id="shared-expense-amount-label" class="field-label">Amount</span>
 
           <InputNumber
-            v-model="amount"
+            name="amount"
             input-id="shared-expense-amount"
             aria-labelledby="shared-expense-amount-label"
             mode="currency"
@@ -218,37 +169,61 @@ defineExpose({
             :min="0.01"
             :min-fraction-digits="2"
             :max-fraction-digits="2"
-            :invalid="Boolean(errors.amount)"
-            :disabled="submitting"
+            :disabled="createMutation.isPending.value"
             fluid
-            @update:model-value="clearError('amount')"
           />
 
-          <Message v-if="errors.amount" severity="error" size="small" variant="simple">
-            {{ errors.amount }}
+          <Message v-if="$form.amount?.invalid" severity="error" size="small" variant="simple">
+            <p v-for="(error, index) of $form.amount.errors" :key="index">
+              {{ error.message }}
+            </p>
           </Message>
         </div>
 
         <div class="form-field">
-          <span id="shared-expense-category-label" class="field-label"> Category </span>
+          <span id="shared-expense-category-label" class="field-label">Category</span>
 
           <Select
-            v-model="sharedCategoryId"
+            name="sharedCategoryId"
             input-id="shared-expense-category"
             aria-labelledby="shared-expense-category-label"
             :options="categories"
             option-label="name"
             option-value="id"
             placeholder="Select a category"
-            :loading="loadingCategories"
-            :invalid="Boolean(errors.category)"
-            :disabled="loadingCategories || submitting"
+            :loading="categoriesQuery.isPending.value"
+            :disabled="categoriesQuery.isPending.value || createMutation.isPending.value"
             fluid
-            @change="clearError('category')"
           />
 
-          <Message v-if="errors.category" severity="error" size="small" variant="simple">
-            {{ errors.category }}
+          <Message
+            v-if="$form.sharedCategoryId?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+          >
+            <p v-for="(error, index) of $form.sharedCategoryId.errors" :key="index">
+              {{ error.message }}
+            </p>
+          </Message>
+        </div>
+
+        <div class="form-field">
+          <span id="shared-expense-description-label" class="field-label">Description</span>
+          <InputText
+            name="description"
+            input-id="shared-expense-description"
+            aria-labelledby="shared-expense-description-label"
+            placeholder="Optional"
+            maxlength="70"
+            :disabled="createMutation.isPending.value"
+            fluid
+          />
+
+          <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
+            <p v-for="(error, index) of $form.description.errors" :key="index">
+              {{ error.message }}
+            </p>
           </Message>
         </div>
 
@@ -256,20 +231,20 @@ defineExpose({
           <legend>Split</legend>
 
           <SelectButton
-            v-model="split"
+            name="split"
             :options="splitOptions"
             option-label="label"
             option-value="value"
             :allow-empty="false"
-            :disabled="submitting"
+            :disabled="createMutation.isPending.value"
           />
         </fieldset>
 
-        <Message v-if="submitError" severity="error" :closable="false">
-          {{ submitError }}
+        <Message v-if="createMutation.isError.value" severity="error" :closable="false">
+          Unable to add expense.
         </Message>
       </template>
-    </form>
+    </Form>
 
     <template #footer>
       <div class="dialog-actions">
@@ -278,7 +253,7 @@ defineExpose({
           label="Cancel"
           severity="secondary"
           variant="text"
-          :disabled="submitting"
+          :disabled="createMutation.isPending.value"
           @click="close"
         />
 
@@ -287,7 +262,7 @@ defineExpose({
           form="shared-expense-create-form"
           label="Add expense"
           icon="pi pi-plus"
-          :loading="submitting"
+          :loading="createMutation.isPending.value"
           :disabled="!canSubmit"
         />
       </div>

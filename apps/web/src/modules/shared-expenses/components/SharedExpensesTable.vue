@@ -29,10 +29,6 @@ type SharedExpenseCreateModalInstance = {
   open: () => void
 }
 
-type SharedExpensesBalanceInstance = {
-  reload: () => Promise<void>
-}
-
 const statusFilterOptions: SelectOption[] = [
   { label: 'All', value: '' },
   { label: 'Pending', value: 'pending' },
@@ -45,7 +41,6 @@ const user = getAuthUser()
 const currentUserId = user?.id ?? ''
 
 const createModal = ref<SharedExpenseCreateModalInstance | null>(null)
-const balance = ref<SharedExpensesBalanceInstance | null>(null)
 
 const status = ref('pending')
 const owedUserId = ref('')
@@ -99,21 +94,11 @@ function onPage(event: DataTablePageEvent) {
 function openCreateModal() {
   createModal.value?.open()
 }
-
-function loadReport() {
-  return expensesQuery.refetch()
-}
-
-async function onExpensesCreated() {
-  first.value = 0
-
-  await Promise.all([loadReport(), balance.value?.reload()])
-}
 </script>
 
 <template>
   <div class="shared-expenses-page">
-    <SharedExpensesBalance v-if="hasPartner" ref="balance" @settled="loadReport" />
+    <SharedExpensesBalance v-if="hasPartner" />
 
     <Card>
       <template #title>Shared expenses</template>
@@ -219,7 +204,7 @@ async function onExpensesCreated() {
       </template>
     </Card>
 
-    <SharedExpenseCreateModal ref="createModal" @created="onExpensesCreated" />
+    <SharedExpenseCreateModal ref="createModal" @created="first = 0" />
   </div>
 </template>
 

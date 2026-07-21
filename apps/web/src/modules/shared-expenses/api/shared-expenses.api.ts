@@ -1,19 +1,15 @@
-import type { PendingBalance, SharedExpenseReportResponse } from '@expense-tracker/contracts'
+import type {
+  CreateSharedExpenseRequest,
+  PendingBalance,
+  SharedExpenseReportResponse,
+} from '@expense-tracker/contracts'
 import { apiRequest } from '@/api/http'
-
-export type SharedExpenseSplit = 'half' | 'full'
 
 export type ListSharedExpensesParams = {
   limit: number
   offset: number
   status?: string
   owedUserId?: string
-}
-
-export type CreateSharedExpensePayload = {
-  totalAmountCents: number
-  sharedCategoryId: string
-  split: SharedExpenseSplit
 }
 
 export type SharedCategory = {
@@ -52,7 +48,7 @@ export function listSharedCategories(): Promise<SharedCategory[]> {
   return apiRequest('/shared-categories')
 }
 
-export function createSharedExpense(expense: CreateSharedExpensePayload): Promise<void> {
+export function createSharedExpense(expense: CreateSharedExpenseRequest): Promise<void> {
   return apiRequest('/shared-expenses', {
     method: 'POST',
     body: JSON.stringify(expense),

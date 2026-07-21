@@ -7,13 +7,13 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "always",
     "source.organizeImports.biome": "always"
-  },
-
-  "[vue]": {
-    "editor.defaultFormatter": "Vue.volar",
-    "editor.codeActionsOnSave": {
-      "source.fixAll.biome": "never",
-      "source.organizeImports.biome": "never"
-    }
   }
+
+  // "[vue]": {
+  //   "editor.defaultFormatter": "Vue.volar",
+  //   "editor.codeActionsOnSave": {
+  //     "source.fixAll.biome": "never",
+  //     "source.organizeImports.biome": "never"
+  //   }
+  // }
 }

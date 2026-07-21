@@ -1,32 +1,25 @@
 <script setup lang="ts">
-import type { PendingBalance } from '@expense-tracker/contracts'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
-import { computed, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { getAuthUser } from '@/modules/auth/auth.session'
 import {
-  getPendingBalance,
-  settlePendingBalance,
-} from '@/modules/shared-expenses/api/shared-expenses.api'
+  usePendingBalanceQuery,
+  useSettlePendingBalanceMutation,
+} from '@/modules/shared-expenses/api/shared-expenses.queries'
 import { formatMoney } from '@/utils/format-money'
-
-const emit = defineEmits<{
-  settled: []
-}>()
 
 const confirm = useConfirm()
 const user = getAuthUser()
 
-const balance = ref<PendingBalance | null>(null)
-const loading = ref(true)
-const settling = ref(false)
-const errorMessage = ref<string | null>(null)
+const balanceQuery = usePendingBalanceQuery()
+const settleMutation = useSettlePendingBalanceMutation()
 
-const totalAmountCents = computed(() => balance.value?.totalAmountCents ?? 0)
+const totalAmountCents = computed(() => balanceQuery.data.value?.totalAmountCents ?? 0)
 
 const amountLabel = computed(() =>
   formatMoney(Math.abs(totalAmountCents.value), user?.currency, user?.locale),
@@ -58,42 +51,20 @@ const balanceSeverity = computed<'warn' | 'success' | 'secondary'>(() => {
 
 const canSettle = computed(() => totalAmountCents.value > 0)
 
-async function loadBalance() {
-  loading.value = true
-  errorMessage.value = null
-
-  try {
-    balance.value = await getPendingBalance()
-  } catch {
-    balance.value = null
-    errorMessage.value = 'Unable to load balance.'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function settle() {
-  if (!canSettle.value || settling.value) {
+async function settle(): Promise<void> {
+  if (!canSettle.value || settleMutation.isPending.value) {
     return
   }
 
-  settling.value = true
-  errorMessage.value = null
-
   try {
-    await settlePendingBalance()
-
-    await loadBalance()
-    emit('settled')
+    await settleMutation.mutateAsync()
   } catch {
-    errorMessage.value = 'Unable to settle.'
-  } finally {
-    settling.value = false
+    // error surfaced via settleMutation.isError
   }
 }
 
 function requestSettlement() {
-  if (!canSettle.value || settling.value) {
+  if (!canSettle.value || settleMutation.isPending.value) {
     return
   }
 
@@ -107,14 +78,6 @@ function requestSettlement() {
     },
   })
 }
-
-onMounted(() => {
-  void loadBalance()
-})
-
-defineExpose({
-  reload: loadBalance,
-})
 </script>
 
 <template>
@@ -122,13 +85,13 @@ defineExpose({
     <template #title>Open balance</template>
 
     <template #content>
-      <div v-if="loading" class="balance-loading">
+      <div v-if="balanceQuery.isPending.value" class="balance-loading">
         <Skeleton width="10rem" height="2rem" />
         <Skeleton width="8rem" />
       </div>
 
-      <Message v-else-if="errorMessage" severity="error" :closable="false">
-        {{ errorMessage }}
+      <Message v-else-if="balanceQuery.isError.value" severity="error" :closable="false">
+        Unable to load balance.
       </Message>
 
       <div v-else class="balance-content">
@@ -138,12 +101,16 @@ defineExpose({
 
         <Tag :value="summary" :severity="balanceSeverity" />
 
+        <Message v-if="settleMutation.isError.value" severity="error" :closable="false">
+          Unable to settle.
+        </Message>
+
         <Button
           v-if="canSettle"
           class="balance-settle-button"
           label="Settle"
-          :loading="settling"
-          :disabled="settling"
+          :loading="settleMutation.isPending.value"
+          :disabled="settleMutation.isPending.value"
           @click="requestSettlement"
         />
       </div>
