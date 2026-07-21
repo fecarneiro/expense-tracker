@@ -4,3 +4,5 @@ packages:
 allowBuilds:
   bcrypt: true
   esbuild: true
+  vue-demi: true
+

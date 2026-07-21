@@ -16,8 +16,8 @@ export const authUserSchema = z.object({
 })
 
 export const loginRequestSchema = z.object({
-  email: z.email(),
-  password: z.string().min(1),
+  email: z.email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export const loginResponseSchema = z.object({

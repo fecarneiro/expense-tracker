@@ -1,84 +1,83 @@
 <script setup lang="ts">
-import {
-  type LoginRequest,
-  type LoginResponse,
-  loginRequestSchema,
-} from '@expense-tracker/contracts'
+import { type LoginRequest, loginRequestSchema } from '@expense-tracker/contracts'
 import { Form, type FormSubmitEvent } from '@primevue/forms'
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
+import InputPassword from 'primevue/inputpassword'
 import InputText from 'primevue/inputtext'
 import Message from 'primevue/message'
-import Password from 'primevue/password'
-import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiRequest } from '@/api/http'
-import { saveSession } from '@/shared/auth/auth.session'
+import { useLoginMutation } from '@/modules/auth/api/auth.queries'
+import { saveSession } from '@/modules/auth/auth.session'
 
 const router = useRouter()
 const route = useRoute()
 
 const sessionExpired = route.query.reason === 'session-expired'
-//
 const initialValues: LoginRequest = {
   email: '',
   password: '',
 }
 
 const resolver = zodResolver(loginRequestSchema)
-//
 
-const email = ref('')
-const password = ref('')
+const loginMutation = useLoginMutation()
 
-const loading = ref(false)
-const errorMessage = ref<string | null>(null)
-
-async function submit(): Promise<void> {
-  loading.value = true
-  errorMessage.value = null
-
-  const credentials: LoginRequest = {
-    email: email.value,
-    password: password.value,
-  }
+async function submit(event: FormSubmitEvent): Promise<void> {
+  if (!event.valid) return
 
   try {
-    const response = await apiRequest<LoginResponse>('/auth/login', {
-      method: 'POST',
-      authenticated: false,
-      body: JSON.stringify(credentials),
-    })
+    const response = await loginMutation.mutateAsync(event.values as LoginRequest)
 
     saveSession(response.access_token, response.user)
 
-    await router.replace('/')
-  } catch {
-    errorMessage.value = 'Unable to login.'
-  } finally {
-    loading.value = false
-  }
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+
+    await router.replace(redirect)
+  } catch {}
 }
 </script>
 
 <template>
   <main class="login-page">
-    <h1>Expense Tracker</h1>
+    <Card class="login-card">
+      <template #title>Expense Tracker</template>
+      <template #content>
+        <p v-if="sessionExpired">Your session has expired. Please log in again.</p>
 
-    <p v-if="sessionExpired">Your session has expired. Please log in again.</p>
+        <Form
+          v-slot="$form"
+          class="login-form"
+          :initial-values="initialValues"
+          :resolver="resolver"
+          :validate-on-value-update="false"
+          @submit="submit"
+        >
+          <div class="form-field">
+            <InputText name="email" type="email" placeholder="E-mail" fluid />
+            <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">
+              <p v-for="(error, index) of $form.email.errors" :key="index">
+                {{ error.message }}
+              </p>
+            </Message>
 
-    <Form
-      v-slot="$form"
-      class="login-form"
-      :initial-values="initialValues"
-      :resolver="resolver"
-      @submit="onSubmit"
-    >
-      <div class="form-field">
-        <InputText name="email" type="email" placeholder="E-mail" fluid />
-        <InputText name="password" type="password" placeholder="Password" fluid />
-      </div>
-    </Form>
+            <InputPassword name="password" type="password" placeholder="Password" fluid />
+            <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
+              <p v-for="(error, index) of $form.password.errors" :key="index">
+                {{ error.message }}
+              </p>
+            </Message>
+          </div>
+          <Message v-if="loginMutation.isError.value" severity="error" role="alert">
+            Unable to login.
+          </Message>
+          <Button type="submit" severity="secondary" :loading="loginMutation.isPending.value"
+            >Submit</Button
+          >
+        </Form>
+      </template>
+    </Card>
   </main>
 </template>
 
@@ -86,61 +85,25 @@ async function submit(): Promise<void> {
 .login-page {
   display: grid;
   min-height: 100vh;
-  padding: var(--space-4);
+  padding: 1rem;
   place-items: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 24rem;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-
+  gap: 1rem;
   width: 100%;
   max-width: 24rem;
-  padding: var(--space-8);
-
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
 }
 
-.login-form h1,
-.login-form p {
-  margin: 0;
-}
-
-.login-form label {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  font-weight: 600;
-}
-
-.login-form input {
-  width: 100%;
-  padding: var(--space-3);
-
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
-}
-
-.login-form input:focus {
-  border-color: var(--color-primary);
-}
-
-.login-form button {
-  padding: var(--space-3) var(--space-4);
-
-  background: var(--color-primary);
-  border: 0;
-  border-radius: var(--radius-sm);
-  color: white;
-  font-weight: 600;
-}
-
-.login-form [role="alert"] {
-  color: var(--color-danger);
+.form-field {
+  display: grid;
+  gap: 0.375rem;
 }
 </style>

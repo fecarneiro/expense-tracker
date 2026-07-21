@@ -12,11 +12,11 @@ import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
 import { computed, onMounted, ref } from 'vue'
+import { getAuthUser } from '@/modules/auth/auth.session.ts'
 import {
   getCurrentPartnership,
   listSharedExpenses,
 } from '@/modules/shared-expenses/api/shared-expenses.api'
-import { getAuthUser } from '@/shared/auth/auth.session'
 import { formatDate } from '@/utils/format-date'
 import { formatMoney } from '@/utils/format-money'
 import { formatParticipant } from '@/utils/format-partner'

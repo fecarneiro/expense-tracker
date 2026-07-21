@@ -6,6 +6,7 @@ import Message from 'primevue/message'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref } from 'vue'
+import { getAuthUser } from '@/modules/auth/auth.session'
 import {
   type CreateSharedExpensePayload,
   createSharedExpense,
@@ -13,7 +14,6 @@ import {
   type SharedCategory,
   type SharedExpenseSplit,
 } from '@/modules/shared-expenses/api/shared-expenses.api'
-import { getAuthUser } from '@/shared/auth/auth.session'
 
 type FormErrors = {
   amount?: string

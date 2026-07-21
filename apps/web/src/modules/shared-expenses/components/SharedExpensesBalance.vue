@@ -7,11 +7,11 @@ import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref } from 'vue'
+import { getAuthUser } from '@/modules/auth/auth.session'
 import {
   getPendingBalance,
   settlePendingBalance,
 } from '@/modules/shared-expenses/api/shared-expenses.api'
-import { getAuthUser } from '@/shared/auth/auth.session'
 import { formatMoney } from '@/utils/format-money'
 
 const emit = defineEmits<{
