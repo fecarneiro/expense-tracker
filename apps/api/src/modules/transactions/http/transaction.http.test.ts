@@ -47,11 +47,12 @@ describe('authorization', () => {
     ],
     ['DELETE /api/transactions/:id', 'delete', `/api/transactions/${UNKNOWN_UUID}`],
     ['GET /api/transactions/monthly-balance', 'get', '/api/transactions/monthly-balance'],
-  ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
-    app,
-  }) => {
-    await sendUnauthorized(app, method, path, body).expect(401)
-  })
+  ] as const)(
+    '%s returns 401 without authorization header',
+    async ([_route, method, path, body], { app }) => {
+      await sendUnauthorized(app, method, path, body).expect(401)
+    },
+  )
 })
 
 describe('POST /api/transactions', () => {

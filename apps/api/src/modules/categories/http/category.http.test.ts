@@ -35,11 +35,12 @@ describe('authorization', () => {
     ['GET /api/categories/:id', 'get', `/api/categories/${UNKNOWN_UUID}`],
     ['PATCH /api/categories/:id', 'patch', `/api/categories/${UNKNOWN_UUID}`, DEFAULT_HTTP_CREATE],
     ['DELETE /api/categories/:id', 'delete', `/api/categories/${UNKNOWN_UUID}`],
-  ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
-    app,
-  }) => {
-    await sendUnauthorized(app, method, path, body).expect(401)
-  })
+  ] as const)(
+    '%s returns 401 without authorization header',
+    async ([_route, method, path, body], { app }) => {
+      await sendUnauthorized(app, method, path, body).expect(401)
+    },
+  )
 })
 
 describe('POST /api/categories', () => {

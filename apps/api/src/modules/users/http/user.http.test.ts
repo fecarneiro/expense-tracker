@@ -21,11 +21,12 @@ describe('authorization', () => {
     ['GET /api/users/me', 'get', '/api/users/me'],
     ['PATCH /api/users/me/password', 'patch', '/api/users/me/password', DEFAULT_CHANGE_PASSWORD],
     ['DELETE /api/users/me', 'delete', '/api/users/me', DEFAULT_DELETE_BODY],
-  ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
-    app,
-  }) => {
-    await sendUnauthorized(app, method, path, body).expect(401)
-  })
+  ] as const)(
+    '%s returns 401 without authorization header',
+    async ([_route, method, path, body], { app }) => {
+      await sendUnauthorized(app, method, path, body).expect(401)
+    },
+  )
 })
 
 describe('GET /api/users/me', () => {

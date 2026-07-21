@@ -1,5 +1,4 @@
 {
-  // "js/ts.experimental.useTsgo": true,
   "js/ts.tsdk.path": "./apps/web/node_modules/typescript/lib",
 
   "editor.formatOnSave": true,
@@ -11,6 +10,10 @@
   },
 
   "[vue]": {
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "Vue.volar",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "never",
+      "source.organizeImports.biome": "never"
+    }
   }
 }

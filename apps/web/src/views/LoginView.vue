@@ -32,9 +32,7 @@ async function submit(event: FormSubmitEvent): Promise<void> {
 
     saveSession(response.access_token, response.user)
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-
-    await router.replace(redirect)
+    await router.replace('/')
   } catch {}
 }
 </script>
@@ -69,9 +67,11 @@ async function submit(event: FormSubmitEvent): Promise<void> {
               </p>
             </Message>
           </div>
+
           <Message v-if="loginMutation.isError.value" severity="error" role="alert">
             Unable to login.
           </Message>
+
           <Button type="submit" severity="secondary" :loading="loginMutation.isPending.value"
             >Submit</Button
           >
