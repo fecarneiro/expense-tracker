@@ -9,34 +9,27 @@
     "dev": "pnpm dev:api",
     "dev:api": "pnpm --filter @expense-tracker/api dev",
     "dev:web": "pnpm --filter @expense-tracker/web dev",
-
     "build:contracts": "pnpm --filter @expense-tracker/contracts build",
-
     "typecheck": "pnpm --filter @expense-tracker/api typecheck && pnpm --filter @expense-tracker/web typecheck",
     "build": "pnpm build:contracts && pnpm --filter @expense-tracker/api build && pnpm --filter @expense-tracker/web build",
     "start": "pnpm --filter @expense-tracker/api start",
-
     "db:generate": "pnpm --filter @expense-tracker/api db:generate",
     "db:migrate": "pnpm --filter @expense-tracker/api db:migrate",
     "db:migrate:deploy": "pnpm --filter @expense-tracker/api db:migrate:deploy",
     "db:seed": "pnpm --filter @expense-tracker/api db:seed",
     "db:studio": "pnpm --filter @expense-tracker/api db:studio",
-
     "test": "pnpm --filter @expense-tracker/api test",
     "test:watch": "pnpm --filter @expense-tracker/api test:watch",
-
     "check": "pnpm exec biome check .",
     "check:fix": "pnpm exec biome check --write .",
     "check:fix:unsafe": "biome check --write --unsafe .",
-
     "validate": "pnpm typecheck && pnpm check && pnpm test",
-
     "prepare": "husky || true"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.4",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7"
+    "lint-staged": "^17.1.0"
   },
   "lint-staged": {
     "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,vue,json,jsonc,css}": "biome check --write --no-errors-on-unmatched"
