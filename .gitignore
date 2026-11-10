@@ -22,6 +22,7 @@ yarn-debug.log*
 .cache/
 .parcel-cache/
 .vite/
+coverage/
 
 # TypeScript
 *.tsbuildinfo
@@ -34,9 +35,11 @@ yarn-debug.log*
 .idea/
 
 # Tools
-AGENTS.md
 tempCodeRunner*
 .pnpm-store/
+.playwright-cli
+AGENTS.md
+CLAUDE.md
 
 # personal dev scripts (local only)
 .dev/local/

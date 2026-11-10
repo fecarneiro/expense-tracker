@@ -12,5 +12,6 @@
 
   "[vue]": {
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
+  "js/ts.experimental.useTsgo": false
 }

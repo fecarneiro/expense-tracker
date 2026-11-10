@@ -191,18 +191,23 @@ If you prefer to run the application using Docker and Docker Compose, you do not
    docker compose up --build
    ```
    This starts PostgreSQL (`expense-tracker-db`), the shared contracts compiler
-   (`expense-tracker-contracts`) and the API (`expense-tracker-api`) in development
-   mode. Migrations run automatically when the API container starts.
+   (`expense-tracker-contracts`), the API (`expense-tracker-api`) and the Vue
+   frontend (`expense-tracker-web`) in development mode. Migrations run
+   automatically when the API container starts.
 
-   The contracts container performs an initial build before the API starts, then
-   keeps TypeScript running in watch mode. Changes under
+   The contracts container performs an initial build before the API and frontend
+   start, then keeps TypeScript running in watch mode. Changes under
    `packages/contracts/src` are compiled automatically.
 
 The application will be available at:
 
 ```txt
-API: http://localhost:3000
+Frontend: http://localhost:5173
+API:      http://localhost:3000
 ```
+
+The Vite development server proxies frontend requests from `/api` to the API
+container.
 
 #### Running commands inside Docker
 
@@ -223,6 +228,14 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
 * **Apply automatic linter fixes:**
   ```bash
   docker compose exec api pnpm check:fix
+  ```
+* **Type-check the frontend:**
+  ```bash
+  docker compose exec web pnpm typecheck
+  ```
+* **Build the frontend:**
+  ```bash
+  docker compose exec web pnpm build
   ```
 * **Type-check the shared contracts:**
   ```bash
@@ -246,7 +259,7 @@ If you are using the Docker setup and do not have Node.js or pnpm installed on y
 | `pnpm db:migrate:deploy` | Runs migrations using the compiled production script |
 | `pnpm db:generate`       | Generates a new Drizzle migration                    |
 | `pnpm db:studio`         | Opens Drizzle Studio                                 |
-| `docker compose up`      | Starts the database, contracts and API containers |
+| `docker compose up`      | Starts the database, contracts, API and frontend containers |
 | `docker compose down`    | Stops and removes Docker Compose containers          |
 | `docker compose exec api pnpm db:migrate` | Runs database migrations inside the API container |
 
@@ -325,6 +338,24 @@ curl "http://localhost:3000/api/transactions/monthly-balance" \
 ```
 
 Optional `from` and `until` query parameters filter by `occurredAt` as ISO datetimes with offset. Omit both to include all transactions. `until` is exclusive.
+
+### Transactions list
+
+```bash
+curl "http://localhost:3000/api/transactions?limit=20&offset=0" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+Returns `{ data, meta }`, where `meta` has `total`, `limit` and `offset`. Accepts the same optional `from` and `until` query parameters.
+
+### Expenses per category
+
+```bash
+curl "http://localhost:3000/api/transactions/category-totals" \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+Returns the expense total of each category, largest first. Income is not included. Accepts the same optional `from` and `until` query parameters.
 
 ## Authentication
 
