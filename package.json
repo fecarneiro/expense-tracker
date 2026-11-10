@@ -8,10 +8,9 @@
   "scripts": {
     "dev": "pnpm dev:api",
     "dev:api": "pnpm --filter @expense-tracker/api dev",
-    "dev:web": "pnpm --filter @expense-tracker/web dev",
     "build:contracts": "pnpm --filter @expense-tracker/contracts build",
-    "typecheck": "pnpm --filter @expense-tracker/api typecheck && pnpm --filter @expense-tracker/web typecheck",
-    "build": "pnpm build:contracts && pnpm --filter @expense-tracker/api build && pnpm --filter @expense-tracker/web build",
+    "typecheck": "pnpm --filter @expense-tracker/api typecheck",
+    "build": "pnpm build:contracts && pnpm --filter @expense-tracker/api build",
     "start": "pnpm --filter @expense-tracker/api start",
     "db:generate": "pnpm --filter @expense-tracker/api db:generate",
     "db:migrate": "pnpm --filter @expense-tracker/api db:migrate",
@@ -32,7 +31,7 @@
     "lint-staged": "^17.6.0"
   },
   "lint-staged": {
-    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,vue,json,jsonc,css}": "biome check --write --no-errors-on-unmatched"
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,css}": "biome check --write --no-errors-on-unmatched"
   },
   "author": "Felipe Carneiro"
 }

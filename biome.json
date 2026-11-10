@@ -11,8 +11,6 @@
     "ignoreUnknown": false,
     "includes": [
       "apps/**/*.ts",
-      "apps/**/*.vue",
-      "apps/**/*.css",
 
       "packages/**/*.ts",
 
@@ -47,19 +45,6 @@
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded"
-    }
-  },
-
-  "html": {
-    "experimentalFullSupportEnabled": true,
-    "formatter": {
-      "enabled": true
-    }
-  },
-
-  "css": {
-    "formatter": {
-      "enabled": true
     }
   },
 
