@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/hanken-grotesk";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Hanken Grotesk Variable", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-you: var(--you);
+  --color-partner: var(--partner);
+  --color-you-bar: var(--you-bar);
+  --color-partner-bar: var(--partner-bar);
+  --color-category-bar: var(--category-bar);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-text: var(--warning-text);
+  --color-success-surface: var(--success-surface);
+  --color-success-text: var(--success-text);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  color-scheme: light;
+  --radius: 0.75rem;
+  --background: #fafafd;
+  --foreground: #14152b;
+  --card: #ffffff;
+  --card-foreground: #14152b;
+  --popover: #ffffff;
+  --popover-foreground: #14152b;
+  --primary: #3636d0;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f8;
+  --secondary-foreground: #14152b;
+  --muted: #f5f5fa;
+  --muted-foreground: #5f6178;
+  --accent: #f0f0f8;
+  --accent-foreground: #14152b;
+  --destructive: #dc2626;
+  --you: #4f52d9;
+  --partner: #14794a;
+  --you-bar: #7a7df0;
+  --partner-bar: #62d6a6;
+  --category-bar: #5457dc;
+  --warning-surface: #fdf0cc;
+  --warning-text: #7c5a06;
+  --success-surface: #d9f3e6;
+  --success-text: #156346;
+  --border: #e4e4ee;
+  --input: #e4e4ee;
+  --ring: #3636d0;
+  --sidebar: #fafafd;
+  --sidebar-foreground: #14152b;
+  --sidebar-accent: #e9e9fc;
+  --sidebar-accent-foreground: #2f2fb8;
+  --sidebar-border: #e4e4ee;
+  --sidebar-ring: #3636d0;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0f1222;
+  --foreground: #f0f1f8;
+  --card: #181c2e;
+  --card-foreground: #f0f1f8;
+  --popover: #181c2e;
+  --popover-foreground: #f0f1f8;
+  --primary: #9193f8;
+  --primary-foreground: #12132a;
+  --secondary: #262a45;
+  --secondary-foreground: #f0f1f8;
+  --muted: #1d2134;
+  --muted-foreground: #a0a5bd;
+  --accent: #262a45;
+  --accent-foreground: #f0f1f8;
+  --destructive: #f87171;
+  --you: #9a9cfb;
+  --partner: #7be3b6;
+  --you-bar: #9193f8;
+  --partner-bar: #7be3b6;
+  --category-bar: #7376ea;
+  --warning-surface: #3d3216;
+  --warning-text: #f0cd7c;
+  --success-surface: #17382a;
+  --success-text: #86dfb0;
+  --border: #2b3046;
+  --input: #2b3046;
+  --ring: #9193f8;
+  --sidebar: #0f1222;
+  --sidebar-foreground: #f0f1f8;
+  --sidebar-accent: #262a45;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2b3046;
+  --sidebar-ring: #9193f8;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100vh;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 0.1875rem solid var(--ring);
+    outline-offset: 0.125rem;
+  }
+}

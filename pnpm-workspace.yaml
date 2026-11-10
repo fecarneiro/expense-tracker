@@ -4,6 +4,7 @@ packages:
 allowBuilds:
   bcrypt: true
   esbuild: true
+  vue-demi: false
 minimumReleaseAgeExclude:
   - typescript
   - '@biomejs/biome@2.5.1'

@@ -11,6 +11,8 @@
     "ignoreUnknown": false,
     "includes": [
       "apps/**/*.ts",
+      "apps/**/*.vue",
+      "apps/**/*.css",
 
       "packages/**/*.ts",
 
@@ -47,6 +49,31 @@
       "semicolons": "asNeeded"
     }
   },
+
+  "html": {
+    "experimentalFullSupportEnabled": true,
+    "formatter": {
+      "enabled": true
+    }
+  },
+
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    },
+    "formatter": {
+      "enabled": true
+    }
+  },
+
+  "overrides": [
+    {
+      "includes": ["apps/web/src/shared/ui/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ],
 
   "assist": {
     "enabled": true,
