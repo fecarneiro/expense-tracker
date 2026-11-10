@@ -1,6 +1,6 @@
+import type { AuthUser } from '@expense-tracker/contracts'
 import type { Database } from '../../database/db.js'
 import type { CategoryService } from '../categories/category.service.js'
-import type { UserResponse } from '../users/user.mapper.js'
 import type { UserService } from '../users/user.service.js'
 import { InvalidCredentialsError } from './auth.error.js'
 import type { LoginInput, RegisterInput } from './auth.types.js'
@@ -12,7 +12,7 @@ export class AuthService {
     private readonly database: Database,
   ) {}
 
-  async register(data: RegisterInput): Promise<UserResponse> {
+  async register(data: RegisterInput): Promise<AuthUser> {
     return await this.database.transaction(async (tx) => {
       const user = await this.userService.createWithPassword(
         {
@@ -30,7 +30,7 @@ export class AuthService {
     })
   }
 
-  async verifyCredentials(data: LoginInput): Promise<UserResponse> {
+  async verifyCredentials(data: LoginInput): Promise<AuthUser> {
     const user = await this.userService.verifyPassword(data)
 
     if (!user) {

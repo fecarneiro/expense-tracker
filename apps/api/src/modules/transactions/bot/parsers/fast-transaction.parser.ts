@@ -1,4 +1,4 @@
-import { categoryNameField } from '../../../categories/category.schemas.js'
+import { categoryNameSchema } from '@expense-tracker/contracts'
 import type { TransactionAmountCents, TransactionType } from '../../transaction.types.js'
 import { transactionAmountParser } from './transaction-amount.parser.js'
 
@@ -28,7 +28,7 @@ export function fastTransactionParser(message: string): FastTransaction | null {
   const amountCents = transactionAmountParser(amountPart)
   if (amountCents == null) return null
 
-  const categoryResult = categoryNameField.safeParse(rawCategoryName)
+  const categoryResult = categoryNameSchema.safeParse(rawCategoryName)
 
   if (!categoryResult.success) return null
 

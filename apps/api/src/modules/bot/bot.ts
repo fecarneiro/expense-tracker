@@ -30,6 +30,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
     botService,
     categoryService,
     transactionService,
+    userService,
     partnershipService,
     sharedCategoryService,
     sharedExpenseService,
@@ -94,7 +95,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
   })
 
   bot.command('pending', async (ctx) => {
-    await handlePendingSharedExpenses(ctx, settlementService)
+    await handlePendingSharedExpenses(ctx, settlementService, userService)
   })
 
   bot.command('settle', async (ctx) => {
@@ -118,7 +119,7 @@ export function createBot(container: Container, config: Pick<BotRuntimeConfig, '
   })
 
   bot.command('last', async (ctx) => {
-    await handleLastTransactions(ctx, transactionService)
+    await handleLastTransactions(ctx, transactionService, userService)
   })
 
   // Text Messages

@@ -1,9 +1,9 @@
+import type { AuthUser } from '@expense-tracker/contracts'
 import { test as baseTest, expect } from 'vitest'
 import { createApp } from '../../app.js'
 import { createContainer } from '../../container.js'
 import type { Database } from '../../database/db.js'
 import type { UserRow } from '../../database/schemas/users.schema.js'
-import type { UserResponse } from '../../modules/users/user.mapper.js'
 import { generateToken } from '../../shared/access-token.js'
 import { TEST_EMAIL, TEST_PASSWORD } from '../constants.js'
 import { cleanDbTest } from '../db/clean-db-test.js'
@@ -18,7 +18,7 @@ export type AuthenticateResult = {
 export type AuthenticateWithPasswordResult = {
   token: string
   password: string
-  user: UserResponse
+  user: AuthUser
 }
 
 type AuthenticateOptions = {

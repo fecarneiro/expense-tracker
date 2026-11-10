@@ -1,4 +1,4 @@
-import type { CategoryType } from './category.types.js'
+import type { CategoryType } from '@expense-tracker/contracts'
 
 export const CATEGORY_SYSTEM_KEY = {
   UNCATEGORIZED: 'uncategorized',

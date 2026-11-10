@@ -1,4 +1,4 @@
-import { and, desc, eq, getTableColumns, gte, lt, sql } from 'drizzle-orm'
+import { and, count, desc, eq, getTableColumns, gte, lt, sql, sum } from 'drizzle-orm'
 
 import { isForeignKeyViolation } from '../../database/db.error.js'
 import type { Database, DatabaseClient } from '../../database/db.js'
@@ -11,9 +11,11 @@ import {
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type {
   DeleteTransactionInput,
+  FindExpenseCategoryTotalsInput,
   FindManyTransactionsRepositoryInput,
   FindMonthlyTotalsInRangeRepositoryInput,
   FindTransactionByIdInput,
+  TransactionRange,
   TransactionWithCategory,
   UpdateTransactionInput,
 } from './transaction.types.js'
@@ -36,6 +38,13 @@ const expenseTotalSql = sql<number>`
   coalesce(sum(case when ${transactionsTable.transactionType} = 'expense'
     then ${transactionsTable.amountCents} else 0 end), 0)
 `
+
+function inRange({ from, until }: TransactionRange) {
+  return and(
+    from ? gte(transactionsTable.occurredAt, from) : undefined,
+    until ? lt(transactionsTable.occurredAt, until) : undefined,
+  )
+}
 
 export class TransactionRepository {
   constructor(private readonly database: Database) {}
@@ -101,8 +110,15 @@ export class TransactionRepository {
 
   async findManyWithCategory(
     data: FindManyTransactionsRepositoryInput,
-  ): Promise<TransactionWithCategory[]> {
-    return this.database
+  ): Promise<{ rows: TransactionWithCategory[]; total: number }> {
+    const where = and(eq(transactionsTable.userId, data.userId), inRange(data))
+
+    const [countRow] = await this.database
+      .select({ total: count().mapWith(Number) })
+      .from(transactionsTable)
+      .where(where)
+
+    const rows = await this.database
       .select({
         ...getTableColumns(transactionsTable),
         category: {
@@ -118,10 +134,40 @@ export class TransactionRepository {
           eq(transactionsTable.userId, categoriesTable.userId),
         ),
       )
-      .where(eq(transactionsTable.userId, data.userId))
+      .where(where)
       .orderBy(desc(transactionsTable.occurredAt), desc(transactionsTable.id))
       .limit(data.limit)
       .offset(data.offset)
+
+    return { rows, total: countRow?.total ?? 0 }
+  }
+
+  async findExpenseCategoryTotals(data: FindExpenseCategoryTotalsInput) {
+    const totalCents = sum(transactionsTable.amountCents).mapWith(Number)
+
+    return this.database
+      .select({
+        categoryId: categoriesTable.id,
+        categoryName: categoriesTable.name,
+        totalCents,
+      })
+      .from(transactionsTable)
+      .innerJoin(
+        categoriesTable,
+        and(
+          eq(transactionsTable.categoryId, categoriesTable.id),
+          eq(transactionsTable.userId, categoriesTable.userId),
+        ),
+      )
+      .where(
+        and(
+          eq(transactionsTable.userId, data.userId),
+          eq(transactionsTable.transactionType, 'expense'),
+          inRange(data),
+        ),
+      )
+      .groupBy(categoriesTable.id, categoriesTable.name)
+      .orderBy(desc(totalCents), categoriesTable.name)
   }
 
   async findMonthlyTotalsInRange(data: FindMonthlyTotalsInRangeRepositoryInput) {
@@ -135,16 +181,11 @@ export class TransactionRepository {
         expenseTotal: expenseTotalSql.mapWith(Number),
       })
       .from(transactionsTable)
-      .where(
-        and(
-          eq(transactionsTable.userId, userId),
-          from ? gte(transactionsTable.occurredAt, from) : undefined,
-          until ? lt(transactionsTable.occurredAt, until) : undefined,
-        ),
-      )
+      .where(and(eq(transactionsTable.userId, userId), inRange({ from, until })))
       .groupBy(sql`1`) // 1 = month
       .orderBy(sql`1 desc`)
   }
+
   async delete(data: DeleteTransactionInput): Promise<Pick<TransactionRow, 'id'> | null> {
     const { id, userId } = data
 

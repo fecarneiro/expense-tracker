@@ -1,9 +1,9 @@
+import { SPLIT_TYPE } from '@expense-tracker/contracts'
 import request from 'supertest'
 import { describe, expect } from 'vitest'
 import { createContainer } from '../../../../container.js'
 import { createTestPartnership } from '../../../../tests/factories/partnership.factory.js'
 import { httpTest as test } from '../../../../tests/fixtures/http.fixture.js'
-import { SPLIT_TYPE } from '../shared-expense.types.js'
 
 describe('POST /api/shared-expenses/batch', () => {
   test('returns 201 with all created shared expenses', async ({ app, db, authenticate }) => {

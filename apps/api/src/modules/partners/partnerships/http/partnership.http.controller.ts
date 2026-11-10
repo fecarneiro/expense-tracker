@@ -1,3 +1,4 @@
+import { partnershipResponseSchema } from '@expense-tracker/contracts'
 import type { Request, Response } from 'express'
 import { createPartnershipBodySchema } from '../partnership.schemas.js'
 import type { PartnershipService } from '../partnership.service.js'
@@ -12,7 +13,7 @@ export class PartnershipHttpController {
 
   async getMe(req: Request, res: Response) {
     const partnership = await this.partnershipService.findPartnershipContext(req.auth.userId)
-    res.status(200).json(partnership)
+    res.status(200).json(partnershipResponseSchema.parse(partnership))
   }
 
   async create(req: Request, res: Response) {

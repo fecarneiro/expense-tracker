@@ -30,25 +30,30 @@ export type TransactionWithCategory = TransactionRow & {
 
 export type FindTransactionByIdInput = Pick<Transaction, 'id' | 'userId'>
 
-export type FindManyTransactionsInput = Pick<Transaction, 'userId'> & {
-  limit?: number | undefined
-  offset?: number | undefined
-}
-
-export type FindManyTransactionsRepositoryInput = Pick<Transaction, 'userId'> & {
-  limit: number
-  offset: number
-}
-
-export type DeleteTransactionInput = Pick<Transaction, 'id' | 'userId'>
-
-export type MonthlyBalanceRange = {
+export type TransactionRange = {
   from?: Date | undefined
   until?: Date | undefined
 }
+
+export type FindManyTransactionsInput = Pick<Transaction, 'userId'> &
+  TransactionRange & {
+    limit?: number | undefined
+    offset?: number | undefined
+  }
+
+export type FindManyTransactionsRepositoryInput = Pick<Transaction, 'userId'> &
+  TransactionRange & {
+    limit: number
+    offset: number
+  }
+
+export type FindExpenseCategoryTotalsInput = Pick<Transaction, 'userId'> & TransactionRange
+
+export type DeleteTransactionInput = Pick<Transaction, 'id' | 'userId'>
+
 export type FindMonthlyTotalsInRangeInput = {
   userId: string
-  range?: MonthlyBalanceRange | undefined
+  range?: TransactionRange | undefined
 }
 export type FindMonthlyTotalsInRangeRepositoryInput = {
   userId: string
@@ -60,8 +65,4 @@ export type MonthlyTotalsRow = {
   month: string
   incomeTotal: number
   expenseTotal: number
-}
-
-export type MonthlyTotalsInRangeRow = MonthlyTotalsRow & {
-  balance: number
 }

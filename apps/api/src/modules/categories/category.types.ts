@@ -1,6 +1,5 @@
+import type { CategoryType } from '@expense-tracker/contracts'
 import type { CategorySystemKey } from './category.defaults.js'
-
-export type CategoryType = 'income' | 'expense'
 
 /** Public domain category — never includes `systemKey`. */
 export type Category = {

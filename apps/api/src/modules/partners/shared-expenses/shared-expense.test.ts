@@ -1,3 +1,4 @@
+import { SPLIT_TYPE } from '@expense-tracker/contracts'
 import { inArray } from 'drizzle-orm'
 import { describe } from 'vitest'
 import type { Database } from '../../../database/db.js'
@@ -6,7 +7,6 @@ import { insertTestCategory } from '../../../tests/factories/category.factory.js
 import { createTestPartnership } from '../../../tests/factories/partnership.factory.js'
 import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
 import { CATEGORY_SYSTEM_KEY } from '../../categories/category.defaults.js'
-import { SPLIT_TYPE } from './shared-expense.types.js'
 
 async function listTransactionsForUsers(db: Database, userIds: string[]) {
   return db.select().from(transactionsTable).where(inArray(transactionsTable.userId, userIds))

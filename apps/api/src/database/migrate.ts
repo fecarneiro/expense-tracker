@@ -12,9 +12,6 @@ if (!databaseUrl) {
 const pool = new Pool({
   connectionString: databaseUrl,
   max: 1,
-  ssl: {
-    rejectUnauthorized: false,
-  },
 })
 
 const db = drizzle({

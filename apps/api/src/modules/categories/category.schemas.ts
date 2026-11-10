@@ -1,33 +1,32 @@
+import {
+  categoryIdSchema,
+  categoryNameSchema,
+  categoryTypeSchema,
+} from '@expense-tracker/contracts'
 import { z } from 'zod'
 
-export const categoryTypeField = z.enum(['income', 'expense'])
-
-export const categoryNameField = z.string().trim().min(1).max(50)
-
-export const categoryIdField = z.uuid()
-
 export const categoryTypeQuerySchema = z.strictObject({
-  categoryType: categoryTypeField.optional(),
+  categoryType: categoryTypeSchema.optional(),
 })
 
 export const categoryIdParamsSchema = z.strictObject({
-  id: categoryIdField,
+  id: categoryIdSchema,
 })
 
 export const createCategoryBodySchema = z.strictObject({
-  name: categoryNameField,
-  categoryType: categoryTypeField,
+  name: categoryNameSchema,
+  categoryType: categoryTypeSchema,
 })
 
 export const updateCategoryBodySchema = z.strictObject({
-  name: categoryNameField,
-  categoryType: categoryTypeField,
+  name: categoryNameSchema,
+  categoryType: categoryTypeSchema,
 })
 
 export const categoryResponseSchema = z.object({
-  id: categoryIdField,
-  name: categoryNameField,
-  categoryType: categoryTypeField,
+  id: categoryIdSchema,
+  name: categoryNameSchema,
+  categoryType: categoryTypeSchema,
 })
 
 export const categoriesResponseSchema = z.array(categoryResponseSchema)

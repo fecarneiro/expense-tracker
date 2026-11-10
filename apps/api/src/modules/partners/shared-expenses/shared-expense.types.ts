@@ -10,10 +10,3 @@ export type SharedExpense = {
   description: string | null
   createdAt: Date
 }
-
-export const SPLIT_TYPE = {
-  HALF: 'half',
-  FULL: 'full',
-} as const
-
-export type SplitType = (typeof SPLIT_TYPE)[keyof typeof SPLIT_TYPE]

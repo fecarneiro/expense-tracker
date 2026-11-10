@@ -1,15 +1,10 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
-import { env, isProduction } from '../config/app.config.js'
+import { env } from '../config/app.config.js'
 import * as schemas from './schemas/index.js'
 
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
-  ssl: isProduction
-    ? {
-        rejectUnauthorized: false,
-      }
-    : false,
   max: 5,
   min: 1,
   idleTimeoutMillis: 60_000,

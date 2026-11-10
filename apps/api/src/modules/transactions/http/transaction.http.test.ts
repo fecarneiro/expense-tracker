@@ -47,11 +47,13 @@ describe('authorization', () => {
     ],
     ['DELETE /api/transactions/:id', 'delete', `/api/transactions/${UNKNOWN_UUID}`],
     ['GET /api/transactions/monthly-balance', 'get', '/api/transactions/monthly-balance'],
-  ] as const)('%s returns 401 without authorization header', async ([_route, method, path, body], {
-    app,
-  }) => {
-    await sendUnauthorized(app, method, path, body).expect(401)
-  })
+    ['GET /api/transactions/category-totals', 'get', '/api/transactions/category-totals'],
+  ] as const)(
+    '%s returns 401 without authorization header',
+    async ([_route, method, path, body], { app }) => {
+      await sendUnauthorized(app, method, path, body).expect(401)
+    },
+  )
 })
 
 describe('POST /api/transactions', () => {
@@ -108,14 +110,84 @@ describe('GET /api/transactions', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
 
-    expect(res.body).toEqual([])
+    expect(res.body).toEqual({ data: [], meta: { total: 0, limit: 10, offset: 0 } })
   })
 
-  test('returns 400 with invalid query params', async ({ app, authenticate }) => {
+  test('returns the page, its meta and honors the range', async ({ app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    const { id } = await postTransaction(app, token, category.id)
+
+    const query = `from=${encodeURIComponent(TEST_OCCURRED_AT)}&until=${encodeURIComponent(TEST_OCCURRED_AT_LATER)}&limit=5`
+    const inside = await request(app)
+      .get(`/api/transactions?${query}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+    const outside = await request(app)
+      .get(`/api/transactions?from=${encodeURIComponent(TEST_OCCURRED_AT_LATER)}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    expect(inside.body.data).toMatchObject([{ id }])
+    expect(inside.body.meta).toEqual({ total: 1, limit: 5, offset: 0 })
+    expect(outside.body.meta.total).toBe(0)
+  })
+
+  test.for([
+    ['limit below 1', '?limit=0'],
+    ['invalid from date', '?from=not-a-date'],
+    [
+      'from after until',
+      `?from=${encodeURIComponent(TEST_OCCURRED_AT_LATER)}&until=${encodeURIComponent(TEST_OCCURRED_AT)}`,
+    ],
+  ])('returns 400 when %s', async ([_label, query], { app, authenticate }) => {
     const { token } = await authenticate()
 
     await request(app)
-      .get('/api/transactions?limit=0')
+      .get(`/api/transactions${query}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
+  })
+})
+
+describe('GET /api/transactions/category-totals', () => {
+  test('returns 200 with an empty list', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
+
+    const res = await request(app)
+      .get('/api/transactions/category-totals')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    expect(res.body).toEqual([])
+  })
+
+  test('returns the expense total of each category', async ({ app, db, authenticate }) => {
+    const { user, token } = await authenticate()
+    const category = await insertTestCategory(db, { userId: user.id })
+    await postTransaction(app, token, category.id)
+    await postTransaction(app, token, category.id)
+
+    const res = await request(app)
+      .get('/api/transactions/category-totals')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+
+    expect(res.body).toEqual([
+      {
+        categoryId: category.id,
+        categoryName: DEFAULT_CATEGORY_NAME,
+        totalCents: DEFAULT_HTTP_CREATE.amountCents * 2,
+      },
+    ])
+  })
+
+  test('returns 400 when from is after until', async ({ app, authenticate }) => {
+    const { token } = await authenticate()
+    const query = `?from=${encodeURIComponent(TEST_OCCURRED_AT_LATER)}&until=${encodeURIComponent(TEST_OCCURRED_AT)}`
+
+    await request(app)
+      .get(`/api/transactions/category-totals${query}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(400)
   })

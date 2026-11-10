@@ -1,3 +1,4 @@
+import { sharedCategoriesResponseSchema } from '@expense-tracker/contracts'
 import type { Request, Response } from 'express'
 import { ActivePartnershipNotFoundError } from '../../shared-expenses/shared-expense.errors.js'
 import { mapUserCategoryToSharedBodySchema } from '../shared-category.schemas.js'
@@ -12,7 +13,7 @@ export class SharedCategoryHttpController {
     const sharedCategories = await this.sharedCategoryService.findPartnershipSharedCategories(
       req.partnership.id,
     )
-    res.status(200).json(sharedCategories)
+    res.status(200).json(sharedCategoriesResponseSchema.parse(sharedCategories))
   }
 
   async mapUserCategory(req: Request, res: Response) {

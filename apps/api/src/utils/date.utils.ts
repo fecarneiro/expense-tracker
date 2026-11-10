@@ -13,15 +13,14 @@ export function isValidIanaTimeZone(value: string) {
   }
 }
 
-// TODO - Timezone issue
-export function isoDateTimeToReadable(isoDateTime: string) {
+export function isoDateTimeToReadable(isoDateTime: string, timeZone: string) {
   const date = new Date(isoDateTime)
 
   return new Intl.DateTimeFormat('en-US', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-    timeZone: 'UTC',
+    timeZone,
   }).format(date)
 }
 

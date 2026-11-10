@@ -1,3 +1,7 @@
+import {
+  expenseCategoryTotalsResponseSchema,
+  monthlyBalanceResponseSchema,
+} from '@expense-tracker/contracts'
 import type { Request, Response } from 'express'
 import {
   createTransactionBodySchema,
@@ -44,16 +48,31 @@ export class TransactionHttpController {
   }
 
   async findAll(req: Request, res: Response) {
-    const { limit, offset } = transactionQueryParamsSchema.parse(req.query)
+    const { limit, offset, from, until } = transactionQueryParamsSchema.parse(req.query)
     const userId = req.auth.userId
 
     const transactions = await this.transactionService.findManyWithCategory({
       userId,
       limit,
       offset,
+      from,
+      until,
     })
 
     res.status(200).json(transactions)
+  }
+
+  async categoryTotals(req: Request, res: Response) {
+    const { from, until } = transactionsByRangeQuerySchema.parse(req.query)
+    const userId = req.auth.userId
+
+    const totals = await this.transactionService.findExpenseCategoryTotals({
+      userId,
+      from,
+      until,
+    })
+
+    res.status(200).json(expenseCategoryTotalsResponseSchema.parse(totals))
   }
 
   async monthlyBalance(req: Request, res: Response) {
@@ -68,7 +87,7 @@ export class TransactionHttpController {
       },
     })
 
-    res.status(200).json(monthlyBalance)
+    res.status(200).json(monthlyBalanceResponseSchema.parse(monthlyBalance))
   }
 
   async delete(req: Request, res: Response) {

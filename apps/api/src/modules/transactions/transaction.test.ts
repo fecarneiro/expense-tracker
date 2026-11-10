@@ -2,6 +2,7 @@ import { describe } from 'vitest'
 import type { createContainer } from '../../container.js'
 import type { CategoryRow } from '../../database/schemas/categories.schema.js'
 import type { UserRow } from '../../database/schemas/users.schema.js'
+import { LIST_DEFAULT_LIMIT } from '../../shared/pagination.js'
 import {
   TEST_OCCURRED_AT_DATE,
   TEST_OCCURRED_AT_FAR_LATER_DATE,
@@ -15,7 +16,6 @@ import {
 import { insertOtherTestUser, insertTestUser } from '../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../tests/fixtures/integration.fixture.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
-import { LIST_DEFAULT_LIMIT } from './transaction.constants.js'
 import { InvalidTransactionRangeError, TransactionNotFoundError } from './transaction.error.js'
 import type { CreateTransactionInput } from './transaction.types.js'
 
@@ -230,7 +230,8 @@ describe('TransactionService', () => {
         userId: user.id,
       })
 
-      expect(found).toEqual([])
+      expect(found.data).toEqual([])
+      expect(found.meta).toEqual({ total: 0, limit: LIST_DEFAULT_LIMIT, offset: 0 })
     })
 
     test('returns only transactions of the given user', async ({ container, db }) => {
@@ -249,8 +250,9 @@ describe('TransactionService', () => {
         userId: user.id,
       })
 
-      expect(found).toHaveLength(1)
-      expect(found[0]).toMatchObject({ description: OWNER_DESCRIPTION })
+      expect(found.data).toHaveLength(1)
+      expect(found.data[0]).toMatchObject({ description: OWNER_DESCRIPTION })
+      expect(found.meta.total).toBe(1)
     })
 
     test('applies default limit and offset when omitted', async ({ container, db }) => {
@@ -262,7 +264,8 @@ describe('TransactionService', () => {
       }
       const found = await container.transactionService.findManyWithCategory({ userId: user.id })
 
-      expect(found).toHaveLength(LIST_DEFAULT_LIMIT)
+      expect(found.data).toHaveLength(LIST_DEFAULT_LIMIT)
+      expect(found.meta.total).toBe(LIST_DEFAULT_LIMIT + 1)
     })
 
     test('respects limit and offset when provided', async ({ container, db }) => {
@@ -290,11 +293,121 @@ describe('TransactionService', () => {
         offset: 1,
       })
 
-      expect(found).toHaveLength(1)
-      expect(found[0]).toMatchObject({
+      expect(found.data).toHaveLength(1)
+      expect(found.data[0]).toMatchObject({
         id: middle.id,
         description: 'middle',
       })
+      expect(found.meta).toEqual({ total: 3, limit: 1, offset: 1 })
+    })
+
+    test('filters by range with an exclusive until', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+
+      await createTransaction(container, user, category, {
+        description: 'before',
+        occurredAt: TEST_OCCURRED_AT_DATE,
+      })
+      await createTransaction(container, user, category, {
+        description: 'inside',
+        occurredAt: TEST_OCCURRED_AT_LATER_DATE,
+      })
+      await createTransaction(container, user, category, {
+        description: 'at until',
+        occurredAt: TEST_OCCURRED_AT_FAR_LATER_DATE,
+      })
+
+      const found = await container.transactionService.findManyWithCategory({
+        userId: user.id,
+        from: TEST_OCCURRED_AT_LATER_DATE,
+        until: TEST_OCCURRED_AT_FAR_LATER_DATE,
+      })
+
+      expect(found.data.map(({ description }) => description)).toEqual(['inside'])
+      expect(found.meta.total).toBe(1)
+    })
+
+    test('throws when from is not before until', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+
+      await expect(
+        container.transactionService.findManyWithCategory({
+          userId: user.id,
+          from: TEST_OCCURRED_AT_LATER_DATE,
+          until: TEST_OCCURRED_AT_DATE,
+        }),
+      ).rejects.toThrow(InvalidTransactionRangeError)
+    })
+  })
+
+  describe('findExpenseCategoryTotals', () => {
+    test('sums only the expenses of the user, largest first', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+      const other = await insertOtherTestUser(db)
+      const smaller = await insertTestCategory(db, { userId: user.id, name: 'Smaller' })
+      const larger = await insertTestCategory(db, { userId: user.id, name: 'Larger' })
+      const income = await insertTestCategory(db, {
+        userId: user.id,
+        name: 'Salary',
+        categoryType: 'income',
+      })
+      const otherCategory = await insertTestCategory(db, { userId: other.id })
+
+      await createTransaction(container, user, smaller, { amountCents: 500 })
+      await createTransaction(container, user, larger, { amountCents: 1000 })
+      await createTransaction(container, user, larger, { amountCents: 2000 })
+      await createTransaction(container, user, income, { amountCents: 99999 })
+      await createTransaction(container, other, otherCategory, { amountCents: 99999 })
+
+      const totals = await container.transactionService.findExpenseCategoryTotals({
+        userId: user.id,
+      })
+
+      expect(totals).toEqual([
+        { categoryId: larger.id, categoryName: 'Larger', totalCents: 3000 },
+        { categoryId: smaller.id, categoryName: 'Smaller', totalCents: 500 },
+      ])
+    })
+
+    test('filters by range with an exclusive until', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+      const category = await insertTestCategory(db, { userId: user.id })
+
+      await createTransaction(container, user, category, {
+        amountCents: 100,
+        occurredAt: TEST_OCCURRED_AT_DATE,
+      })
+      await createTransaction(container, user, category, {
+        amountCents: 200,
+        occurredAt: TEST_OCCURRED_AT_LATER_DATE,
+      })
+      await createTransaction(container, user, category, {
+        amountCents: 400,
+        occurredAt: TEST_OCCURRED_AT_FAR_LATER_DATE,
+      })
+
+      const totals = await container.transactionService.findExpenseCategoryTotals({
+        userId: user.id,
+        from: TEST_OCCURRED_AT_LATER_DATE,
+        until: TEST_OCCURRED_AT_FAR_LATER_DATE,
+      })
+
+      expect(totals).toEqual([
+        { categoryId: category.id, categoryName: DEFAULT_CATEGORY_NAME, totalCents: 200 },
+      ])
+    })
+
+    test('throws when from is not before until', async ({ container, db }) => {
+      const user = await insertTestUser(db)
+
+      await expect(
+        container.transactionService.findExpenseCategoryTotals({
+          userId: user.id,
+          from: TEST_OCCURRED_AT_LATER_DATE,
+          until: TEST_OCCURRED_AT_DATE,
+        }),
+      ).rejects.toThrow(InvalidTransactionRangeError)
     })
   })
 

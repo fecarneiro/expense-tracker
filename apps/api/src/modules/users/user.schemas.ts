@@ -10,8 +10,6 @@ const ianaTimeZoneSchema = z
 const localeSchema = z.string().trim().max(10)
 const currencySchema = z.string().length(3)
 
-export const userIdField = z.uuid()
-
 export const emailField = z.string().trim().toLowerCase().max(254).pipe(z.email())
 
 export const passwordField = z.string().min(8).max(72)
@@ -19,8 +17,6 @@ export const passwordField = z.string().min(8).max(72)
 export const localeField = localeSchema.optional()
 
 export const currencyField = currencySchema.toUpperCase().optional()
-
-export const lastSeenAtField = z.iso.datetime({ offset: true }).nullable()
 
 export const timezoneField = ianaTimeZoneSchema.optional()
 
@@ -33,8 +29,6 @@ export const userCredentialsBodySchema = z.strictObject({
   locale: localeField,
 })
 
-export const createUserBodySchema = userCredentialsBodySchema
-
 export const changePasswordBodySchema = z.strictObject({
   currentPassword: z.string().min(1),
   newPassword: passwordField,
@@ -45,21 +39,12 @@ export const deleteUserBodySchema = z.strictObject({
 })
 
 // -- Response schemas --
-export const userResponseSchema = z.object({
-  id: userIdField,
-  email: emailField,
-  timezone: timezoneField,
-  currency: currencyField,
-  locale: localeField,
-  lastSeenAt: lastSeenAtField,
-})
-
 export const userPreferencesSchema = z.object({
   timeZone: ianaTimeZoneSchema,
   locale: localeSchema,
   currency: currencySchema,
 })
 
-export type CreateUserBodyInput = z.input<typeof createUserBodySchema>
+export type UserCredentialsBodyInput = z.input<typeof userCredentialsBodySchema>
 export type ChangePasswordBodyInput = z.input<typeof changePasswordBodySchema>
 export type DeleteUserBodyInput = z.input<typeof deleteUserBodySchema>

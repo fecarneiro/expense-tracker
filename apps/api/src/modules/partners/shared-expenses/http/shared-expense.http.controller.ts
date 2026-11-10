@@ -1,10 +1,10 @@
+import {
+  createSharedExpenseRequestSchema,
+  createSharedExpensesRequestSchema,
+} from '@expense-tracker/contracts'
 import type { Request, Response } from 'express'
 import { ActivePartnershipNotFoundError } from '../shared-expense.errors.js'
-import {
-  createSharedExpenseBodySchema,
-  createSharedExpensesBodySchema,
-  sharedExpenseReportQuerySchema,
-} from '../shared-expense.schemas.js'
+import { sharedExpenseReportQuerySchema } from '../shared-expense.schemas.js'
 import type { SharedExpenseService } from '../shared-expense.service.js'
 
 export class SharedExpenseHttpController {
@@ -13,7 +13,7 @@ export class SharedExpenseHttpController {
   async create(req: Request, res: Response) {
     if (!req.partnership) throw new ActivePartnershipNotFoundError()
 
-    const body = createSharedExpenseBodySchema.parse(req.body)
+    const body = createSharedExpenseRequestSchema.parse(req.body)
     const sharedExpense = await this.sharedExpenseService.create({
       userId: req.auth.userId,
       totalAmountCents: body.totalAmountCents,
@@ -29,7 +29,7 @@ export class SharedExpenseHttpController {
   async createMany(req: Request, res: Response) {
     if (!req.partnership) throw new ActivePartnershipNotFoundError()
 
-    const { expenses } = createSharedExpensesBodySchema.parse(req.body)
+    const { expenses } = createSharedExpensesRequestSchema.parse(req.body)
     const sharedExpenses = await this.sharedExpenseService.createMany({
       userId: req.auth.userId,
       expenses,

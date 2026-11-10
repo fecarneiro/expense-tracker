@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { PGlite } from '@electric-sql/pglite'
 import { drizzle } from 'drizzle-orm/pglite'
 import { migrate } from 'drizzle-orm/pglite/migrator'
@@ -12,7 +13,9 @@ export async function setupDbTest() {
     casing: 'snake_case',
   })
 
-  await migrate(dbTest, { migrationsFolder: './drizzle' })
+  await migrate(dbTest, {
+    migrationsFolder: fileURLToPath(new URL('../../../drizzle/', import.meta.url)),
+  })
 
   return { client, dbTest }
 }

@@ -1,6 +1,7 @@
 import { isoDateTimeToReadable } from '../../../../utils/date.utils.js'
 import { centsToString } from '../../../../utils/money.utils.js'
 import type { BotContext } from '../../../bot/bot.context.js'
+import type { UserService } from '../../../users/user.service.js'
 import type { SharedExpense } from '../../shared-expenses/shared-expense.types.js'
 import type { SettlementService } from '../settlement.service.js'
 
@@ -17,6 +18,7 @@ function compareByCreatedAtAsc(a: SharedExpense, b: SharedExpense): number {
 export async function handlePendingSharedExpenses(
   ctx: BotContext,
   settlementService: SettlementService,
+  userService: Pick<UserService, 'getUserPreferences'>,
 ) {
   if (!ctx.partnership) {
     return ctx.reply('You are not part of a partnership yet.')
@@ -46,10 +48,11 @@ export async function handlePendingSharedExpenses(
     ? `Pending shared (showing ${shown.length} of ${ordered.length}):`
     : `Pending shared:`
 
-  // TODO - Timezone issue
+  const { timeZone } = await userService.getUserPreferences({ id: userId })
+
   const message = shown
     .map((expense) => {
-      const date = isoDateTimeToReadable(expense.createdAt.toISOString())
+      const date = isoDateTimeToReadable(expense.createdAt.toISOString(), timeZone)
       const dir = directionLabel(expense, userId)
       const total = centsToString(expense.totalAmountCents)
       const owed = centsToString(expense.owedAmountCents)

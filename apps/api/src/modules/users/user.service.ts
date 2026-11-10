@@ -1,18 +1,14 @@
-import type { DatabaseClient } from '../../database/db.js'
-import type { PasswordHasher } from '../../shared/password-hasher.js'
-import { InvalidCredentialsError } from '../auth/auth.error.js'
+import type { AuthUser } from '@expense-tracker/contracts'
 import {
   DEFAULT_USER_CURRENCY,
   DEFAULT_USER_LOCALE,
   DEFAULT_USER_TIME_ZONE,
-} from './user.constants.js'
+} from '@expense-tracker/contracts'
+import type { DatabaseClient } from '../../database/db.js'
+import type { PasswordHasher } from '../../shared/password-hasher.js'
+import { InvalidCredentialsError } from '../auth/auth.error.js'
 import { AuthenticatedUserNotFoundError } from './user.error.js'
-import {
-  toUserPreferences,
-  toUserResponse,
-  type UserPreferences,
-  type UserResponse,
-} from './user.mapper.js'
+import { toUserPreferences, toUserResponse, type UserPreferences } from './user.mapper.js'
 
 import type { UserRepository } from './user.repository.js'
 import type {
@@ -31,10 +27,7 @@ export class UserService {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async createWithPassword(
-    data: CreateUserInput,
-    dbClient?: DatabaseClient,
-  ): Promise<UserResponse> {
+  async createWithPassword(data: CreateUserInput, dbClient?: DatabaseClient): Promise<AuthUser> {
     const passwordHash = await this.passwordHasher.hash(data.password)
 
     const createdUser = await this.userRepository.create(
@@ -54,7 +47,7 @@ export class UserService {
     return this.userRepository.findByEmail({ email: data.email })
   }
 
-  async getCurrentUser(data: FindUserByIdInput): Promise<UserResponse> {
+  async getCurrentUser(data: FindUserByIdInput): Promise<AuthUser> {
     const user = await this.userRepository.findById({ id: data.id })
     if (!user) {
       throw new AuthenticatedUserNotFoundError()
@@ -94,7 +87,7 @@ export class UserService {
     })
   }
 
-  async verifyPassword(data: VerifyPasswordInput): Promise<UserResponse | null> {
+  async verifyPassword(data: VerifyPasswordInput): Promise<AuthUser | null> {
     const user = await this.userRepository.findByEmail({ email: data.email })
 
     if (!user) {

@@ -1,4 +1,4 @@
-import { transactionAmountCentsField } from '../../transaction.schemas.js'
+import { transactionAmountCentsSchema } from '@expense-tracker/contracts'
 import type { TransactionAmountCents } from '../../transaction.types.js'
 
 export function transactionAmountParser(message: string): TransactionAmountCents | null {
@@ -8,7 +8,7 @@ export function transactionAmountParser(message: string): TransactionAmountCents
   const numeric = Number(normalized)
   const cents = Math.round(numeric * 100)
 
-  const result = transactionAmountCentsField.safeParse(cents)
+  const result = transactionAmountCentsSchema.safeParse(cents)
 
   return result.success ? result.data : null
 }

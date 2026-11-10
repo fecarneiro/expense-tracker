@@ -1,11 +1,10 @@
+import { resolveSplitAmounts, SPLIT_TYPE, type SplitType } from '@expense-tracker/contracts'
 import { InlineKeyboard } from 'grammy'
 import { centsToString } from '../../../../utils/money.utils.js'
 import type { BotConversation, BotConversationContext } from '../../../bot/bot.context.js'
 import { CANCEL_HINT } from '../../../bot/handlers/cancel.handler.js'
 import type { SharedCategoryService } from '../../shared-categories/shared-category.service.js'
 import type { SharedExpenseService } from '../shared-expense.service.js'
-import { SPLIT_TYPE, type SplitType } from '../shared-expense.types.js'
-import { resolveSplitAmounts } from '../shared-expense.utils.js'
 import {
   type SharedExpenseAmountCents,
   sharedExpenseAmountParser,

@@ -1,6 +1,5 @@
+import { resolveSplitAmounts, SPLIT_TYPE } from '@expense-tracker/contracts'
 import { expect, test } from 'vitest'
-import { SPLIT_TYPE } from './shared-expense.types.js'
-import { resolveSplitAmounts } from './shared-expense.utils.js'
 
 test('resolveSplitAmounts FULL assigns full amount to owed', () => {
   expect(resolveSplitAmounts(1000, SPLIT_TYPE.FULL)).toStrictEqual({

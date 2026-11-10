@@ -1,6 +1,6 @@
+import type { CategoryType } from '@expense-tracker/contracts'
 import type { Database } from '../../database/db.js'
 import { categoriesTable } from '../../database/schemas/categories.schema.js'
-import type { CategoryType } from '../../modules/categories/category.types.js'
 
 export const DEFAULT_CATEGORY_NAME = 'Eating Out'
 export const DEFAULT_CATEGORY_TYPE = 'expense' as const

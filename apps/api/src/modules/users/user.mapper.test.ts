@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'vitest'
-import { TEST_EMAIL } from '../../tests/constants.js'
 import {
   DEFAULT_USER_CURRENCY,
   DEFAULT_USER_LOCALE,
   DEFAULT_USER_TIME_ZONE,
-} from './user.constants.js'
+} from '@expense-tracker/contracts'
+import { describe, expect, test } from 'vitest'
+import { TEST_EMAIL } from '../../tests/constants.js'
 import { toUserPreferences, toUserResponse } from './user.mapper.js'
 
 describe('toUserResponse', () => {

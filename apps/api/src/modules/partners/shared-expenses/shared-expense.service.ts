@@ -1,24 +1,25 @@
 import {
+  resolveSplitAmounts,
   type SharedExpenseReportResponse,
   type SharedExpenseStatus,
+  SPLIT_TYPE,
+  type SplitType,
   sharedExpenseStatusSchema,
 } from '@expense-tracker/contracts'
 import type { Database } from '../../../database/db.js'
+import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from '../../../shared/pagination.js'
 import { CATEGORY_SYSTEM_KEY } from '../../categories/category.defaults.js'
 import { CategoryNotFoundError } from '../../categories/category.error.js'
 import type { CategoryRepository } from '../../categories/category.repository.js'
 import type { Category } from '../../categories/category.types.js'
 import type { TransactionRepository } from '../../transactions/transaction.repository.js'
 import type { PartnershipRepository } from '../partnerships/partnership.repository.js'
-
 import { partnerOf } from '../partnerships/partnership.utils.js'
 import { SharedCategoryNotFoundError } from '../shared-categories/shared-category.errors.js'
 import type { SharedCategoryRepository } from '../shared-categories/shared-category.repository.js'
-import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './shared-expense.constants.js'
 import { ActivePartnershipNotFoundError } from './shared-expense.errors.js'
 import type { SharedExpenseRepository } from './shared-expense.repository.js'
-import { type SharedExpense, SPLIT_TYPE, type SplitType } from './shared-expense.types.js'
-import { resolveSplitAmounts } from './shared-expense.utils.js'
+import type { SharedExpense } from './shared-expense.types.js'
 
 export type CreateSharedExpense = {
   userId: string

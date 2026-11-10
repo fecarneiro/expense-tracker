@@ -1,20 +1,21 @@
+import type { LoginRequest } from '@expense-tracker/contracts'
 import request from 'supertest'
 import { describe, expect } from 'vitest'
 import { accessTokenConfig } from '../../../shared/access-token.js'
 import { TEST_EMAIL, TEST_PASSWORD } from '../../../tests/constants.js'
 import { httpTest as test } from '../../../tests/fixtures/http.fixture.js'
 import type { HttpTestApp } from '../../../tests/helpers/http-request.helpers.js'
-import type { LoginBodyInput, RegisterBodyInput } from '../auth.schemas.js'
+import type { UserCredentialsBodyInput } from '../../users/user.schemas.js'
 
 const registerCredentials = {
   email: TEST_EMAIL,
   password: TEST_PASSWORD,
-} as const satisfies RegisterBodyInput
+} as const satisfies UserCredentialsBodyInput
 
 const loginCredentials = {
   email: TEST_EMAIL,
   password: TEST_PASSWORD,
-} as const satisfies LoginBodyInput
+} as const satisfies LoginRequest
 
 async function registerUser(app: HttpTestApp, credentials = registerCredentials) {
   return request(app).post('/api/auth/register').send(credentials).expect(201)

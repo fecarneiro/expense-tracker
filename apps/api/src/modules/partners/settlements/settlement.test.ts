@@ -1,3 +1,4 @@
+import { SPLIT_TYPE } from '@expense-tracker/contracts'
 import { eq, isNull } from 'drizzle-orm'
 import { describe } from 'vitest'
 import { settlementsTable } from '../../../database/schemas/partners/settlements.schema.js'
@@ -6,7 +7,6 @@ import { createTestPartnership } from '../../../tests/factories/partnership.fact
 import { insertTestUser } from '../../../tests/factories/user.factory.js'
 import { expect, integrationTest as test } from '../../../tests/fixtures/integration.fixture.js'
 import { ActivePartnershipNotFoundError } from '../shared-expenses/shared-expense.errors.js'
-import { SPLIT_TYPE } from '../shared-expenses/shared-expense.types.js'
 import { NothingToSettleError } from './settlement.errors.js'
 
 describe('SettlementService', () => {

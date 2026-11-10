@@ -1,25 +1,38 @@
+import type {
+  ExpenseCategoryTotal,
+  MonthlyBalanceRow,
+  TransactionResponse,
+  TransactionsResponse,
+} from '@expense-tracker/contracts'
+import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from '../../shared/pagination.js'
 import { CategoryNotFoundError } from '../categories/category.error.js'
 import type { CategoryRepository } from '../categories/category.repository.js'
 import type { UserRepository } from '../users/user.repository.js'
 import type { UserService } from '../users/user.service.js'
-import { LIST_DEFAULT_LIMIT, LIST_DEFAULT_OFFSET } from './transaction.constants.js'
 import {
   InvalidTransactionRangeError,
   TransactionCreatedByUserNotFoundError,
   TransactionCreationFailedError,
   TransactionNotFoundError,
 } from './transaction.error.js'
-import { type TransactionResponse, toTransactionResponse } from './transaction.mapper.js'
+import { toTransactionResponse } from './transaction.mapper.js'
 import type { TransactionRepository } from './transaction.repository.js'
 import type {
   CreateTransactionInput,
   DeleteTransactionInput,
+  FindExpenseCategoryTotalsInput,
   FindManyTransactionsInput,
   FindMonthlyTotalsInRangeInput,
   FindTransactionByIdInput,
-  MonthlyTotalsInRangeRow,
+  TransactionRange,
   UpdateTransactionInput,
 } from './transaction.types.js'
+
+function assertValidRange({ from, until }: TransactionRange) {
+  if (from != null && until != null && from >= until) {
+    throw new InvalidTransactionRangeError()
+  }
+}
 
 export class TransactionService {
   constructor(
@@ -103,28 +116,41 @@ export class TransactionService {
     return toTransactionResponse(transaction)
   }
 
-  async findManyWithCategory(data: FindManyTransactionsInput): Promise<TransactionResponse[]> {
+  async findManyWithCategory(data: FindManyTransactionsInput): Promise<TransactionsResponse> {
+    assertValidRange(data)
+
     const limit = data.limit ?? LIST_DEFAULT_LIMIT
     const offset = data.offset ?? LIST_DEFAULT_OFFSET
 
-    const transactions = await this.transactionRepository.findManyWithCategory({
+    const { rows, total } = await this.transactionRepository.findManyWithCategory({
       userId: data.userId,
       limit,
       offset,
+      from: data.from,
+      until: data.until,
     })
 
-    return transactions.map(toTransactionResponse)
+    return {
+      data: rows.map(toTransactionResponse),
+      meta: { total, limit, offset },
+    }
+  }
+
+  async findExpenseCategoryTotals(
+    data: FindExpenseCategoryTotalsInput,
+  ): Promise<ExpenseCategoryTotal[]> {
+    assertValidRange(data)
+
+    return this.transactionRepository.findExpenseCategoryTotals(data)
   }
 
   async findMonthlyTotalsInRange(
     data: FindMonthlyTotalsInRangeInput,
-  ): Promise<MonthlyTotalsInRangeRow[]> {
+  ): Promise<MonthlyBalanceRow[]> {
     const { timeZone } = await this.userService.getUserPreferences({ id: data.userId })
     const { from, until } = data.range ?? {}
 
-    if (from != null && until != null && from >= until) {
-      throw new InvalidTransactionRangeError()
-    }
+    assertValidRange({ from, until })
 
     const rows = await this.transactionRepository.findMonthlyTotalsInRange({
       userId: data.userId,
